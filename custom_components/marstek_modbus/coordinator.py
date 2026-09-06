@@ -1511,6 +1511,8 @@ def get_registers(version: str):
       - SOLAR_POWER_SENSOR_DEFINITIONS
       - STORED_ENERGY_SENSOR_DEFINITIONS
     - CYCLE_SENSOR_DEFINITIONS
+    - RUNTIME_SENSOR_DEFINITIONS
+    - BATTERY_LIFE_SENSOR_DEFINITIONS
     - CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
     - BITFIELD_TEXT_SENSOR_DEFINITIONS
     - GRID_POWER_SENSOR_DEFINITIONS
@@ -1605,6 +1607,12 @@ def get_registers(version: str):
                     ),
                     "CYCLE_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("CYCLE_SENSOR_DEFINITIONS")
+                    ),
+                    "RUNTIME_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("RUNTIME_SENSOR_DEFINITIONS")
+                    ),
+                    "BATTERY_LIFE_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("BATTERY_LIFE_SENSOR_DEFINITIONS")
                     ),
                     "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS")
