@@ -37,6 +37,8 @@ async def async_setup_entry(
         (MarstekVersionSensor, coordinator.VERSION_SENSOR_DEFINITIONS),
         (MarstekStoredEnergySensor, coordinator.STORED_ENERGY_SENSOR_DEFINITIONS),
         (MarstekBatteryCycleSensor, coordinator.CYCLE_SENSOR_DEFINITIONS),
+        (MarstekRuntimeSensor, coordinator.RUNTIME_SENSOR_DEFINITIONS),
+        (MarstekBatteryLifeSensor, coordinator.BATTERY_LIFE_SENSOR_DEFINITIONS),
         (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
@@ -732,6 +734,92 @@ class MarstekBatteryCycleSensor(MarstekCalculatedSensor):
         cycles = round(discharge / capacity, 2)
         self._attr_native_value = cycles
         return cycles
+
+
+class MarstekRuntimeSensor(MarstekCalculatedSensor):
+    """
+    Hours until the battery is empty or full at the current power.
+
+    Mode is determined by 'mode' in the sensor definition:
+    - "to_empty": time until 0 % SoC, counts only while discharging
+    - "to_full":  time until 100 % SoC, counts only while charging
+
+    Idle, or flow in the other direction, yields 0 rather than None. The value
+    is a countdown; an unknown state would read as a broken sensor on a
+    dashboard instead of "not counting down right now".
+
+    Note that both ends are the raw SoC limits, not the configured charge and
+    discharge cutoffs: those registers exist on Venus E v1/v2 only, so using
+    them would make the sensor behave differently per model.
+    """
+
+    # Below this many watts the battery counts as idle. Standby draw drifts
+    # around zero and would otherwise produce runtimes of thousands of hours.
+    IDLE_POWER_W = 5
+
+    # Anything beyond this is not a useful reading; report the ceiling instead.
+    MAX_HOURS = 999
+
+    def calculate_value(self, dep_values: dict):
+        soc = dep_values.get("soc")
+        capacity = dep_values.get("capacity")
+        power = dep_values.get("power")
+        if soc is None or capacity is None or power is None:
+            return None
+
+        mode = self.definition.get("mode", "to_empty")
+        if mode == "to_empty":
+            if power >= -self.IDLE_POWER_W:
+                return 0.0
+            energy = capacity * soc / 100
+        elif mode == "to_full":
+            if power <= self.IDLE_POWER_W:
+                return 0.0
+            energy = capacity * (100 - soc) / 100
+        else:
+            _LOGGER.warning("%s unknown runtime mode '%s'", self._key, mode)
+            return None
+
+        hours = energy / (abs(power) / 1000)
+        return round(min(hours, self.MAX_HOURS), 2)
+
+
+class MarstekBatteryLifeSensor(MarstekCalculatedSensor):
+    """
+    Remaining cycles or state of health, derived from lifetime throughput.
+
+    Both share one estimate: cycles used so far are the lifetime discharged
+    energy divided by the pack capacity, measured against the cycle rating in
+    'rated_cycles'. That rating is a manufacturer figure the battery does not
+    report, so these are estimates, not readings.
+
+    Mode is determined by 'mode' in the sensor definition:
+    - "remaining_cycles": rated cycles minus the cycles used
+    - "health":           percentage of the rating still left
+    """
+
+    def calculate_value(self, dep_values: dict):
+        discharge = dep_values.get("discharge")
+        capacity = dep_values.get("capacity")
+        if discharge is None or not capacity:
+            return None
+
+        rated = self.definition.get("rated_cycles")
+        if not rated:
+            _LOGGER.warning(
+                "%s has no 'rated_cycles' in its definition, cannot estimate", self._key
+            )
+            return None
+
+        used = discharge / capacity
+        mode = self.definition.get("mode", "remaining_cycles")
+        if mode == "remaining_cycles":
+            return round(max(rated - used, 0))
+        if mode == "health":
+            return round(max(100 - (used / rated * 100), 0), 2)
+
+        _LOGGER.warning("%s unknown battery life mode '%s'", self._key, mode)
+        return None
 
 
 class MarstekVersionSensor(MarstekCalculatedSensor):

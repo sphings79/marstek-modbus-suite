@@ -484,6 +484,18 @@
       "battery_cycle_count_calc": {
         "name": "Vollzyklen (berechnet)"
       },
+      "runtime_to_empty": {
+        "name": "Laufzeit bis leer"
+      },
+      "runtime_to_full": {
+        "name": "Laufzeit bis voll"
+      },
+      "remaining_cycles": {
+        "name": "Verbleibende Zyklen"
+      },
+      "battery_health": {
+        "name": "Batteriezustand"
+      },
       "total_daily_charging_energy": {
         "name": "Tägliche Ladeenergie"
       },

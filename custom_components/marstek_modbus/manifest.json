@@ -1,10 +1,10 @@
 {
   "domain": "marstek_modbus",
   "name": "Marstek Venus Modbus",
-  "version": "1.4.0-beta.2",
+  "version": "1.4.0",
   "config_flow": true,
-  "documentation": "https://github.com/viperrnmc/marstek_venus_modbus",
+  "documentation": "https://github.com/sphings79/marstek_venus_modbus_dev",
   "requirements": ["pymodbus>=3.9.2"],
-  "codeowners": ["@ViperRNMC"],
+  "codeowners": ["@sphings79"],
   "iot_class": "local_polling"
 }

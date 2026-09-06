@@ -491,6 +491,18 @@
       "battery_cycle_count_calc": {
         "name": "Volledige cycli (Calc)"
       },
+      "runtime_to_empty": {
+        "name": "Looptijd tot leeg"
+      },
+      "runtime_to_full": {
+        "name": "Looptijd tot vol"
+      },
+      "remaining_cycles": {
+        "name": "Resterende cycli"
+      },
+      "battery_health": {
+        "name": "Batterijconditie"
+      },
       "total_daily_charging_energy": {
         "name": "Dagelijkse Oplaadenergie"
       },

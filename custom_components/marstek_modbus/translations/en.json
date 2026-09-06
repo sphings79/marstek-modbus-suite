@@ -487,6 +487,18 @@
       "battery_cycle_count_calc": {
         "name": "Cycle Count (Calc)"
       },
+      "runtime_to_empty": {
+        "name": "Runtime to Empty"
+      },
+      "runtime_to_full": {
+        "name": "Runtime to Full"
+      },
+      "remaining_cycles": {
+        "name": "Remaining Cycles"
+      },
+      "battery_health": {
+        "name": "Battery Health"
+      },
       "total_daily_charging_energy": {
         "name": "Daily Charging Energy"
       },

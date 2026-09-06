@@ -94,6 +94,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.VERSION_SENSOR_DEFINITIONS = []
         self.STORED_ENERGY_SENSOR_DEFINITIONS = []
         self.CYCLE_SENSOR_DEFINITIONS = []
+        self.RUNTIME_SENSOR_DEFINITIONS = []
+        self.BATTERY_LIFE_SENSOR_DEFINITIONS = []
         self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = []
         self.BITFIELD_TEXT_SENSOR_DEFINITIONS = []
         self.GRID_POWER_SENSOR_DEFINITIONS = []
@@ -710,6 +712,10 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.VERSION_SENSOR_DEFINITIONS = data.get("VERSION_SENSOR_DEFINITIONS", [])
             self.STORED_ENERGY_SENSOR_DEFINITIONS = data.get("STORED_ENERGY_SENSOR_DEFINITIONS", [])
             self.CYCLE_SENSOR_DEFINITIONS = data.get("CYCLE_SENSOR_DEFINITIONS", [])
+            self.RUNTIME_SENSOR_DEFINITIONS = data.get("RUNTIME_SENSOR_DEFINITIONS", [])
+            self.BATTERY_LIFE_SENSOR_DEFINITIONS = data.get(
+                "BATTERY_LIFE_SENSOR_DEFINITIONS", []
+            )
             self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = data.get(
                 "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS", []
             )

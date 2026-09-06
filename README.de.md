@@ -15,14 +15,6 @@
 
 </div>
 
-> [!NOTE]
-> **Dies ist ein Entwicklungs-Fork** von [ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus).
-> Das Verdienst an der Integration gebührt [@ViperRNMC](https://github.com/ViperRNMC). Dieser Fork
-> enthält zusätzliche Registerforschung zur Venus D sowie Fehlerkorrekturen; was genau abweicht und
-> warum, steht in [UPSTREAM-DIVERGENCE.md](UPSTREAM-DIVERGENCE.md) — damit es bewusst nach upstream
-> übernommen oder verworfen werden kann. Probleme mit **diesem Fork** bitte im Issue-Tracker dieses
-> Repositories melden.
-
 ---
 
 ## Was diese Integration macht

@@ -15,13 +15,6 @@
 
 </div>
 
-> [!NOTE]
-> **This is a development fork** of [ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus).
-> Credit for the integration goes to [@ViperRNMC](https://github.com/ViperRNMC). This fork carries
-> additional Venus D register research and bug fixes; what exactly differs, and why, is documented
-> in [UPSTREAM-DIVERGENCE.md](UPSTREAM-DIVERGENCE.md) so it can be carried upstream or dropped
-> deliberately. Please report problems with **this fork** in this repository's issue tracker.
-
 ---
 
 ## What this integration does
