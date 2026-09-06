@@ -103,8 +103,14 @@
       "battery_6_voltage": {
         "name": "Batteriepack 6 Spannung"
       },
+      "battery_7_voltage": {
+        "name": "Batteriepack 7 Spannung"
+      },
       "battery_6_current": {
         "name": "Batteriepack 6 Strom"
+      },
+      "battery_7_current": {
+        "name": "Batteriepack 7 Strom"
       },
       "work_mode": {
         "name": "Betriebsmodus"
@@ -160,11 +166,20 @@
       "battery_6_cycle_count": {
         "name": "Batteriepack 6 Zyklenzahl"
       },
+      "battery_7_cycle_count": {
+        "name": "Batteriepack 7 Zyklenzahl"
+      },
       "battery_6_mos_status": {
         "name": "Batteriepack 6 MOSFET-Status"
       },
+      "battery_7_mos_status": {
+        "name": "Batteriepack 7 MOSFET-Status"
+      },
       "battery_6_bms_version": {
         "name": "Batteriepack 6 BMS-Version"
+      },
+      "battery_7_bms_version": {
+        "name": "Batteriepack 7 BMS-Version"
       },
       "battery_1_max_cell_voltage": {
         "name": "Batteriepack 1 max. Zellspannung"
@@ -259,20 +274,38 @@
       "battery_6_max_cell_voltage": {
         "name": "Batteriepack 6 max. Zellspannung"
       },
+      "battery_7_max_cell_voltage": {
+        "name": "Batteriepack 7 max. Zellspannung"
+      },
       "battery_6_min_cell_voltage": {
         "name": "Batteriepack 6 min. Zellspannung"
+      },
+      "battery_7_min_cell_voltage": {
+        "name": "Batteriepack 7 min. Zellspannung"
       },
       "battery_6_cell_temperature_1": {
         "name": "Batteriepack 6 Zell-NTC 1"
       },
+      "battery_7_cell_temperature_1": {
+        "name": "Batteriepack 7 Zell-NTC 1"
+      },
       "battery_6_cell_temperature_2": {
         "name": "Batteriepack 6 Zell-NTC 2"
+      },
+      "battery_7_cell_temperature_2": {
+        "name": "Batteriepack 7 Zell-NTC 2"
       },
       "battery_6_cell_temperature_3": {
         "name": "Batteriepack 6 Zell-NTC 3"
       },
+      "battery_7_cell_temperature_3": {
+        "name": "Batteriepack 7 Zell-NTC 3"
+      },
       "battery_6_cell_temperature_4": {
         "name": "Batteriepack 6 Zell-NTC 4"
+      },
+      "battery_7_cell_temperature_4": {
+        "name": "Batteriepack 7 Zell-NTC 4"
       },
       "battery_1_env_temperature": {
         "name": "Batteriepack 1 Umgebungstemperatur"
@@ -337,14 +370,26 @@
       "battery_6_env_temperature": {
         "name": "Batteriepack 6 Umgebungstemperatur"
       },
+      "battery_7_env_temperature": {
+        "name": "Batteriepack 7 Umgebungstemperatur"
+      },
       "battery_6_mos_temperature": {
         "name": "Batteriepack 6 MOSFET-Temperatur"
+      },
+      "battery_7_mos_temperature": {
+        "name": "Batteriepack 7 MOSFET-Temperatur"
       },
       "battery_6_protection_1": {
         "name": "Batteriepack 6 Schutz 1"
       },
+      "battery_7_protection_1": {
+        "name": "Batteriepack 7 Schutz 1"
+      },
       "battery_6_protection_2": {
         "name": "Batteriepack 6 Schutz 2"
+      },
+      "battery_7_protection_2": {
+        "name": "Batteriepack 7 Schutz 2"
       },
       "device_name": {
         "name": "Gerätename"
@@ -390,6 +435,9 @@
       },
       "battery_soc_6": {
         "name": "SoC Batteriepack 6"
+      },
+      "battery_soc_7": {
+        "name": "SoC Batteriepack 7"
       },
       "battery_total_energy": {
         "name": "Batterie-Gesamtenergie"
@@ -703,50 +751,98 @@
       "battery_6_cell_1_voltage": {
         "name": "Batteriepack 6 Zelle 1 Spannung"
       },
+      "battery_7_cell_1_voltage": {
+        "name": "Batteriepack 7 Zelle 1 Spannung"
+      },
       "battery_6_cell_2_voltage": {
         "name": "Batteriepack 6 Zelle 2 Spannung"
+      },
+      "battery_7_cell_2_voltage": {
+        "name": "Batteriepack 7 Zelle 2 Spannung"
       },
       "battery_6_cell_3_voltage": {
         "name": "Batteriepack 6 Zelle 3 Spannung"
       },
+      "battery_7_cell_3_voltage": {
+        "name": "Batteriepack 7 Zelle 3 Spannung"
+      },
       "battery_6_cell_4_voltage": {
         "name": "Batteriepack 6 Zelle 4 Spannung"
+      },
+      "battery_7_cell_4_voltage": {
+        "name": "Batteriepack 7 Zelle 4 Spannung"
       },
       "battery_6_cell_5_voltage": {
         "name": "Batteriepack 6 Zelle 5 Spannung"
       },
+      "battery_7_cell_5_voltage": {
+        "name": "Batteriepack 7 Zelle 5 Spannung"
+      },
       "battery_6_cell_6_voltage": {
         "name": "Batteriepack 6 Zelle 6 Spannung"
+      },
+      "battery_7_cell_6_voltage": {
+        "name": "Batteriepack 7 Zelle 6 Spannung"
       },
       "battery_6_cell_7_voltage": {
         "name": "Batteriepack 6 Zelle 7 Spannung"
       },
+      "battery_7_cell_7_voltage": {
+        "name": "Batteriepack 7 Zelle 7 Spannung"
+      },
       "battery_6_cell_8_voltage": {
         "name": "Batteriepack 6 Zelle 8 Spannung"
+      },
+      "battery_7_cell_8_voltage": {
+        "name": "Batteriepack 7 Zelle 8 Spannung"
       },
       "battery_6_cell_9_voltage": {
         "name": "Batteriepack 6 Zelle 9 Spannung"
       },
+      "battery_7_cell_9_voltage": {
+        "name": "Batteriepack 7 Zelle 9 Spannung"
+      },
       "battery_6_cell_10_voltage": {
         "name": "Batteriepack 6 Zelle 10 Spannung"
+      },
+      "battery_7_cell_10_voltage": {
+        "name": "Batteriepack 7 Zelle 10 Spannung"
       },
       "battery_6_cell_11_voltage": {
         "name": "Batteriepack 6 Zelle 11 Spannung"
       },
+      "battery_7_cell_11_voltage": {
+        "name": "Batteriepack 7 Zelle 11 Spannung"
+      },
       "battery_6_cell_12_voltage": {
         "name": "Batteriepack 6 Zelle 12 Spannung"
+      },
+      "battery_7_cell_12_voltage": {
+        "name": "Batteriepack 7 Zelle 12 Spannung"
       },
       "battery_6_cell_13_voltage": {
         "name": "Batteriepack 6 Zelle 13 Spannung"
       },
+      "battery_7_cell_13_voltage": {
+        "name": "Batteriepack 7 Zelle 13 Spannung"
+      },
       "battery_6_cell_14_voltage": {
         "name": "Batteriepack 6 Zelle 14 Spannung"
+      },
+      "battery_7_cell_14_voltage": {
+        "name": "Batteriepack 7 Zelle 14 Spannung"
       },
       "battery_6_cell_15_voltage": {
         "name": "Batteriepack 6 Zelle 15 Spannung"
       },
+      "battery_7_cell_15_voltage": {
+        "name": "Batteriepack 7 Zelle 15 Spannung"
+      },
       "battery_6_cell_16_voltage": {
         "name": "Batteriepack 6 Zelle 16 Spannung"
+      },
+      "battery_7_cell_16_voltage": {
+        "name": "Batteriepack 7 Zelle 16 Spannung"
       },
       "inverter_state": {
         "name": "Wechselrichter-Status",
@@ -898,6 +994,9 @@
       },
       "battery_6_cell_voltage_delta": {
         "name": "Batteriepack 6 Zellspannungs-Differenz"
+      },
+      "battery_7_cell_voltage_delta": {
+        "name": "Batteriepack 7 Zellspannungs-Differenz"
       },
       "fault_status_low": {
         "name": "Fehlerstatus Low-Word"

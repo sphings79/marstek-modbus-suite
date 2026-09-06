@@ -126,6 +126,15 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 1
         scan_interval: high
+    battery_soc_7:
+        register: 34602
+        scale: 0.1
+        unit: "%"
+        state_class: measurement
+        enabled_by_default: false
+        data_type: uint16
+        precision: 1
+        scan_interval: high
     battery_total_energy:
         register: 32105
         scale: 0.001
@@ -1274,6 +1283,166 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
+    battery_7_cell_1_voltage:
+        register: 34618
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_2_voltage:
+        register: 34619
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_3_voltage:
+        register: 34620
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_4_voltage:
+        register: 34621
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_5_voltage:
+        register: 34622
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_6_voltage:
+        register: 34623
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_7_voltage:
+        register: 34624
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_8_voltage:
+        register: 34625
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_9_voltage:
+        register: 34626
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_10_voltage:
+        register: 34627
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_11_voltage:
+        register: 34628
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_12_voltage:
+        register: 34629
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_13_voltage:
+        register: 34630
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_14_voltage:
+        register: 34631
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_15_voltage:
+        register: 34632
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_7_cell_16_voltage:
+        register: 34633
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
     alarm_status:
         register: 36000
         count: 2
@@ -1713,6 +1882,40 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: high
+    battery_7_env_temperature:
+        register: 34611
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_mos_temperature:
+        register: 34612
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_protection_1:
+        register: 34607
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_7_protection_2:
+        register: 34608
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
     # --- Per-pack cell voltage extremes and cell NTC block (firmware-confirmed) ---
     battery_1_max_cell_voltage:
         register: 34005
@@ -2074,6 +2277,66 @@ SENSOR_DEFINITIONS:
         precision: 1
         enabled_by_default: false
         scan_interval: low
+    battery_7_max_cell_voltage:
+        register: 34605
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_min_cell_voltage:
+        register: 34606
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_cell_temperature_1:
+        register: 34613
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_cell_temperature_2:
+        register: 34614
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_cell_temperature_3:
+        register: 34615
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_cell_temperature_4:
+        register: 34616
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
     # --- Per-pack cycle count, MOS status and BMS version (firmware-confirmed) ---
     battery_1_mos_status:
         register: 34004
@@ -2199,7 +2462,29 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: low
-    # --- Per-pack terminal voltage / current (packs 2-6; pack 1 = battery_voltage/current) ---
+    battery_7_cycle_count:
+        register: 34603
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_mos_status:
+        register: 34604
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_7_bms_version:
+        register: 34610
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    # --- Per-pack terminal voltage / current (packs 2-7; pack 1 = battery_voltage/current) ---
     battery_2_voltage:
         register: 34100
         scale: 0.01
@@ -2292,6 +2577,26 @@ SENSOR_DEFINITIONS:
         scan_interval: low
     battery_6_current:
         register: 34501
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_voltage:
+        register: 34600
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_7_current:
+        register: 34601
         scale: 0.1
         unit: A
         device_class: current
@@ -3028,6 +3333,17 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         dependency_keys:
             max: battery_6_max_cell_voltage
             min: battery_6_min_cell_voltage
+    battery_7_cell_voltage_delta:
+        key: battery_7_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_7_max_cell_voltage
+            min: battery_7_min_cell_voltage
 
 BITFIELD_TEXT_SENSOR_DEFINITIONS:
     fault_status_description:
@@ -3113,6 +3429,7 @@ BMS_POWER_SENSOR_DEFINITIONS:
             p4: battery_4_current
             p5: battery_5_current
             p6: battery_6_current
+            p7: battery_7_current
 
 # ---------------------------------------------------------------------------
 # DEV_UNKNOWN_SENSOR_DEFINITIONS — Option 'DEV-Register: unbekannt'
@@ -3257,20 +3574,6 @@ DEV_UNKNOWN_SENSOR_DEFINITIONS:
   dev_34509:
     register: 34509
     name: "DEV 34509 (pack6_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34602:
-    register: 34602
-    name: "DEV 34602 (pack7_soc?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34604:
-    register: 34604
-    name: "DEV 34604 (pack7_mos_status?)"
     data_type: uint16
     category: diagnostic
     scan_interval: low

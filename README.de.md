@@ -264,7 +264,7 @@ Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Regi
 | bluetooth_status                  | Bluetooth-Verbindung/-Status  | uint16  | 2    | -      | -    | 30301 | 30301 | 30301 | 30301 |
 | wifi_status (binary)              | WLAN verbunden (0/1) | uint16  | 2    | 1      | -    | 30300 | 30300 | 30300 | 30300 |
 | cloud_status (binary)             | Cloud verbunden (0/1) | uint16  | 2    | 1      | -    | 30302 | 30302 | 30302 | 30302 |
-| battery_soc                       | Ladezustand     | uint16  | 2    | 0.1/1  | %    | 34002 | 34002 | 32104 | 34002 |
+| battery_soc                       | Ladezustand     | uint16  | 2    | 0.1/1  | %    | 32104 | 32104 | 32104 | 34002 |
 | battery_total_energy              | Gesamte gespeicherte Energie | uint16  | 2    | 0.001  | kWh  | 32105 | 32105 | 32105 | 32105 |
 | battery_voltage                   | Batteriespannung | uint16  | 2    | 0.01   | V    | 30100 | 30100 | 32100 | 30100 |
 | battery_current                   | Batteriestrom   | int16   | 2    | 0.1/0.01| A   | 30101 | 30101 | 32101 | 30101 |
@@ -298,78 +298,109 @@ Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Regi
 | battery_1_cell_7_voltage            | Spannung Akkupack 1 Zelle 7   | int16   | 2    | 0.001  | V    | 34024 | 34024 |       | 34024 |
 | battery_1_cell_8_voltage            | Spannung Akkupack 1 Zelle 8   | int16   | 2    | 0.001  | V    | 34025 | 34025 |       | 34025 |
 | battery_1_cell_9_voltage            | Spannung Akkupack 1 Zelle 9   | int16   | 2    | 0.001  | V    | 34026 | 34026 |       | 34026 |
-| battery_1_cell_10_voltage           | Spannung Akkupack 1 Zelle 10   | int16   | 2    | 0.001  | V    | 34027 | 34027 |       | 34027 |
-| battery_1_cell_11_voltage           | Spannung Akkupack 1 Zelle 11   | int16   | 2    | 0.001  | V    | 34028 | 34028 |       | 34028 |
-| battery_1_cell_12_voltage           | Spannung Akkupack 1 Zelle 12   | int16   | 2    | 0.001  | V    | 34029 | 34029 |       | 34029 |
-| battery_1_cell_13_voltage           | Spannung Akkupack 1 Zelle 13   | int16   | 2    | 0.001  | V    | 34030 | 34030 |       | 34030 |
-| battery_1_cell_14_voltage           | Spannung Akkupack 1 Zelle 14   | int16   | 2    | 0.001  | V    |       | 34031 |       | 34031 |
-| battery_1_cell_15_voltage           | Spannung Akkupack 1 Zelle 15   | int16   | 2    | 0.001  | V    |       | 34032 |       | 34032 |
-| battery_1_cell_16_voltage           | Spannung Akkupack 1 Zelle 16   | int16   | 2    | 0.001  | V    |       | 34033 |       | 34033 |
-| battery_2_cell_1_voltage            | Spannung Akkupack 2 Zelle 1   | int16   | 2    | 0.001  | V    | 34031 |       |       |       |
-| battery_2_cell_2_voltage            | Spannung Akkupack 2 Zelle 2   | int16   | 2    | 0.001  | V    | 34032 |       |       |       |
-| battery_2_cell_3_voltage            | Spannung Akkupack 2 Zelle 3   | int16   | 2    | 0.001  | V    | 34033 |       |       |       |
-| battery_2_cell_4_voltage            | Spannung Akkupack 2 Zelle 4   | int16   | 2    | 0.001  | V    | 34034 |       |       |       |
-| battery_2_cell_5_voltage            | Spannung Akkupack 2 Zelle 5   | int16   | 2    | 0.001  | V    | 34035 |       |       |       |
-| battery_2_cell_6_voltage            | Spannung Akkupack 2 Zelle 6   | int16   | 2    | 0.001  | V    | 34036 |       |       |       |
-| battery_2_cell_7_voltage            | Spannung Akkupack 2 Zelle 7   | int16   | 2    | 0.001  | V    | 34037 |       |       |       |
-| battery_2_cell_8_voltage            | Spannung Akkupack 2 Zelle 8   | int16   | 2    | 0.001  | V    | 34038 |       |       |       |
-| battery_2_cell_9_voltage            | Spannung Akkupack 2 Zelle 9   | int16   | 2    | 0.001  | V    | 34039 |       |       |       |
-| battery_2_cell_10_voltage           | Spannung Akkupack 2 Zelle 10   | int16   | 2    | 0.001  | V    | 34040 |       |       |       |
-| battery_2_cell_11_voltage           | Spannung Akkupack 2 Zelle 11   | int16   | 2    | 0.001  | V    | 34041 |       |       |       |
-| battery_2_cell_12_voltage           | Spannung Akkupack 2 Zelle 12   | int16   | 2    | 0.001  | V    | 34042 |       |       |       |
-| battery_2_cell_13_voltage           | Spannung Akkupack 2 Zelle 13   | int16   | 2    | 0.001  | V    | 34043 |       |       |       |
-| battery_3_cell_1_voltage            | Spannung Akkupack 3 Zelle 1   | int16   | 2    | 0.001  | V    | 34044 |       |       |       |
-| battery_3_cell_2_voltage            | Spannung Akkupack 3 Zelle 2   | int16   | 2    | 0.001  | V    | 34045 |       |       |       |
-| battery_3_cell_3_voltage            | Spannung Akkupack 3 Zelle 3   | int16   | 2    | 0.001  | V    | 34046 |       |       |       |
-| battery_3_cell_4_voltage            | Spannung Akkupack 3 Zelle 4   | int16   | 2    | 0.001  | V    | 34047 |       |       |       |
-| battery_3_cell_5_voltage            | Spannung Akkupack 3 Zelle 5   | int16   | 2    | 0.001  | V    | 34048 |       |       |       |
-| battery_3_cell_6_voltage            | Spannung Akkupack 3 Zelle 6   | int16   | 2    | 0.001  | V    | 34049 |       |       |       |
-| battery_3_cell_7_voltage            | Spannung Akkupack 3 Zelle 7   | int16   | 2    | 0.001  | V    | 34050 |       |       |       |
-| battery_3_cell_8_voltage            | Spannung Akkupack 3 Zelle 8   | int16   | 2    | 0.001  | V    | 34051 |       |       |       |
-| battery_3_cell_9_voltage            | Spannung Akkupack 3 Zelle 9   | int16   | 2    | 0.001  | V    | 34052 |       |       |       |
-| battery_3_cell_10_voltage           | Spannung Akkupack 3 Zelle 10   | int16   | 2    | 0.001  | V    | 34053 |       |       |       |
-| battery_3_cell_11_voltage           | Spannung Akkupack 3 Zelle 11   | int16   | 2    | 0.001  | V    | 34054 |       |       |       |
-| battery_3_cell_12_voltage           | Spannung Akkupack 3 Zelle 12   | int16   | 2    | 0.001  | V    | 34055 |       |       |       |
-| battery_3_cell_13_voltage           | Spannung Akkupack 3 Zelle 13   | int16   | 2    | 0.001  | V    | 34056 |       |       |       |
-| battery_4_cell_1_voltage            | Spannung Akkupack 4 Zelle 1   | int16   | 2    | 0.001  | V    | 34057 |       |       |       |
-| battery_4_cell_2_voltage            | Spannung Akkupack 4 Zelle 2   | int16   | 2    | 0.001  | V    | 34058 |       |       |       |
-| battery_4_cell_3_voltage            | Spannung Akkupack 4 Zelle 3   | int16   | 2    | 0.001  | V    | 34059 |       |       |       |
-| battery_4_cell_4_voltage            | Spannung Akkupack 4 Zelle 4   | int16   | 2    | 0.001  | V    | 34060 |       |       |       |
-| battery_4_cell_5_voltage            | Spannung Akkupack 4 Zelle 5   | int16   | 2    | 0.001  | V    | 34061 |       |       |       |
-| battery_4_cell_6_voltage            | Spannung Akkupack 4 Zelle 6   | int16   | 2    | 0.001  | V    | 34062 |       |       |       |
-| battery_4_cell_7_voltage            | Spannung Akkupack 4 Zelle 7   | int16   | 2    | 0.001  | V    | 34063 |       |       |       |
-| battery_4_cell_8_voltage            | Spannung Akkupack 4 Zelle 8   | int16   | 2    | 0.001  | V    | 34064 |       |       |       |
-| battery_4_cell_9_voltage            | Spannung Akkupack 4 Zelle 9   | int16   | 2    | 0.001  | V    | 34065 |       |       |       |
-| battery_4_cell_10_voltage           | Spannung Akkupack 4 Zelle 10   | int16   | 2    | 0.001  | V    | 34066 |       |       |       |
-| battery_4_cell_11_voltage           | Spannung Akkupack 4 Zelle 11   | int16   | 2    | 0.001  | V    | 34067 |       |       |       |
-| battery_4_cell_12_voltage           | Spannung Akkupack 4 Zelle 12   | int16   | 2    | 0.001  | V    | 34068 |       |       |       |
-| battery_4_cell_13_voltage           | Spannung Akkupack 4 Zelle 13   | int16   | 2    | 0.001  | V    | 34069 |       |       |       |
-| battery_5_cell_1_voltage            | Spannung Akkupack 5 Zelle 1   | int16   | 2    | 0.001  | V    | 34070 |       |       |       |
-| battery_5_cell_2_voltage            | Spannung Akkupack 5 Zelle 2   | int16   | 2    | 0.001  | V    | 34071 |       |       |       |
-| battery_5_cell_3_voltage            | Spannung Akkupack 5 Zelle 3   | int16   | 2    | 0.001  | V    | 34072 |       |       |       |
-| battery_5_cell_4_voltage            | Spannung Akkupack 5 Zelle 4   | int16   | 2    | 0.001  | V    | 34073 |       |       |       |
-| battery_5_cell_5_voltage            | Spannung Akkupack 5 Zelle 5   | int16   | 2    | 0.001  | V    | 34074 |       |       |       |
-| battery_5_cell_6_voltage            | Spannung Akkupack 5 Zelle 6   | int16   | 2    | 0.001  | V    | 34075 |       |       |       |
-| battery_5_cell_7_voltage            | Spannung Akkupack 5 Zelle 7   | int16   | 2    | 0.001  | V    | 34076 |       |       |       |
-| battery_5_cell_8_voltage            | Spannung Akkupack 5 Zelle 8   | int16   | 2    | 0.001  | V    | 34077 |       |       |       |
-| battery_5_cell_9_voltage            | Spannung Akkupack 5 Zelle 9   | int16   | 2    | 0.001  | V    | 34078 |       |       |       |
-| battery_5_cell_10_voltage           | Spannung Akkupack 5 Zelle 10   | int16   | 2    | 0.001  | V    | 34079 |       |       |       |
-| battery_5_cell_11_voltage           | Spannung Akkupack 5 Zelle 11   | int16   | 2    | 0.001  | V    | 34080 |       |       |       |
-| battery_5_cell_12_voltage           | Spannung Akkupack 5 Zelle 12   | int16   | 2    | 0.001  | V    | 34081 |       |       |       |
-| battery_5_cell_13_voltage           | Spannung Akkupack 5 Zelle 13   | int16   | 2    | 0.001  | V    | 34082 |       |       |       |
-| battery_6_cell_1_voltage            | Spannung Akkupack 6 Zelle 1   | int16   | 2    | 0.001  | V    | 34083 |       |       |       |
-| battery_6_cell_2_voltage            | Spannung Akkupack 6 Zelle 2   | int16   | 2    | 0.001  | V    | 34084 |       |       |       |
-| battery_6_cell_3_voltage            | Spannung Akkupack 6 Zelle 3   | int16   | 2    | 0.001  | V    | 34085 |       |       |       |
-| battery_6_cell_4_voltage            | Spannung Akkupack 6 Zelle 4   | int16   | 2    | 0.001  | V    | 34086 |       |       |       |
-| battery_6_cell_5_voltage            | Spannung Akkupack 6 Zelle 5   | int16   | 2    | 0.001  | V    | 34087 |       |       |       |
-| battery_6_cell_6_voltage            | Spannung Akkupack 6 Zelle 6   | int16   | 2    | 0.001  | V    | 34088 |       |       |       |
-| battery_6_cell_7_voltage            | Spannung Akkupack 6 Zelle 7   | int16   | 2    | 0.001  | V    | 34089 |       |       |       |
-| battery_6_cell_8_voltage            | Spannung Akkupack 6 Zelle 8   | int16   | 2    | 0.001  | V    | 34090 |       |       |       |
-| battery_6_cell_9_voltage            | Spannung Akkupack 6 Zelle 9   | int16   | 2    | 0.001  | V    | 34091 |       |       |       |
-| battery_6_cell_10_voltage           | Spannung Akkupack 6 Zelle 10   | int16   | 2    | 0.001  | V    | 34092 |       |       |       |
-| battery_6_cell_11_voltage           | Spannung Akkupack 6 Zelle 11   | int16   | 2    | 0.001  | V    | 34093 |       |       |       |
-| battery_6_cell_12_voltage           | Spannung Akkupack 6 Zelle 12   | int16   | 2    | 0.001  | V    | 34094 |       |       |       |
-| battery_6_cell_13_voltage           | Spannung Akkupack 6 Zelle 13   | int16   | 2    | 0.001  | V    | 34095 |       |       |       |
+| battery_1_cell_10_voltage           | Spannung Akkupack 1 Zelle 10  | int16   | 2    | 0.001  | V    | 34027 | 34027 |       | 34027 |
+| battery_1_cell_11_voltage           | Spannung Akkupack 1 Zelle 11  | int16   | 2    | 0.001  | V    | 34028 | 34028 |       | 34028 |
+| battery_1_cell_12_voltage           | Spannung Akkupack 1 Zelle 12  | int16   | 2    | 0.001  | V    | 34029 | 34029 |       | 34029 |
+| battery_1_cell_13_voltage           | Spannung Akkupack 1 Zelle 13  | int16   | 2    | 0.001  | V    | 34030 | 34030 |       | 34030 |
+| battery_1_cell_14_voltage           | Spannung Akkupack 1 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34031 |       | 34031 |
+| battery_1_cell_15_voltage           | Spannung Akkupack 1 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34032 |       | 34032 |
+| battery_1_cell_16_voltage           | Spannung Akkupack 1 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34033 |       | 34033 |
+| battery_2_cell_1_voltage            | Spannung Akkupack 2 Zelle 1   | int16   | 2    | 0.001  | V    | 34118 | 34118 |       |       |
+| battery_2_cell_2_voltage            | Spannung Akkupack 2 Zelle 2   | int16   | 2    | 0.001  | V    | 34119 | 34119 |       |       |
+| battery_2_cell_3_voltage            | Spannung Akkupack 2 Zelle 3   | int16   | 2    | 0.001  | V    | 34120 | 34120 |       |       |
+| battery_2_cell_4_voltage            | Spannung Akkupack 2 Zelle 4   | int16   | 2    | 0.001  | V    | 34121 | 34121 |       |       |
+| battery_2_cell_5_voltage            | Spannung Akkupack 2 Zelle 5   | int16   | 2    | 0.001  | V    | 34122 | 34122 |       |       |
+| battery_2_cell_6_voltage            | Spannung Akkupack 2 Zelle 6   | int16   | 2    | 0.001  | V    | 34123 | 34123 |       |       |
+| battery_2_cell_7_voltage            | Spannung Akkupack 2 Zelle 7   | int16   | 2    | 0.001  | V    | 34124 | 34124 |       |       |
+| battery_2_cell_8_voltage            | Spannung Akkupack 2 Zelle 8   | int16   | 2    | 0.001  | V    | 34125 | 34125 |       |       |
+| battery_2_cell_9_voltage            | Spannung Akkupack 2 Zelle 9   | int16   | 2    | 0.001  | V    | 34126 | 34126 |       |       |
+| battery_2_cell_10_voltage           | Spannung Akkupack 2 Zelle 10  | int16   | 2    | 0.001  | V    | 34127 | 34127 |       |       |
+| battery_2_cell_11_voltage           | Spannung Akkupack 2 Zelle 11  | int16   | 2    | 0.001  | V    | 34128 | 34128 |       |       |
+| battery_2_cell_12_voltage           | Spannung Akkupack 2 Zelle 12  | int16   | 2    | 0.001  | V    | 34129 | 34129 |       |       |
+| battery_2_cell_13_voltage           | Spannung Akkupack 2 Zelle 13  | int16   | 2    | 0.001  | V    | 34130 | 34130 |       |       |
+| battery_2_cell_14_voltage           | Spannung Akkupack 2 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34131 |       |       |
+| battery_2_cell_15_voltage           | Spannung Akkupack 2 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34132 |       |       |
+| battery_2_cell_16_voltage           | Spannung Akkupack 2 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34133 |       |       |
+| battery_3_cell_1_voltage            | Spannung Akkupack 3 Zelle 1   | int16   | 2    | 0.001  | V    | 34218 | 34218 |       |       |
+| battery_3_cell_2_voltage            | Spannung Akkupack 3 Zelle 2   | int16   | 2    | 0.001  | V    | 34219 | 34219 |       |       |
+| battery_3_cell_3_voltage            | Spannung Akkupack 3 Zelle 3   | int16   | 2    | 0.001  | V    | 34220 | 34220 |       |       |
+| battery_3_cell_4_voltage            | Spannung Akkupack 3 Zelle 4   | int16   | 2    | 0.001  | V    | 34221 | 34221 |       |       |
+| battery_3_cell_5_voltage            | Spannung Akkupack 3 Zelle 5   | int16   | 2    | 0.001  | V    | 34222 | 34222 |       |       |
+| battery_3_cell_6_voltage            | Spannung Akkupack 3 Zelle 6   | int16   | 2    | 0.001  | V    | 34223 | 34223 |       |       |
+| battery_3_cell_7_voltage            | Spannung Akkupack 3 Zelle 7   | int16   | 2    | 0.001  | V    | 34224 | 34224 |       |       |
+| battery_3_cell_8_voltage            | Spannung Akkupack 3 Zelle 8   | int16   | 2    | 0.001  | V    | 34225 | 34225 |       |       |
+| battery_3_cell_9_voltage            | Spannung Akkupack 3 Zelle 9   | int16   | 2    | 0.001  | V    | 34226 | 34226 |       |       |
+| battery_3_cell_10_voltage           | Spannung Akkupack 3 Zelle 10  | int16   | 2    | 0.001  | V    | 34227 | 34227 |       |       |
+| battery_3_cell_11_voltage           | Spannung Akkupack 3 Zelle 11  | int16   | 2    | 0.001  | V    | 34228 | 34228 |       |       |
+| battery_3_cell_12_voltage           | Spannung Akkupack 3 Zelle 12  | int16   | 2    | 0.001  | V    | 34229 | 34229 |       |       |
+| battery_3_cell_13_voltage           | Spannung Akkupack 3 Zelle 13  | int16   | 2    | 0.001  | V    | 34230 | 34230 |       |       |
+| battery_3_cell_14_voltage           | Spannung Akkupack 3 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34231 |       |       |
+| battery_3_cell_15_voltage           | Spannung Akkupack 3 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34232 |       |       |
+| battery_3_cell_16_voltage           | Spannung Akkupack 3 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34233 |       |       |
+| battery_4_cell_1_voltage            | Spannung Akkupack 4 Zelle 1   | int16   | 2    | 0.001  | V    | 34318 | 34318 |       |       |
+| battery_4_cell_2_voltage            | Spannung Akkupack 4 Zelle 2   | int16   | 2    | 0.001  | V    | 34319 | 34319 |       |       |
+| battery_4_cell_3_voltage            | Spannung Akkupack 4 Zelle 3   | int16   | 2    | 0.001  | V    | 34320 | 34320 |       |       |
+| battery_4_cell_4_voltage            | Spannung Akkupack 4 Zelle 4   | int16   | 2    | 0.001  | V    | 34321 | 34321 |       |       |
+| battery_4_cell_5_voltage            | Spannung Akkupack 4 Zelle 5   | int16   | 2    | 0.001  | V    | 34322 | 34322 |       |       |
+| battery_4_cell_6_voltage            | Spannung Akkupack 4 Zelle 6   | int16   | 2    | 0.001  | V    | 34323 | 34323 |       |       |
+| battery_4_cell_7_voltage            | Spannung Akkupack 4 Zelle 7   | int16   | 2    | 0.001  | V    | 34324 | 34324 |       |       |
+| battery_4_cell_8_voltage            | Spannung Akkupack 4 Zelle 8   | int16   | 2    | 0.001  | V    | 34325 | 34325 |       |       |
+| battery_4_cell_9_voltage            | Spannung Akkupack 4 Zelle 9   | int16   | 2    | 0.001  | V    | 34326 | 34326 |       |       |
+| battery_4_cell_10_voltage           | Spannung Akkupack 4 Zelle 10  | int16   | 2    | 0.001  | V    | 34327 | 34327 |       |       |
+| battery_4_cell_11_voltage           | Spannung Akkupack 4 Zelle 11  | int16   | 2    | 0.001  | V    | 34328 | 34328 |       |       |
+| battery_4_cell_12_voltage           | Spannung Akkupack 4 Zelle 12  | int16   | 2    | 0.001  | V    | 34329 | 34329 |       |       |
+| battery_4_cell_13_voltage           | Spannung Akkupack 4 Zelle 13  | int16   | 2    | 0.001  | V    | 34330 | 34330 |       |       |
+| battery_4_cell_14_voltage           | Spannung Akkupack 4 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34331 |       |       |
+| battery_4_cell_15_voltage           | Spannung Akkupack 4 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34332 |       |       |
+| battery_4_cell_16_voltage           | Spannung Akkupack 4 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34333 |       |       |
+| battery_5_cell_1_voltage            | Spannung Akkupack 5 Zelle 1   | int16   | 2    | 0.001  | V    | 34418 | 34418 |       |       |
+| battery_5_cell_2_voltage            | Spannung Akkupack 5 Zelle 2   | int16   | 2    | 0.001  | V    | 34419 | 34419 |       |       |
+| battery_5_cell_3_voltage            | Spannung Akkupack 5 Zelle 3   | int16   | 2    | 0.001  | V    | 34420 | 34420 |       |       |
+| battery_5_cell_4_voltage            | Spannung Akkupack 5 Zelle 4   | int16   | 2    | 0.001  | V    | 34421 | 34421 |       |       |
+| battery_5_cell_5_voltage            | Spannung Akkupack 5 Zelle 5   | int16   | 2    | 0.001  | V    | 34422 | 34422 |       |       |
+| battery_5_cell_6_voltage            | Spannung Akkupack 5 Zelle 6   | int16   | 2    | 0.001  | V    | 34423 | 34423 |       |       |
+| battery_5_cell_7_voltage            | Spannung Akkupack 5 Zelle 7   | int16   | 2    | 0.001  | V    | 34424 | 34424 |       |       |
+| battery_5_cell_8_voltage            | Spannung Akkupack 5 Zelle 8   | int16   | 2    | 0.001  | V    | 34425 | 34425 |       |       |
+| battery_5_cell_9_voltage            | Spannung Akkupack 5 Zelle 9   | int16   | 2    | 0.001  | V    | 34426 | 34426 |       |       |
+| battery_5_cell_10_voltage           | Spannung Akkupack 5 Zelle 10  | int16   | 2    | 0.001  | V    | 34427 | 34427 |       |       |
+| battery_5_cell_11_voltage           | Spannung Akkupack 5 Zelle 11  | int16   | 2    | 0.001  | V    | 34428 | 34428 |       |       |
+| battery_5_cell_12_voltage           | Spannung Akkupack 5 Zelle 12  | int16   | 2    | 0.001  | V    | 34429 | 34429 |       |       |
+| battery_5_cell_13_voltage           | Spannung Akkupack 5 Zelle 13  | int16   | 2    | 0.001  | V    | 34430 | 34430 |       |       |
+| battery_5_cell_14_voltage           | Spannung Akkupack 5 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34431 |       |       |
+| battery_5_cell_15_voltage           | Spannung Akkupack 5 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34432 |       |       |
+| battery_5_cell_16_voltage           | Spannung Akkupack 5 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34433 |       |       |
+| battery_6_cell_1_voltage            | Spannung Akkupack 6 Zelle 1   | int16   | 2    | 0.001  | V    | 34518 | 34518 |       |       |
+| battery_6_cell_2_voltage            | Spannung Akkupack 6 Zelle 2   | int16   | 2    | 0.001  | V    | 34519 | 34519 |       |       |
+| battery_6_cell_3_voltage            | Spannung Akkupack 6 Zelle 3   | int16   | 2    | 0.001  | V    | 34520 | 34520 |       |       |
+| battery_6_cell_4_voltage            | Spannung Akkupack 6 Zelle 4   | int16   | 2    | 0.001  | V    | 34521 | 34521 |       |       |
+| battery_6_cell_5_voltage            | Spannung Akkupack 6 Zelle 5   | int16   | 2    | 0.001  | V    | 34522 | 34522 |       |       |
+| battery_6_cell_6_voltage            | Spannung Akkupack 6 Zelle 6   | int16   | 2    | 0.001  | V    | 34523 | 34523 |       |       |
+| battery_6_cell_7_voltage            | Spannung Akkupack 6 Zelle 7   | int16   | 2    | 0.001  | V    | 34524 | 34524 |       |       |
+| battery_6_cell_8_voltage            | Spannung Akkupack 6 Zelle 8   | int16   | 2    | 0.001  | V    | 34525 | 34525 |       |       |
+| battery_6_cell_9_voltage            | Spannung Akkupack 6 Zelle 9   | int16   | 2    | 0.001  | V    | 34526 | 34526 |       |       |
+| battery_6_cell_10_voltage           | Spannung Akkupack 6 Zelle 10  | int16   | 2    | 0.001  | V    | 34527 | 34527 |       |       |
+| battery_6_cell_11_voltage           | Spannung Akkupack 6 Zelle 11  | int16   | 2    | 0.001  | V    | 34528 | 34528 |       |       |
+| battery_6_cell_12_voltage           | Spannung Akkupack 6 Zelle 12  | int16   | 2    | 0.001  | V    | 34529 | 34529 |       |       |
+| battery_6_cell_13_voltage           | Spannung Akkupack 6 Zelle 13  | int16   | 2    | 0.001  | V    | 34530 | 34530 |       |       |
+| battery_6_cell_14_voltage           | Spannung Akkupack 6 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34531 |       |       |
+| battery_6_cell_15_voltage           | Spannung Akkupack 6 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34532 |       |       |
+| battery_6_cell_16_voltage           | Spannung Akkupack 6 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34533 |       |       |
+| battery_7_cell_1_voltage            | Spannung Akkupack 7 Zelle 1   | int16   | 2    | 0.001  | V    |       | 34618 |       |       |
+| battery_7_cell_2_voltage            | Spannung Akkupack 7 Zelle 2   | int16   | 2    | 0.001  | V    |       | 34619 |       |       |
+| battery_7_cell_3_voltage            | Spannung Akkupack 7 Zelle 3   | int16   | 2    | 0.001  | V    |       | 34620 |       |       |
+| battery_7_cell_4_voltage            | Spannung Akkupack 7 Zelle 4   | int16   | 2    | 0.001  | V    |       | 34621 |       |       |
+| battery_7_cell_5_voltage            | Spannung Akkupack 7 Zelle 5   | int16   | 2    | 0.001  | V    |       | 34622 |       |       |
+| battery_7_cell_6_voltage            | Spannung Akkupack 7 Zelle 6   | int16   | 2    | 0.001  | V    |       | 34623 |       |       |
+| battery_7_cell_7_voltage            | Spannung Akkupack 7 Zelle 7   | int16   | 2    | 0.001  | V    |       | 34624 |       |       |
+| battery_7_cell_8_voltage            | Spannung Akkupack 7 Zelle 8   | int16   | 2    | 0.001  | V    |       | 34625 |       |       |
+| battery_7_cell_9_voltage            | Spannung Akkupack 7 Zelle 9   | int16   | 2    | 0.001  | V    |       | 34626 |       |       |
+| battery_7_cell_10_voltage           | Spannung Akkupack 7 Zelle 10  | int16   | 2    | 0.001  | V    |       | 34627 |       |       |
+| battery_7_cell_11_voltage           | Spannung Akkupack 7 Zelle 11  | int16   | 2    | 0.001  | V    |       | 34628 |       |       |
+| battery_7_cell_12_voltage           | Spannung Akkupack 7 Zelle 12  | int16   | 2    | 0.001  | V    |       | 34629 |       |       |
+| battery_7_cell_13_voltage           | Spannung Akkupack 7 Zelle 13  | int16   | 2    | 0.001  | V    |       | 34630 |       |       |
+| battery_7_cell_14_voltage           | Spannung Akkupack 7 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34631 |       |       |
+| battery_7_cell_15_voltage           | Spannung Akkupack 7 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34632 |       |       |
+| battery_7_cell_16_voltage           | Spannung Akkupack 7 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34633 |       |       |
 | mppt1_voltage                     | MPPT1-String-Spannung | uint16  | 2    | 0.1    | V    | 30020 | 30020 |       |       |
 | mppt1_current                     | MPPT1-String-Strom  | uint16  | 2    | 0.1    | A    | 30024 | 30024 |       |       |
 | mppt1_power                       | MPPT1-String-Leistung | uint16  | 2    | 0.1    | W    | 30037 | 30037 |       |       |
