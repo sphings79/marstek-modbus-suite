@@ -83,8 +83,14 @@
   },
   "entity": {
     "sensor": {
+      "battery_1_voltage": {
+        "name": "Battery Pack 1 Voltage"
+      },
       "battery_2_voltage": {
         "name": "Battery Pack 2 Voltage"
+      },
+      "battery_1_current": {
+        "name": "Battery Pack 1 Current"
       },
       "battery_2_current": {
         "name": "Battery Pack 2 Current"
@@ -133,6 +139,9 @@
       },
       "battery_1_bms_version": {
         "name": "Battery Pack 1 BMS Version"
+      },
+      "battery_1_cycle_count": {
+        "name": "Battery Pack 1 Cycle Count"
       },
       "battery_2_cycle_count": {
         "name": "Battery Pack 2 Cycle Count"

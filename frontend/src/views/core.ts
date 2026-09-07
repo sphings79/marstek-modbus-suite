@@ -1,4 +1,4 @@
-import { html, css } from "lit";
+import { html, css, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
 import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
@@ -48,6 +48,12 @@ export class MkViewCore extends MkView {
       .split .value {
         font-size: 21px;
         margin-top: 3px;
+      }
+      .split .of {
+        font-size: 13px;
+        color: var(--mk-dim);
+        font-weight: 400;
+        margin-left: 5px;
       }
       .split .unit {
         font-size: 11px;
@@ -102,6 +108,7 @@ export class MkViewCore extends MkView {
 
     const flowing = power !== null && Math.abs(power) > IDLE_W;
     const discharging = flowing && (power as number) < 0;
+    const packs = r.packCount();
 
     return html`
       <div class="top">
@@ -125,23 +132,22 @@ export class MkViewCore extends MkView {
 
           <div class="split">
             <div>
-              <div class="label">${t("core.stored")}</div>
+              <div class="label">${t("core.stored_of_total")}</div>
               <div class="value">
-                ${f.num(stored, 2)}<span class="unit">kWh</span>
+                ${f.num(stored, 2)}<span class="of">/ ${f.num(capacity, 2)}</span
+                ><span class="unit">kWh</span>
               </div>
             </div>
-            <div>
-              <div class="label">${t("core.capacity")}</div>
-              <div class="value" style="color:var(--mk-fg-2)">
-                ${f.num(capacity, 2)}<span class="unit">kWh</span>
-              </div>
-            </div>
-            <div>
-              <div class="label">${r.label("runtime_to_empty")}</div>
-              <div class="value">
-                ${f.num(r.num("runtime_to_empty"), 1)}<span class="unit">h</span>
-              </div>
-            </div>
+            ${this.energyCell(flowing && !discharging)}
+            ${this.runtimeCell(flowing, discharging)}
+            ${packs
+              ? html`<div>
+                  <div class="label">${t("core.packs")}</div>
+                  <div class="value" style="color:var(--mk-fg-2)">
+                    ${f.num(packs, 0)}
+                  </div>
+                </div>`
+              : nothing}
           </div>
 
           <div
@@ -210,6 +216,56 @@ export class MkViewCore extends MkView {
     `;
   }
 
+
+  /**
+   * Energy left in the direction the battery is actually moving: while charging
+   * the interesting figure is what still fits, otherwise what can still come
+   * out. At rest the usable figure stands, since that is the one worth reading
+   * when nothing is happening.
+   */
+  private energyCell(charging: boolean) {
+    const key = charging ? "energy_to_full" : "usable_energy";
+    const value = this.reader.num(key);
+    if (value === null && !this.reader.entityId(key)) return nothing;
+
+    return html`
+      <div>
+        <div class="label">${this.t(charging ? "core.to_full" : "core.usable")}</div>
+        <div class="value" style="color:var(${charging ? "--mk-accent" : "--mk-fg"})">
+          ${this.fmt.num(value, 2)}<span class="unit">kWh</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * The countdown that is actually counting.
+   *
+   * Only one of the two runtime sensors ever runs: each returns 0 when the
+   * power flows the other way. A fixed slot would therefore show a stopped
+   * countdown half the time, so the cell follows the flow and says which of
+   * the two it is showing. At rest neither counts, and a dash is more honest
+   * than a zero.
+   */
+  private runtimeCell(flowing: boolean, discharging: boolean) {
+    const key = discharging ? "runtime_to_empty" : "runtime_to_full";
+    if (!this.reader.entityId(key)) return nothing;
+
+    const label = !flowing
+      ? this.t("core.runtime")
+      : this.t(discharging ? "core.to_empty" : "core.until_full");
+
+    return html`
+      <div>
+        <div class="label">${label}</div>
+        <div class="value" style=${flowing ? "" : "color:var(--mk-dim)"}>
+          ${flowing
+            ? html`${this.fmt.num(this.reader.num(key), 1)}<span class="unit">h</span>`
+            : "—"}
+        </div>
+      </div>
+    `;
+  }
 
   /**
    * Spread between the highest and lowest cell across all packs. The device

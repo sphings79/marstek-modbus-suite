@@ -87,8 +87,14 @@
   },
   "entity": {
     "sensor": {
+      "battery_1_voltage": {
+        "name": "Batterij pack 1 Spanning"
+      },
       "battery_2_voltage": {
         "name": "Batterij pack 2 Spanning"
+      },
+      "battery_1_current": {
+        "name": "Batterij pack 1 Stroom"
       },
       "battery_2_current": {
         "name": "Batterij pack 2 Stroom"
@@ -137,6 +143,9 @@
       },
       "battery_1_bms_version": {
         "name": "Batterij pack 1 BMS-versie"
+      },
+      "battery_1_cycle_count": {
+        "name": "Batterij pack 1 Cyclusaantal"
       },
       "battery_2_cycle_count": {
         "name": "Batterij pack 2 Cyclusaantal"
