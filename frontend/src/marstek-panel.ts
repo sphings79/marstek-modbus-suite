@@ -20,7 +20,7 @@ const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "system"];
  *  opened repeatedly, and re-picking the same one every time is friction. */
 const STORAGE_DEVICE = "marstek-panel.device";
 
-@customElement("marstek-panel")
+@customElement("marstek-modbus-panel")
 export class MarstekPanel extends LitElement {
   @property({ attribute: false }) hass!: import("./types").HomeAssistant;
   @property({ type: Boolean }) narrow = false;
@@ -378,6 +378,6 @@ function readStoredDevice(): string | null {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "marstek-panel": MarstekPanel;
+    "marstek-modbus-panel": MarstekPanel;
   }
 }

@@ -116,7 +116,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # The sidebar panel belongs to the integration, not to one device: this
         # is a no-op once a second entry arrives.
-        await async_register_panel(hass)
+        try:
+            await async_register_panel(hass)
+        except Exception as err:  # noqa: BLE001 - the panel is optional
+            _LOGGER.warning("Could not register the sidebar panel: %s", err)
     except Exception:
         # Do not leave a half-set-up entry (platforms, an open socket) behind
         # when Home Assistant retries the setup later.
@@ -153,9 +156,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             coordinator._async_clear_rs485_control_mode_issue()
             # Remove coordinator reference from hass data
             hass.data[DOMAIN].pop(entry.entry_id, None)
-            async_remove_panel_if_unused(hass)
 
         return unload_ok
     except Exception as err:
         _LOGGER.error("Error unloading entry %s: %s", entry.entry_id, err)
         return False
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Drop the sidebar panel when the last battery is deleted.
+
+    Unloading is not the same as removing: Home Assistant unloads an entry on
+    every reload and every options change, and the panel has to survive those.
+    """
+    hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+    async_remove_panel_if_unused(hass)

@@ -14,7 +14,7 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       input: {
-        "marstek-panel": "src/marstek-panel.ts",
+        "marstek-modbus-panel": "src/marstek-panel.ts",
       },
       output: {
         entryFileNames: "[name].js",
@@ -24,7 +24,9 @@ export default defineConfig({
           const locale = chunk.facadeModuleId?.match(
             /[\\/]locales[\\/]([a-z]{2})\.ts$/,
           )?.[1];
-          return locale ? `marstek-lang-${locale}.js` : "marstek-shared.js";
+          return locale
+            ? `marstek-modbus-lang-${locale}.js`
+            : "marstek-modbus-shared.js";
         },
         format: "es",
       },

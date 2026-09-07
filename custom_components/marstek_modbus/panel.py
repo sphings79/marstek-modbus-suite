@@ -1,4 +1,4 @@
-"""Registers the Marstek Venus sidebar panel and serves its frontend bundle."""
+"""Registers the Marstek Modbus sidebar panel and serves its frontend bundle."""
 
 from __future__ import annotations
 
@@ -14,11 +14,17 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PANEL_URL_PATH = "marstek-venus"
+PANEL_URL_PATH = "marstek-modbus"
 STATIC_URL = f"/{DOMAIN}-frontend"
-COMPONENT_NAME = "marstek-panel"
-BUNDLE_NAME = "marstek-panel.js"
-PANEL_TITLE = "Marstek Venus"
+
+# Names are prefixed with the domain on purpose. A custom element name is
+# global to the page, and another integration serving its own file called
+# marstek-panel.js would collide with this one - the second definition throws
+# and that panel stays blank.
+COMPONENT_NAME = "marstek-modbus-panel"
+BUNDLE_NAME = "marstek-modbus-panel.js"
+
+PANEL_TITLE = "Marstek Modbus"
 PANEL_ICON = "mdi:home-battery"
 
 DATA_PANEL_REGISTERED = "panel_registered"
@@ -40,9 +46,9 @@ async def _version(hass: HomeAssistant) -> str:
 
 
 async def async_register_panel(hass: HomeAssistant) -> None:
-    """Serve the bundle and add Marstek Venus to the sidebar.
+    """Serve the bundle and add Marstek Modbus to the sidebar.
 
-    Safe to call once per config entry: a second device must not add a second
+    Safe to call once per config entry: a second battery must not add a second
     sidebar item, so both registrations are guarded by flags that survive a
     reload.
     """
@@ -78,23 +84,26 @@ async def async_register_panel(hass: HomeAssistant) -> None:
         require_admin=False,
     )
     data[DATA_PANEL_REGISTERED] = True
-    _LOGGER.debug("Panel registered at /%s", PANEL_URL_PATH)
+    _LOGGER.info("Panel registered at /%s", PANEL_URL_PATH)
 
 
 def async_remove_panel_if_unused(hass: HomeAssistant) -> None:
-    """Take the panel out of the sidebar once the last device is gone.
+    """Take the panel out of the sidebar once the last battery is removed.
 
-    With two batteries configured, unloading one must leave the panel alone.
-    Everything in hass.data[DOMAIN] that is not one of the flags above is a
-    coordinator stored under its entry id, so a leftover key means a device
-    is still set up.
+    Deliberately *not* called when a config entry is merely unloaded: Home
+    Assistant unloads and reloads an entry for every options change and every
+    reload, and tearing the sidebar item down each time makes it depend on the
+    setup that follows succeeding. It only goes away when the entry is actually
+    deleted.
     """
     data = hass.data.get(DOMAIN, {})
     if not data.get(DATA_PANEL_REGISTERED):
         return
+    # Everything here that is not one of our own flags is a coordinator stored
+    # under its entry id, so a leftover key means a battery is still set up.
     if any(key not in _OWN_DATA_KEYS for key in data):
         return
 
     frontend.async_remove_panel(hass, PANEL_URL_PATH)
     data[DATA_PANEL_REGISTERED] = False
-    _LOGGER.debug("Panel removed, no device left")
+    _LOGGER.info("Panel removed, no battery left")
