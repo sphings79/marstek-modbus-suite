@@ -6,9 +6,17 @@ import type { PackRange } from "../components/mk-pack-matrix";
 import "../components/mk-pack-matrix";
 import "../components/mk-stat";
 
-/** Spread across the whole stack, in volts, at which it is worth a warning. */
-const STACK_WARN_V = 0.05;
-const STACK_CRIT_V = 0.1;
+/*
+ * The stack spread - highest cell anywhere minus lowest cell anywhere - is
+ * reported without a verdict on purpose.
+ *
+ * The device works one pack at a time, so during a charge or discharge the
+ * packs sit at different states of charge and their cells therefore sit at
+ * different voltages. Judging that against the usual 100 mV, which is a limit
+ * for cells inside one pack, marks normal operation as a fault. The number
+ * that finds a weak cell is the delta within a single pack, and that is what
+ * the tile beside it and the table below report.
+ */
 
 @customElement("mk-view-cells")
 export class MkViewCells extends MkView {
@@ -81,9 +89,6 @@ export class MkViewCells extends MkView {
       ? inPackDeltas.reduce((a, b) => a + b, 0) / inPackDeltas.length
       : null;
 
-    const tone =
-      spread === null ? "" : spread >= STACK_CRIT_V ? "crit" : spread >= STACK_WARN_V ? "warn" : "ok";
-
     return html`
       <div class="grid tiles">
         <mk-stat
@@ -110,10 +115,7 @@ export class MkViewCells extends MkView {
           label=${t("cells.stack_spread")}
           value=${f.millivolts(spread)}
           unit="mV"
-          tone=${tone}
-          .bar=${spread}
-          .max=${STACK_CRIT_V}
-          foot=${t("cells.limit_hint")}
+          foot=${t("cells.stack_hint")}
         ></mk-stat>
         <mk-stat
           label=${t("cells.mean_delta")}

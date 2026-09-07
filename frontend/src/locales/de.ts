@@ -75,10 +75,10 @@ export const de: Record<string, string> = {
   "core.at_rest": "in Ruhe",
   "core.today_charged": "Heute geladen",
   "core.today_discharged": "Heute entladen",
-  "core.cell_delta": "Zelldelta",
+  "core.cell_delta": "Größtes Zelldelta",
   "core.internal_temp": "Innentemperatur",
   "core.mppt_total": "MPPT gesamt",
-  "core.pack_spread": "über {count} Packs",
+  "core.in_pack": "in Pack {pack}",
   "core.no_delta": "keine Werte je Pack",
 
   // ---- Zellen ----
@@ -86,7 +86,7 @@ export const de: Record<string, string> = {
   "cells.lowest": "Niedrigste Zelle",
   "cells.in_pack": "Pack {pack}",
   "cells.stack_spread": "Spreizung gesamt",
-  "cells.limit_hint": "üblicher Grenzwert 100 mV",
+  "cells.stack_hint": "Packs laden nacheinander, Spreizung ist normal",
   "cells.mean_delta": "Delta ⌀ im Pack",
   "cells.worst_pack": "größtes: Pack {pack}, {value} mV",
   "cells.temp_span": "Spreizung Zelltemperatur",

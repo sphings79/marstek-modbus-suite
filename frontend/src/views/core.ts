@@ -268,39 +268,39 @@ export class MkViewCore extends MkView {
   }
 
   /**
-   * Spread between the highest and lowest cell across all packs. The device
-   * reports a delta per pack, not one for the whole stack, so a difference
-   * *between* packs only shows up if it is computed here.
+   * The widest spread of cells inside a single pack, and which pack that is.
+   *
+   * Deliberately not the spread across the whole stack: the device charges one
+   * pack at a time, so packs routinely sit at different states of charge and
+   * their cells at different voltages. That difference says nothing about cell
+   * health, while a pack whose own cells drift apart says a great deal.
    */
   private deltaTile() {
     const r = this.reader;
-    const packs = r.packCount();
-    const highs: number[] = [];
-    const lows: number[] = [];
-    for (let i = 1; i <= packs; i++) {
+    let worst: { pack: number; delta: number } | null = null;
+
+    for (let i = 1; i <= r.packCount(); i++) {
       const hi = r.num(`battery_${i}_max_cell_voltage`);
       const lo = r.num(`battery_${i}_min_cell_voltage`);
-      if (hi !== null) highs.push(hi);
-      if (lo !== null) lows.push(lo);
+      if (hi === null || lo === null) continue;
+      const delta = hi - lo;
+      if (!worst || delta > worst.delta) worst = { pack: i, delta };
     }
-
-    const spread =
-      highs.length && lows.length ? Math.max(...highs) - Math.min(...lows) : null;
 
     // 100 mV is where a pack is usually considered out of balance; the bar is
     // drawn against that, not against the largest value seen so far.
-    const tone = spread === null ? "" : spread > 0.1 ? "crit" : spread > 0.05 ? "warn" : "ok";
+    const tone = !worst ? "" : worst.delta > 0.1 ? "crit" : worst.delta > 0.05 ? "warn" : "ok";
 
     return html`
       <mk-stat
         label=${this.t("core.cell_delta")}
-        value=${this.fmt.millivolts(spread)}
+        value=${this.fmt.millivolts(worst?.delta ?? null)}
         unit="mV"
         tone=${tone}
-        .bar=${spread}
+        .bar=${worst?.delta ?? null}
         .max=${0.1}
-        foot=${packs
-          ? this.t("core.pack_spread", { count: packs })
+        foot=${worst
+          ? this.t("core.in_pack", { pack: worst.pack })
           : this.t("core.no_delta")}
       ></mk-stat>
     `;

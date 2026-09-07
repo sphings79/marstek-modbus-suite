@@ -6,6 +6,20 @@ import type { PackFill } from "../components/mk-pack-bars";
 import "../components/mk-pack-bars";
 import "../components/mk-stat";
 
+/**
+ * How far apart the packs' states of charge may sit before it means anything.
+ *
+ * The device works one pack at a time rather than all of them in parallel, so
+ * during a charge or a discharge the packs are routinely around ten points
+ * apart. That is the design working, not a fault, and flagging it would train
+ * the reader to ignore the tile. These thresholds sit above the spread normal
+ * operation produces.
+ */
+const SPREAD_WARN_PP = 12;
+const SPREAD_CRIT_PP = 20;
+/** Bar scale, so an ordinary working spread does not sit at the end of it. */
+const SPREAD_SCALE_PP = 25;
+
 @customElement("mk-view-packs")
 export class MkViewPacks extends MkView {
   /** Discharge floor in percent, so the columns can show where it sits. */
@@ -104,9 +118,15 @@ export class MkViewPacks extends MkView {
           label=${t("packs.spread")}
           value=${f.num(spread, 1)}
           unit="pp"
-          tone=${spread === null ? "" : spread > 5 ? "warn" : "ok"}
+          tone=${spread === null
+            ? ""
+            : spread >= SPREAD_CRIT_PP
+              ? "crit"
+              : spread >= SPREAD_WARN_PP
+                ? "warn"
+                : "ok"}
           .bar=${spread}
-          .max=${10}
+          .max=${SPREAD_SCALE_PP}
         ></mk-stat>
         <mk-stat
           label=${t("packs.stored_total")}

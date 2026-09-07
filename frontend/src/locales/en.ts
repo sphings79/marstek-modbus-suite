@@ -83,10 +83,10 @@ export const en: Record<string, string> = {
   "core.at_rest": "at rest",
   "core.today_charged": "Charged today",
   "core.today_discharged": "Discharged today",
-  "core.cell_delta": "Cell delta",
+  "core.cell_delta": "Largest cell delta",
   "core.internal_temp": "Internal temperature",
   "core.mppt_total": "MPPT total",
-  "core.pack_spread": "across {count} packs",
+  "core.in_pack": "in pack {pack}",
   "core.no_delta": "no per-pack readings",
 
   // ---- cells ----
@@ -94,7 +94,7 @@ export const en: Record<string, string> = {
   "cells.lowest": "Lowest cell",
   "cells.in_pack": "pack {pack}",
   "cells.stack_spread": "Spread across stack",
-  "cells.limit_hint": "100 mV is the usual limit",
+  "cells.stack_hint": "packs charge in turn, so a spread is expected",
   "cells.mean_delta": "Mean delta in pack",
   "cells.worst_pack": "widest: pack {pack}, {value} mV",
   "cells.temp_span": "Cell temperature span",
