@@ -1,0 +1,264 @@
+# Modbus-Registerreferenz
+
+Alle Register, die die Integration kennt, je Modell. Steht nicht im README, weil es eine
+Nachschlagetabelle ist und kein Fließtext. Maßgeblich sind die YAML-Dateien unter
+`custom_components/marstek_modbus/registers/`; diese Seite gibt denselben Stand wieder und kann
+ihm hinterherhinken.
+
+> Venus **A**, **D** und **E v3** teilen eine Firmware-Basis. Venus **E v1/v2** baut auf einer
+> völlig anderen auf — eine übereinstimmende Registernummer ist dort Zufall, solange sie nicht auf
+> E-v1/v2-Firmware selbst bestätigt wurde.
+
+Die Registerdefinitionen liegen in `custom_components/marstek_modbus/registers/`.
+
+Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Register auf, das in der jeweiligen YAML-Datei definiert ist. Die Spalten `Type`, `Bytes`, `Scale` und `Unit` stammen aus den YAML-Definitionen, sofern dort vorhanden.
+
+| Schlüssel / Name                  | Beschreibung                               | Type    | Bytes | Scale  | Unit | a     | d     | e_v12 | e_v3 |
+|:----------------------------------|:-------------------------------------------|:--------|:-----:|:------:|:----:|:-----:|:-----:|:------:|:-----:|
+| device_name                       | Gerätename (String)  | char    | 20   | -      | -    | 31000 | 31000 | 31000 | 31000 |
+| sn_code                           | Seriennummer / SN-Code  | char    | 20   | -      | -    |       |       | 31200 |       |
+| software_version                  | Software-Version des Geräts | uint16  | 2    | 0.01   | -    |       |       | 31100 |       |
+| bms_version                       | BMS-Firmware-Version | uint16  | 2    | -      | -    | 30204 | 30204 | 31102 | 30204 |
+| vms_version                       | VMS-Firmware-Version | uint16  | 2    | -      | -    | 30202 | 30202 |       | 30202 |
+| ems_version                       | EMS-Firmware-Version (besondere Formatierung) | uint16  | 2    | 1      | -    | 30200 | 30200 | 31101 | 30200 |
+| firmware_version                  | Zusammengesetzter Firmware-Versionsstring | calculated | - | - | - |  |  |  |  |
+| ble_mac_address                   | BLE-MAC-Adresse | mac     | 12   | -      | -    | 30304 | 30304 | 30402 | 30304 |
+| comm_module_firmware              | Firmware des Kommunikationsmoduls | char    | 12   | -      | -    | 30350 | 30350 | 30800 | 30350 |
+| wifi_signal_strength              | WLAN-RSSI | uint16  | 2    | -1     | dBm  | 30303 | 30303 | 30303 | 30303 |
+| bluetooth_status                  | Bluetooth-Verbindung/-Status  | uint16  | 2    | -      | -    | 30301 | 30301 | 30301 | 30301 |
+| wifi_status (binary)              | WLAN verbunden (0/1) | uint16  | 2    | 1      | -    | 30300 | 30300 | 30300 | 30300 |
+| cloud_status (binary)             | Cloud verbunden (0/1) | uint16  | 2    | 1      | -    | 30302 | 30302 | 30302 | 30302 |
+| battery_soc                       | Ladezustand     | uint16  | 2    | 0.1/1  | %    | 32104 | 32104 | 32104 | 34002 |
+| battery_total_energy              | Gesamte gespeicherte Energie | uint16  | 2    | 0.001  | kWh  | 32105 | 32105 | 32105 | 32105 |
+| battery_voltage                   | Batteriespannung | uint16  | 2    | 0.01   | V    | 30100 | 30100 | 32100 | 30100 |
+| battery_current                   | Batteriestrom   | int16   | 2    | 0.1/0.01| A   | 30101 | 30101 | 32101 | 30101 |
+| battery_power                     | Batterieleistung | int16/32| 2/4  | 1      | W    | 30001 | 30001 | 32102 | 30001 |
+| total_charging_energy             | Gesamte Ladeenergie   | uint32  | 4    | 0.01   | kWh  | 33000 | 33000 | 33000 | 33000 |
+| total_discharging_energy          | Gesamte Entladeenergie   | int32   | 4    | 0.01   | kWh  | 33002 | 33002 | 33002 | 33002 |
+| total_daily_charging_energy       | Gesamte tägliche Ladeenergie | uint32  | 4    | 0.01   | kWh  | 33004 | 33004 | 33004 | 33004 |
+| total_daily_discharging_energy    | Gesamte tägliche Entladeenergie | int32   | 4    | 0.01   | kWh  | 33006 | 33006 | 33006 | 33006 |
+| total_monthly_charging_energy     | Gesamte monatliche Ladeenergie | uint32  | 4    | 0.01   | kWh  | 33008 | 33008 | 33008 | 33008 |
+| total_monthly_discharging_energy  | Gesamte monatliche Entladeenergie | int32   | 4    | 0.01   | kWh  | 33010 | 33010 | 33010 | 33010 |
+| battery_cycle_count               | Nativer Zyklenzähler | uint16  | 2    | 1      | -    | 34003 | 34003 |       | 34003 |
+| ac_voltage                        | AC-Spannung | uint16  | 2    | 0.1    | V    | 32200 | 32200 | 32200 | 32200 |
+| ac_current                        | AC-Strom   | int16   | 2    | 0.004/0.01| A  | 37004 | 37004 | 32201 | 37004 |
+| ac_power                          | AC-Leistung | int16/32| 2/4  | 1      | W    | 30006 | 30006 | 32202 | 30006 |
+| ac_frequency                      | AC-Frequenz  | int16   | 2    | 0.1/0.01| Hz  | 32204 | 32204 | 32204 | 32204 |
+| ac_offgrid_voltage                | AC-Inselbetrieb-Spannung | uint16  | 2    | 0.1    | V    | 32300 | 32300 | 32300 | 32300 |
+| ac_offgrid_current                | AC-Inselbetrieb-Strom | uint16  | 2    | 0.01   | A    | 32301 | 32301 | 32301 | 32301 |
+| ac_offgrid_power                  | AC-Inselbetrieb-Leistung | int32   | 4    | 1      | W    | 32302 | 32302 | 32302 | 32302 |
+| internal_temperature              | Interne Gerätetemperatur    | int16   | 2    | 0.1    | °C   | 35000 | 35000 | 35000 | 35000 |
+| internal_mos1_temperature         | Interne Temperatur MOS1   | int16   | 2    | 0.1    | °C   | 35001 | 35001 | 35001 | 35001 |
+| internal_mos2_temperature         | Interne Temperatur MOS2   | int16   | 2    | 0.1    | °C   | 35002 | 35002 | 35002 | 35002 |
+| max_cell_temperature              | Maximale Zelltemperatur | int16   | 2    | 0.1/1  | °C   | 35010 | 35010 | 35010 | 35010 |
+| max_cell_voltage                  | Maximale Zellspannung | uint16  | 2    | 0.001  | V    | 37007 | —     | 37007 | 37007 |
+| min_cell_voltage                  | Minimale Zellspannung | uint16  | 2    | 0.001  | V    | 37008 | —     | 37008 | 37008 |
+| battery_1_cell_1_voltage            | Spannung Akkupack 1 Zelle 1   | int16   | 2    | 0.001  | V    | 34018 | 34018 |       | 34018 |
+| battery_1_cell_2_voltage            | Spannung Akkupack 1 Zelle 2   | int16   | 2    | 0.001  | V    | 34019 | 34019 |       | 34019 |
+| battery_1_cell_3_voltage            | Spannung Akkupack 1 Zelle 3   | int16   | 2    | 0.001  | V    | 34020 | 34020 |       | 34020 |
+| battery_1_cell_4_voltage            | Spannung Akkupack 1 Zelle 4   | int16   | 2    | 0.001  | V    | 34021 | 34021 |       | 34021 |
+| battery_1_cell_5_voltage            | Spannung Akkupack 1 Zelle 5   | int16   | 2    | 0.001  | V    | 34022 | 34022 |       | 34022 |
+| battery_1_cell_6_voltage            | Spannung Akkupack 1 Zelle 6   | int16   | 2    | 0.001  | V    | 34023 | 34023 |       | 34023 |
+| battery_1_cell_7_voltage            | Spannung Akkupack 1 Zelle 7   | int16   | 2    | 0.001  | V    | 34024 | 34024 |       | 34024 |
+| battery_1_cell_8_voltage            | Spannung Akkupack 1 Zelle 8   | int16   | 2    | 0.001  | V    | 34025 | 34025 |       | 34025 |
+| battery_1_cell_9_voltage            | Spannung Akkupack 1 Zelle 9   | int16   | 2    | 0.001  | V    | 34026 | 34026 |       | 34026 |
+| battery_1_cell_10_voltage           | Spannung Akkupack 1 Zelle 10  | int16   | 2    | 0.001  | V    | 34027 | 34027 |       | 34027 |
+| battery_1_cell_11_voltage           | Spannung Akkupack 1 Zelle 11  | int16   | 2    | 0.001  | V    | 34028 | 34028 |       | 34028 |
+| battery_1_cell_12_voltage           | Spannung Akkupack 1 Zelle 12  | int16   | 2    | 0.001  | V    | 34029 | 34029 |       | 34029 |
+| battery_1_cell_13_voltage           | Spannung Akkupack 1 Zelle 13  | int16   | 2    | 0.001  | V    | 34030 | 34030 |       | 34030 |
+| battery_1_cell_14_voltage           | Spannung Akkupack 1 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34031 |       | 34031 |
+| battery_1_cell_15_voltage           | Spannung Akkupack 1 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34032 |       | 34032 |
+| battery_1_cell_16_voltage           | Spannung Akkupack 1 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34033 |       | 34033 |
+| battery_2_cell_1_voltage            | Spannung Akkupack 2 Zelle 1   | int16   | 2    | 0.001  | V    | 34118 | 34118 |       |       |
+| battery_2_cell_2_voltage            | Spannung Akkupack 2 Zelle 2   | int16   | 2    | 0.001  | V    | 34119 | 34119 |       |       |
+| battery_2_cell_3_voltage            | Spannung Akkupack 2 Zelle 3   | int16   | 2    | 0.001  | V    | 34120 | 34120 |       |       |
+| battery_2_cell_4_voltage            | Spannung Akkupack 2 Zelle 4   | int16   | 2    | 0.001  | V    | 34121 | 34121 |       |       |
+| battery_2_cell_5_voltage            | Spannung Akkupack 2 Zelle 5   | int16   | 2    | 0.001  | V    | 34122 | 34122 |       |       |
+| battery_2_cell_6_voltage            | Spannung Akkupack 2 Zelle 6   | int16   | 2    | 0.001  | V    | 34123 | 34123 |       |       |
+| battery_2_cell_7_voltage            | Spannung Akkupack 2 Zelle 7   | int16   | 2    | 0.001  | V    | 34124 | 34124 |       |       |
+| battery_2_cell_8_voltage            | Spannung Akkupack 2 Zelle 8   | int16   | 2    | 0.001  | V    | 34125 | 34125 |       |       |
+| battery_2_cell_9_voltage            | Spannung Akkupack 2 Zelle 9   | int16   | 2    | 0.001  | V    | 34126 | 34126 |       |       |
+| battery_2_cell_10_voltage           | Spannung Akkupack 2 Zelle 10  | int16   | 2    | 0.001  | V    | 34127 | 34127 |       |       |
+| battery_2_cell_11_voltage           | Spannung Akkupack 2 Zelle 11  | int16   | 2    | 0.001  | V    | 34128 | 34128 |       |       |
+| battery_2_cell_12_voltage           | Spannung Akkupack 2 Zelle 12  | int16   | 2    | 0.001  | V    | 34129 | 34129 |       |       |
+| battery_2_cell_13_voltage           | Spannung Akkupack 2 Zelle 13  | int16   | 2    | 0.001  | V    | 34130 | 34130 |       |       |
+| battery_2_cell_14_voltage           | Spannung Akkupack 2 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34131 |       |       |
+| battery_2_cell_15_voltage           | Spannung Akkupack 2 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34132 |       |       |
+| battery_2_cell_16_voltage           | Spannung Akkupack 2 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34133 |       |       |
+| battery_3_cell_1_voltage            | Spannung Akkupack 3 Zelle 1   | int16   | 2    | 0.001  | V    | 34218 | 34218 |       |       |
+| battery_3_cell_2_voltage            | Spannung Akkupack 3 Zelle 2   | int16   | 2    | 0.001  | V    | 34219 | 34219 |       |       |
+| battery_3_cell_3_voltage            | Spannung Akkupack 3 Zelle 3   | int16   | 2    | 0.001  | V    | 34220 | 34220 |       |       |
+| battery_3_cell_4_voltage            | Spannung Akkupack 3 Zelle 4   | int16   | 2    | 0.001  | V    | 34221 | 34221 |       |       |
+| battery_3_cell_5_voltage            | Spannung Akkupack 3 Zelle 5   | int16   | 2    | 0.001  | V    | 34222 | 34222 |       |       |
+| battery_3_cell_6_voltage            | Spannung Akkupack 3 Zelle 6   | int16   | 2    | 0.001  | V    | 34223 | 34223 |       |       |
+| battery_3_cell_7_voltage            | Spannung Akkupack 3 Zelle 7   | int16   | 2    | 0.001  | V    | 34224 | 34224 |       |       |
+| battery_3_cell_8_voltage            | Spannung Akkupack 3 Zelle 8   | int16   | 2    | 0.001  | V    | 34225 | 34225 |       |       |
+| battery_3_cell_9_voltage            | Spannung Akkupack 3 Zelle 9   | int16   | 2    | 0.001  | V    | 34226 | 34226 |       |       |
+| battery_3_cell_10_voltage           | Spannung Akkupack 3 Zelle 10  | int16   | 2    | 0.001  | V    | 34227 | 34227 |       |       |
+| battery_3_cell_11_voltage           | Spannung Akkupack 3 Zelle 11  | int16   | 2    | 0.001  | V    | 34228 | 34228 |       |       |
+| battery_3_cell_12_voltage           | Spannung Akkupack 3 Zelle 12  | int16   | 2    | 0.001  | V    | 34229 | 34229 |       |       |
+| battery_3_cell_13_voltage           | Spannung Akkupack 3 Zelle 13  | int16   | 2    | 0.001  | V    | 34230 | 34230 |       |       |
+| battery_3_cell_14_voltage           | Spannung Akkupack 3 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34231 |       |       |
+| battery_3_cell_15_voltage           | Spannung Akkupack 3 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34232 |       |       |
+| battery_3_cell_16_voltage           | Spannung Akkupack 3 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34233 |       |       |
+| battery_4_cell_1_voltage            | Spannung Akkupack 4 Zelle 1   | int16   | 2    | 0.001  | V    | 34318 | 34318 |       |       |
+| battery_4_cell_2_voltage            | Spannung Akkupack 4 Zelle 2   | int16   | 2    | 0.001  | V    | 34319 | 34319 |       |       |
+| battery_4_cell_3_voltage            | Spannung Akkupack 4 Zelle 3   | int16   | 2    | 0.001  | V    | 34320 | 34320 |       |       |
+| battery_4_cell_4_voltage            | Spannung Akkupack 4 Zelle 4   | int16   | 2    | 0.001  | V    | 34321 | 34321 |       |       |
+| battery_4_cell_5_voltage            | Spannung Akkupack 4 Zelle 5   | int16   | 2    | 0.001  | V    | 34322 | 34322 |       |       |
+| battery_4_cell_6_voltage            | Spannung Akkupack 4 Zelle 6   | int16   | 2    | 0.001  | V    | 34323 | 34323 |       |       |
+| battery_4_cell_7_voltage            | Spannung Akkupack 4 Zelle 7   | int16   | 2    | 0.001  | V    | 34324 | 34324 |       |       |
+| battery_4_cell_8_voltage            | Spannung Akkupack 4 Zelle 8   | int16   | 2    | 0.001  | V    | 34325 | 34325 |       |       |
+| battery_4_cell_9_voltage            | Spannung Akkupack 4 Zelle 9   | int16   | 2    | 0.001  | V    | 34326 | 34326 |       |       |
+| battery_4_cell_10_voltage           | Spannung Akkupack 4 Zelle 10  | int16   | 2    | 0.001  | V    | 34327 | 34327 |       |       |
+| battery_4_cell_11_voltage           | Spannung Akkupack 4 Zelle 11  | int16   | 2    | 0.001  | V    | 34328 | 34328 |       |       |
+| battery_4_cell_12_voltage           | Spannung Akkupack 4 Zelle 12  | int16   | 2    | 0.001  | V    | 34329 | 34329 |       |       |
+| battery_4_cell_13_voltage           | Spannung Akkupack 4 Zelle 13  | int16   | 2    | 0.001  | V    | 34330 | 34330 |       |       |
+| battery_4_cell_14_voltage           | Spannung Akkupack 4 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34331 |       |       |
+| battery_4_cell_15_voltage           | Spannung Akkupack 4 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34332 |       |       |
+| battery_4_cell_16_voltage           | Spannung Akkupack 4 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34333 |       |       |
+| battery_5_cell_1_voltage            | Spannung Akkupack 5 Zelle 1   | int16   | 2    | 0.001  | V    | 34418 | 34418 |       |       |
+| battery_5_cell_2_voltage            | Spannung Akkupack 5 Zelle 2   | int16   | 2    | 0.001  | V    | 34419 | 34419 |       |       |
+| battery_5_cell_3_voltage            | Spannung Akkupack 5 Zelle 3   | int16   | 2    | 0.001  | V    | 34420 | 34420 |       |       |
+| battery_5_cell_4_voltage            | Spannung Akkupack 5 Zelle 4   | int16   | 2    | 0.001  | V    | 34421 | 34421 |       |       |
+| battery_5_cell_5_voltage            | Spannung Akkupack 5 Zelle 5   | int16   | 2    | 0.001  | V    | 34422 | 34422 |       |       |
+| battery_5_cell_6_voltage            | Spannung Akkupack 5 Zelle 6   | int16   | 2    | 0.001  | V    | 34423 | 34423 |       |       |
+| battery_5_cell_7_voltage            | Spannung Akkupack 5 Zelle 7   | int16   | 2    | 0.001  | V    | 34424 | 34424 |       |       |
+| battery_5_cell_8_voltage            | Spannung Akkupack 5 Zelle 8   | int16   | 2    | 0.001  | V    | 34425 | 34425 |       |       |
+| battery_5_cell_9_voltage            | Spannung Akkupack 5 Zelle 9   | int16   | 2    | 0.001  | V    | 34426 | 34426 |       |       |
+| battery_5_cell_10_voltage           | Spannung Akkupack 5 Zelle 10  | int16   | 2    | 0.001  | V    | 34427 | 34427 |       |       |
+| battery_5_cell_11_voltage           | Spannung Akkupack 5 Zelle 11  | int16   | 2    | 0.001  | V    | 34428 | 34428 |       |       |
+| battery_5_cell_12_voltage           | Spannung Akkupack 5 Zelle 12  | int16   | 2    | 0.001  | V    | 34429 | 34429 |       |       |
+| battery_5_cell_13_voltage           | Spannung Akkupack 5 Zelle 13  | int16   | 2    | 0.001  | V    | 34430 | 34430 |       |       |
+| battery_5_cell_14_voltage           | Spannung Akkupack 5 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34431 |       |       |
+| battery_5_cell_15_voltage           | Spannung Akkupack 5 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34432 |       |       |
+| battery_5_cell_16_voltage           | Spannung Akkupack 5 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34433 |       |       |
+| battery_6_cell_1_voltage            | Spannung Akkupack 6 Zelle 1   | int16   | 2    | 0.001  | V    | 34518 | 34518 |       |       |
+| battery_6_cell_2_voltage            | Spannung Akkupack 6 Zelle 2   | int16   | 2    | 0.001  | V    | 34519 | 34519 |       |       |
+| battery_6_cell_3_voltage            | Spannung Akkupack 6 Zelle 3   | int16   | 2    | 0.001  | V    | 34520 | 34520 |       |       |
+| battery_6_cell_4_voltage            | Spannung Akkupack 6 Zelle 4   | int16   | 2    | 0.001  | V    | 34521 | 34521 |       |       |
+| battery_6_cell_5_voltage            | Spannung Akkupack 6 Zelle 5   | int16   | 2    | 0.001  | V    | 34522 | 34522 |       |       |
+| battery_6_cell_6_voltage            | Spannung Akkupack 6 Zelle 6   | int16   | 2    | 0.001  | V    | 34523 | 34523 |       |       |
+| battery_6_cell_7_voltage            | Spannung Akkupack 6 Zelle 7   | int16   | 2    | 0.001  | V    | 34524 | 34524 |       |       |
+| battery_6_cell_8_voltage            | Spannung Akkupack 6 Zelle 8   | int16   | 2    | 0.001  | V    | 34525 | 34525 |       |       |
+| battery_6_cell_9_voltage            | Spannung Akkupack 6 Zelle 9   | int16   | 2    | 0.001  | V    | 34526 | 34526 |       |       |
+| battery_6_cell_10_voltage           | Spannung Akkupack 6 Zelle 10  | int16   | 2    | 0.001  | V    | 34527 | 34527 |       |       |
+| battery_6_cell_11_voltage           | Spannung Akkupack 6 Zelle 11  | int16   | 2    | 0.001  | V    | 34528 | 34528 |       |       |
+| battery_6_cell_12_voltage           | Spannung Akkupack 6 Zelle 12  | int16   | 2    | 0.001  | V    | 34529 | 34529 |       |       |
+| battery_6_cell_13_voltage           | Spannung Akkupack 6 Zelle 13  | int16   | 2    | 0.001  | V    | 34530 | 34530 |       |       |
+| battery_6_cell_14_voltage           | Spannung Akkupack 6 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34531 |       |       |
+| battery_6_cell_15_voltage           | Spannung Akkupack 6 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34532 |       |       |
+| battery_6_cell_16_voltage           | Spannung Akkupack 6 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34533 |       |       |
+| battery_7_cell_1_voltage            | Spannung Akkupack 7 Zelle 1   | int16   | 2    | 0.001  | V    |       | 34618 |       |       |
+| battery_7_cell_2_voltage            | Spannung Akkupack 7 Zelle 2   | int16   | 2    | 0.001  | V    |       | 34619 |       |       |
+| battery_7_cell_3_voltage            | Spannung Akkupack 7 Zelle 3   | int16   | 2    | 0.001  | V    |       | 34620 |       |       |
+| battery_7_cell_4_voltage            | Spannung Akkupack 7 Zelle 4   | int16   | 2    | 0.001  | V    |       | 34621 |       |       |
+| battery_7_cell_5_voltage            | Spannung Akkupack 7 Zelle 5   | int16   | 2    | 0.001  | V    |       | 34622 |       |       |
+| battery_7_cell_6_voltage            | Spannung Akkupack 7 Zelle 6   | int16   | 2    | 0.001  | V    |       | 34623 |       |       |
+| battery_7_cell_7_voltage            | Spannung Akkupack 7 Zelle 7   | int16   | 2    | 0.001  | V    |       | 34624 |       |       |
+| battery_7_cell_8_voltage            | Spannung Akkupack 7 Zelle 8   | int16   | 2    | 0.001  | V    |       | 34625 |       |       |
+| battery_7_cell_9_voltage            | Spannung Akkupack 7 Zelle 9   | int16   | 2    | 0.001  | V    |       | 34626 |       |       |
+| battery_7_cell_10_voltage           | Spannung Akkupack 7 Zelle 10  | int16   | 2    | 0.001  | V    |       | 34627 |       |       |
+| battery_7_cell_11_voltage           | Spannung Akkupack 7 Zelle 11  | int16   | 2    | 0.001  | V    |       | 34628 |       |       |
+| battery_7_cell_12_voltage           | Spannung Akkupack 7 Zelle 12  | int16   | 2    | 0.001  | V    |       | 34629 |       |       |
+| battery_7_cell_13_voltage           | Spannung Akkupack 7 Zelle 13  | int16   | 2    | 0.001  | V    |       | 34630 |       |       |
+| battery_7_cell_14_voltage           | Spannung Akkupack 7 Zelle 14  | int16   | 2    | 0.001  | V    |       | 34631 |       |       |
+| battery_7_cell_15_voltage           | Spannung Akkupack 7 Zelle 15  | int16   | 2    | 0.001  | V    |       | 34632 |       |       |
+| battery_7_cell_16_voltage           | Spannung Akkupack 7 Zelle 16  | int16   | 2    | 0.001  | V    |       | 34633 |       |       |
+| mppt1_voltage                     | MPPT1-String-Spannung | uint16  | 2    | 0.1    | V    | 30020 | 30020 |       |       |
+| mppt1_current                     | MPPT1-String-Strom  | uint16  | 2    | 0.1    | A    | 30024 | 30024 |       |       |
+| mppt1_power                       | MPPT1-String-Leistung | uint16  | 2    | 0.1    | W    | 30037 | 30037 |       |       |
+| mppt2_voltage                     | MPPT2-String-Spannung | uint16  | 2    | 0.1    | V    | 30021 | 30021 |       |       |
+| mppt2_current                     | MPPT2-String-Strom  | uint16  | 2    | 0.1    | A    | 30025 | 30025 |       |       |
+| mppt2_power                       | MPPT2-String-Leistung | uint16  | 2    | 0.1    | W    | 30038 | 30038 |       |       |
+| mppt3_voltage                     | MPPT3-String-Spannung | uint16  | 2    | 0.1    | V    | 30022 | 30022 |       |       |
+| mppt3_current                     | MPPT3-String-Strom  | uint16  | 2    | 0.1    | A    | 30026 | 30026 |       |       |
+| mppt3_power                       | MPPT3-String-Leistung | uint16  | 2    | 0.1    | W    | 30039 | 30039 |       |       |
+| mppt4_voltage                     | MPPT4-String-Spannung | uint16  | 2    | 0.1    | V    | 30023 | 30023 |       |       |
+| mppt4_current                     | MPPT4-String-Strom  | uint16  | 2    | 0.1    | A    | 30027 | 30027 |       |       |
+| mppt4_power                       | MPPT4-String-Leistung | uint16  | 2    | 0.1    | W    | 30040 | 30040 |       |       |
+| inverter_state                    | Wechselrichter-/Gerätezustand | uint16  | 2    | 1      | -    | 35100 | 35100 | 35100 | 35100 |
+| fault_status                      | Fehlerstatus-Bits | uint64  | 8    | -      | -    |       |       | 36100 |       |
+| alarm_status                      | Alarmstatus-Bits  | uint32  | 4    | -      | -    |       |       | 36000 |       |
+| modbus_address                    | Modbus-Slave-/Unit-ID | uint16  | 2    | -      | -    | 41100 | 41100 | 41100 | 41100 |
+| rs485_control_mode (switch)       | RS485-Steuermodus (Schreibbefehle)  | uint16  | 2    | -      | -    | 42000 | 42000 | 42000 | 42000 |
+| backup_function (switch)          | Steuerung der Notstromfunktion | uint16  | 2    | -      | -    | 41200 | 41200 | 41200 | 41200 |
+| force_mode (select)               | Zwangsmodus (Kein/Laden/Entladen)  | uint16  | 2    | -      | -    | 42010 | 42010 | 42010 | 42010 |
+| user_work_mode (select)           | Benutzer-Arbeitsmodus (manual/anti_feed/trade) | uint16  | 2    | -      | -    | 43000 | 43000 | 43000 | 43000 |
+| discharge_limit_mode (binary)     | Modus der Entladegrenze (Diagnose) | uint16  | 2    | -      | -    |       |       | 41010 |       |
+| modbus_connection (binary)        | Zustand der Modbus-Verbindung | derived | -    | -      | -    |  |  |  |  |
+| grid_standard (select)            | Netzstandard / Regionsauswahl    | uint16  | 2    | -      | -    |       |       | 44100 |       |
+| charge_to_soc (number)            | Auf SoC laden/entladen (0–100 %) | uint16  | 2    | 1      | %    | 42011 | 42011 | 42011 | 42011 |
+| set_charge_power (number)         | Sollwert für erzwungene Ladeleistung | uint16  | 2    | -      | W    | 42020 | 42020 | 42020 | 42020 |
+| set_discharge_power (number)      | Sollwert für erzwungene Entladeleistung | uint16  | 2    | -      | W    | 42021 | 42021 | 42021 | 42021 |
+| max_charge_power (number)         | Maximal erlaubte Ladeleistung | uint16  | 2    | -      | W    | 44002 | 44002 | 44002 | 44002 |
+| max_discharge_power (number)      | Maximal erlaubte Entladeleistung | uint16  | 2    | -      | W    | 44003 | 44003 | 44003 | 44003 |
+| charging_cutoff_capacity (number) | Ladeschlussgrenze (Prozent)  | uint16  | 2    | 0.1    | %    |       |       | 44000 |       |
+| discharging_cutoff_capacity       | Entladeschlussgrenze (Prozent)  | uint16  | 2    | 0.1    | %    |       |       | 44001 |       |
+| reset_device (button)             | Befehl zum Zurücksetzen des Geräts | uint16  | 2    | -      | -    | 41000 | 41000 | 41000 | 41000 |
+| factory_reset (button)            | Befehl für Werksreset | uint16  | 2    | -      | -    | 41001 | 41001 | 41001 | 41001 |
+| schedule_1_days                  | Zeitplan 1 Tage (Bitmaske) | bit      | 2    | -      | -    | 43100 | 43100 | 43100 | 43100 |
+| schedule_1_start                 | Zeitplan 1 Start (HHMM) | uint     | 2    | -      | min  | 43101 | 43101 | 43101 | 43101 |
+| schedule_1_end                   | Zeitplan 1 Ende (HHMM) | uint     | 2    | -      | min  | 43102 | 43102 | 43102 | 43102 |
+| schedule_1_mode                  | Zeitplan 1 Modus (numerisch) | int16    | 2    | -      | W    | 43103 | 43103 | 43103 | 43103 |
+| schedule_1_enabled               | Zeitplan 1 aktiv (0/1)   | uint     | 2    | -      | -    | 43104 | 43104 | 43104 | 43104 |
+| schedule_2_days                  | Zeitplan 2 Tage (Bitmaske) | bit      | 2    | -      | -    | 43105 | 43105 | 43105 | 43105 |
+| schedule_2_start                 | Zeitplan 2 Start (HHMM) | uint     | 2    | -      | min  | 43106 | 43106 | 43106 | 43106 |
+| schedule_2_end                   | Zeitplan 2 Ende (HHMM) | uint     | 2    | -      | min  | 43107 | 43107 | 43107 | 43107 |
+| schedule_2_mode                  | Zeitplan 2 Modus (numerisch) | int16    | 2    | -      | W    | 43108 | 43108 | 43108 | 43108 |
+| schedule_2_enabled               | Zeitplan 2 aktiv (0/1)   | uint     | 2    | -      | -    | 43109 | 43109 | 43109 | 43109 |
+| schedule_3_days                  | Zeitplan 3 Tage (Bitmaske) | bit      | 2    | -      | -    | 43110 | 43110 | 43110 | 43110 |
+| schedule_3_start                 | Zeitplan 3 Start (HHMM) | uint     | 2    | -      | min  | 43111 | 43111 | 43111 | 43111 |
+| schedule_3_end                   | Zeitplan 3 Ende (HHMM) | uint     | 2    | -      | min  | 43112 | 43112 | 43112 | 43112 |
+| schedule_3_mode                  | Zeitplan 3 Modus (numerisch) | int16    | 2    | -      | W    | 43113 | 43113 | 43113 | 43113 |
+| schedule_3_enabled               | Zeitplan 3 aktiv (0/1)   | uint     | 2    | -      | -    | 43114 | 43114 | 43114 | 43114 |
+| schedule_4_days                  | Zeitplan 4 Tage (Bitmaske) | bit      | 2    | -      | -    | 43115 | 43115 | 43115 | 43115 |
+| schedule_4_start                 | Zeitplan 4 Start (HHMM) | uint     | 2    | -      | min  | 43116 | 43116 | 43116 | 43116 |
+| schedule_4_end                   | Zeitplan 4 Ende (HHMM) | uint     | 2    | -      | min  | 43117 | 43117 | 43117 | 43117 |
+| schedule_4_mode                  | Zeitplan 4 Modus (numerisch) | int16    | 2    | -      | W    | 43118 | 43118 | 43118 | 43118 |
+| schedule_4_enabled               | Zeitplan 4 aktiv (0/1)   | uint     | 2    | -      | -    | 43119 | 43119 | 43119 | 43119 |
+| schedule_5_days                  | Zeitplan 5 Tage (Bitmaske) | bit      | 2    | -      | -    | 43120 | 43120 | 43120 | 43120 |
+| schedule_5_start                 | Zeitplan 5 Start (HHMM) | uint     | 2    | -      | min  | 43121 | 43121 | 43121 | 43121 |
+| schedule_5_end                   | Zeitplan 5 Ende (HHMM) | uint     | 2    | -      | min  | 43122 | 43122 | 43122 | 43122 |
+| schedule_5_mode                  | Zeitplan 5 Modus (numerisch) | int16    | 2    | -      | W    | 43123 | 43123 | 43123 | 43123 |
+| schedule_5_enabled               | Zeitplan 5 aktiv (0/1)   | uint     | 2    | -      | -    | 43124 | 43124 | 43124 | 43124 |
+| schedule_6_days                  | Zeitplan 6 Tage (Bitmaske) | bit      | 2    | -      | -    | 43125 | 43125 | 43125 | 43125 |
+| schedule_6_start                 | Zeitplan 6 Start (HHMM) | uint     | 2    | -      | min  | 43126 | 43126 | 43126 | 43126 |
+| schedule_6_end                   | Zeitplan 6 Ende (HHMM) | uint     | 2    | -      | min  | 43127 | 43127 | 43127 | 43127 |
+| schedule_6_mode                  | Zeitplan 6 Modus (numerisch) | int16    | 2    | -      | W    | 43128 | 43128 | 43128 | 43128 |
+| schedule_6_enabled               | Zeitplan 6 aktiv (0/1)   | uint     | 2    | -      | -    | 43129 | 43129 | 43129 | 43129 |
+| round_trip_efficiency_total       | Round-Trip-Wirkungsgrad (Gesamtenergien Laden/Entladen) | calculated | - | - | % |  |  |  |  |
+| round_trip_efficiency_monthly     | Round-Trip-Wirkungsgrad (Monatswerte Laden/Entladen) | calculated | - | - | % |  |  |  |  |
+| conversion_efficiency             | Wandlungswirkungsgrad (Batterie ↔ AC) | calculated | - | - | % |  |  |  |  |
+| stored_energy                     | Gespeicherte Batterieenergie (SoC × Kapazität) | calculated | - | - | kWh |  |  |  |  |
+| battery_cycle_count_calc          | Aus Gesamtentladung und Kapazität berechnete Zyklenzahl  | calculated | - | - | - |  |  |  |  |
+
+_Hinweise:_
+- `charge_to_soc` (42011, „Maximaler SoC“) ist ein Befehl, keine passive Einstellung: Ein Schreibvorgang lässt das Gerät die Batterie sofort auf diesen Ladezustand fahren — an der Hardware verifiziert: Der Wert 70 löste eine Entladung aus, die bei 70 % stoppte. Es ist **nicht** die in der Marstek-App gezeigte Notstromreserve; das ist ein separater, dauerhafter Parameter ganz ohne Modbus-Register.
+- `max_discharge_power` (44003) ist eine freie Grenze, kein Drei-Stufen-Wähler: 1350 W gesetzt und anschließend 2500 W Entladung angefordert ergab an der Hardware 1355 W. Das Register teilt sich sein EEPROM-Wort mit der Geräteleistungsklasse (800 / 2200 / 2500 W) der App. Ein Schreibvorgang stellt die Leistung also wieder her, nachdem die Cloud die Klasse auf 800 zurückgesetzt hat — was sich in der Praxis als Entladung zeigt, die partout nicht über 800 W hinauskommt. Der Cloud-Befehl setzt zusätzlich ein Stufen-Flag und begrenzt bei 800 W jeden Zeitplan-Slot; das Schreiben des Registers tut beides nicht. Das Register ist ein reines Schreibregister, der aktive Wert lässt sich also nicht zurücklesen.
+- `max_cell_voltage` / `min_cell_voltage` gelten auf der Venus D **nicht** geräteweit: 37007/37008 lesen dieselbe Firmware-Quelle wie `battery_1_max_cell_voltage` / `battery_1_min_cell_voltage` (34005/34006), also nur Pack 1. Sie wurden aus `d.yaml` entfernt; stattdessen die Sensoren je Pack verwenden.
+- Die Spalten `a`, `d`, `e_v12` und `e_v3` entsprechen den YAML-Dateien unter `custom_components/marstek_modbus/registers/`.
+- `Bytes` gibt die typische Byte-Größe des Schlüssels an (jedes Modbus-Register = 2 Bytes).
+- Leere Zellen bedeuten, dass die betreffende YAML diesen Schlüssel nicht definiert (oder dass der Wert berechnet wird und kein direktes Modbus-Register hat).
+- `firmware_version` wird aus den Roh-Versionsregistern zusammengesetzt. `E v1/v2` nutzt `ems + bms`; `A`, `D` und `E v3` nutzen `ems + vms + bms`.
+- `ble_mac_address` wird dekodiert und als normale MAC-Adresse formatiert, etwa `00:9B:08:05:D9:0A`.
+- `modbus_connection` ist ein diagnostischer Binärsensor, der sich aus kürzlich erfolgreichen Modbus-Lesevorgängen ableitet, nicht aus einem eigenen Geräteregister.
+- Der Schalter `rs485_control_mode` (Register 42000) nutzt Schreibbefehle (command_on=21930, command_off=21947), um RS485-Steuervorgänge auszulösen; mit Vorsicht verwenden.
+- Für den Zugriff auf Register im Bereich 42000–42999 muss die Batterie im RS485-Steuermodus sein.
+- Zeitformat der Zeitpläne: `start` und `end` werden als HHMM-Ganzzahlen im 24-Stunden-Format eingetragen (zum Beispiel `0830` = 08:30). Es gelten die in der jeweiligen YAML angegebenen Wertebereiche; für einen zusammenhängenden aktiven Zeitraum muss `start` vor `end` liegen.
+- Tagesauswahl der Zeitpläne: Das zugrunde liegende Register `schedule_*_days` bildet mehrere Tage über eine Bitmaske ab, die Integration stellt es aber derzeit als einfache Einfachauswahl in Home Assistant dar. Aus dieser Einschränkung heraus lassen sich über die Integrations-UI keine mehreren Tage auswählen.
+- Vorbehalt zum Energie-Dashboard (Venus A / Venus D mit PV-Eingang): Die gemeldeten Lade-/Entladeenergieregister der Batterie können Energie enthalten, die über den Wechselrichterpfad an Hausverbraucher fließt — also nicht nur die reine Batterie-Ein-/Ausspeisung. Das kann zu irreführenden Batteriestatistiken im Energie-Dashboard von Home Assistant führen. Für belastbare Dashboard-Werte lieber eigene abgeleitete Sensoren verwenden (etwa über Leistungsintegration) und das Verhalten auf der eigenen Firmware bzw. dem eigenen Gerät prüfen.
+- Werte für den Zeitplan-Modus: `schedule_*_mode` akzeptiert folgende Bereiche:
+  - `-1` = Eigenverbrauchsmodus
+  - Der Lade-/Entladebereich ist modellabhängig.
+  - Venus A (ab FW v148): `-100` bis `-1500` (Laden), `100` bis `1500` (Entladen)
+  - Venus D / Venus E: `-100` bis `-2500` (Laden), `100` bis `2500` (Entladen)
+
+---
+
+## Sponsor this project
+
+Diese Tools entstehen in meiner Freizeit und bleiben kostenlos, quelloffen und cloudfrei.
+Wenn dir eines davon einen Nachmittag gespart hat, kannst du mir [einen Kaffee ausgeben](https://buymeacoffee.com/sphings).
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-sphings-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000)](https://buymeacoffee.com/sphings)
