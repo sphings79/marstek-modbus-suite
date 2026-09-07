@@ -1,27 +1,146 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Marstek Modbus Suite - Home Assistant integration for Marstek Venus battery storage over Modbus TCP">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Marstek Modbus Suite - Home Assistant integration for Marstek Venus battery storage over local Modbus TCP, showing the overview panel with state of charge">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0B1B2B"/><stop offset="55%" stop-color="#10293F"/><stop offset="100%" stop-color="#0A2233"/>
+      <stop offset="0%" stop-color="#05090f"/><stop offset="55%" stop-color="#0a1622"/><stop offset="100%" stop-color="#071018"/>
     </linearGradient>
     <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#41BDF5"/><stop offset="100%" stop-color="#3DDC97"/>
+      <stop offset="0%" stop-color="#2ae6dc"/><stop offset="100%" stop-color="#ff3ea5"/>
     </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2ae6dc"/><stop offset="100%" stop-color="#1b8fd6"/>
+    </linearGradient>
+    <style>
+      .s { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+      .m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
   </defs>
+
   <rect width="1280" height="640" fill="url(#bg)"/>
-  <rect x="0" y="0" width="1280" height="7" fill="url(#accent)"/>
-  <g stroke="#41BDF5" stroke-opacity="0.06" stroke-width="1"><path d="M0 80H1280M0 160H1280M0 240H1280M0 320H1280M0 400H1280M0 480H1280M0 560H1280M160 0V640M320 0V640M480 0V640M640 0V640M800 0V640M960 0V640M1120 0V640"/></g>
-  <text x="90" y="150" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="21" font-weight="700" fill="#41BDF5" letter-spacing="2.4">HOME ASSISTANT · CUSTOM INTEGRATION</text>
-  <text x="90" y="214" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="68" font-weight="700" fill="#F2F8FC">Marstek Modbus Suite</text>
-  <text x="90" y="338" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="24" fill="#9FB6C6">Monitor and control a Marstek Venus storage</text>
-  <text x="90" y="372" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="24" fill="#9FB6C6">over local Modbus TCP. No cloud, no app.</text>
-  <rect x="90" y="432" width="181" height="40" rx="20" fill="#41BDF5" fill-opacity="0.13" stroke="#41BDF5" stroke-opacity="0.45"/>
-  <text x="180" y="458" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#41BDF5" text-anchor="middle">Venus A / D / E</text>
-  <rect x="285.0" y="432" width="130" height="40" rx="20" fill="#3DDC97" fill-opacity="0.13" stroke="#3DDC97" stroke-opacity="0.45"/>
-  <text x="350" y="458" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#3DDC97" text-anchor="middle">Modbus TCP</text>
-  <rect x="429.0" y="432" width="69" height="40" rx="20" fill="#41BDF5" fill-opacity="0.13" stroke="#41BDF5" stroke-opacity="0.45"/>
-  <text x="463" y="458" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#41BDF5" text-anchor="middle">HACS</text>
-  <rect x="511.8" y="432" width="130" height="40" rx="20" fill="#3DDC97" fill-opacity="0.13" stroke="#3DDC97" stroke-opacity="0.45"/>
-  <text x="577" y="458" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#3DDC97" text-anchor="middle">Local only</text>
-  <text x="90" y="588" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="21" font-weight="600" fill="#9FB6C6">github.com/sphings79/marstek-modbus-suite</text>
-  <g transform="translate(712,300) scale(0.92)"><rect x="0" y="20" width="132" height="120" rx="12" fill="#16344C" stroke="#3DDC97" stroke-opacity="0.6" stroke-width="2"/><rect x="22" y="44" width="88" height="20" rx="4" fill="#3DDC97" fill-opacity="0.3"/><rect x="22" y="72" width="88" height="20" rx="4" fill="#3DDC97" fill-opacity="0.55"/><rect x="22" y="100" width="88" height="20" rx="4" fill="#3DDC97" fill-opacity="0.8"/><path d="M52 10h28" stroke="#3DDC97" stroke-width="5" stroke-linecap="round"/><text x="66" y="166" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9FB6C6" text-anchor="middle">Venus</text><path d="M132 80H206" stroke="#F5A623" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5"/><rect x="206" y="46" width="96" height="68" rx="10" fill="#16344C" stroke="#F5A623" stroke-opacity="0.6" stroke-width="2"/><circle cx="228" cy="70" r="4.5" fill="#F5A623"/><circle cx="246" cy="70" r="4.5" fill="#F5A623" fill-opacity="0.5"/><rect x="222" y="88" width="64" height="8" rx="4" fill="#F5A623" fill-opacity="0.35"/><text x="254" y="140" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" fill="#9FB6C6" text-anchor="middle">RS485 &#8594; TCP</text><path d="M302 80H376" stroke="#41BDF5" stroke-width="3" stroke-linecap="round"/><circle cx="339" cy="80" r="17" fill="#0B1B2B" stroke="#41BDF5" stroke-opacity="0.6" stroke-width="2"/><text x="339" y="85" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="10" font-weight="700" fill="#41BDF5" text-anchor="middle">502</text><rect x="376" y="20" width="132" height="120" rx="12" fill="#16344C" stroke="#41BDF5" stroke-opacity="0.6" stroke-width="2"/><path d="M442 44 L482 78 L474 78 L474 108 L410 108 L410 78 L402 78 Z" fill="none" stroke="#41BDF5" stroke-width="3.5" stroke-linejoin="round"/><text x="442" y="166" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9FB6C6" text-anchor="middle">Home Assistant</text></g>
+  <rect x="0" y="0" width="1280" height="6" fill="url(#accent)"/>
+  <g stroke="#2ae6dc" stroke-opacity="0.05" stroke-width="1">
+    <path d="M0 80H1280M0 160H1280M0 240H1280M0 320H1280M0 400H1280M0 480H1280M0 560H1280M160 0V640M320 0V640M480 0V640M640 0V640M800 0V640M960 0V640M1120 0V640"/>
+  </g>
+
+  <!-- the project mark, same five bars as the sidebar icon -->
+  <g transform="translate(90,108) scale(1.55)" fill="#2ae6dc">
+    <rect x="1.2" y="3" width="3.2" height="18.5"/>
+    <rect x="5.8" y="10.5" width="3.2" height="11"/>
+    <rect x="10.4" y="15" width="3.2" height="6.5"/>
+    <rect x="15" y="10.5" width="3.2" height="11"/>
+    <rect x="19.6" y="3" width="3.2" height="18.5"/>
+  </g>
+
+  <text class="s" x="150" y="132" font-size="19" font-weight="700" fill="#2ae6dc" letter-spacing="2.4">HOME ASSISTANT · CUSTOM INTEGRATION</text>
+  <text class="s" x="90" y="210" font-size="52" font-weight="700" fill="#eaf4f8">Marstek Modbus Suite</text>
+
+  <text class="s" x="90" y="278" font-size="23" fill="#9fb8c6">Venus A, D and E over local Modbus TCP.</text>
+  <text class="s" x="90" y="312" font-size="23" fill="#9fb8c6">Sensors, control, schedules — and a panel of its own.</text>
+
+  <g>
+    <rect x="90" y="356" width="176" height="38" rx="19" fill="#2ae6dc" fill-opacity="0.12" stroke="#2ae6dc" stroke-opacity="0.42"/>
+    <text class="s" x="178" y="381" font-size="16" font-weight="600" fill="#2ae6dc" text-anchor="middle">Venus A / D / E</text>
+    <rect x="278" y="356" width="132" height="38" rx="19" fill="#ff3ea5" fill-opacity="0.12" stroke="#ff3ea5" stroke-opacity="0.42"/>
+    <text class="s" x="344" y="381" font-size="16" font-weight="600" fill="#ff3ea5" text-anchor="middle">No cloud</text>
+    <rect x="422" y="356" width="122" height="38" rx="19" fill="#2ae6dc" fill-opacity="0.12" stroke="#2ae6dc" stroke-opacity="0.42"/>
+    <text class="s" x="483" y="381" font-size="16" font-weight="600" fill="#2ae6dc" text-anchor="middle">Monitoring</text>
+  </g>
+
+  <text class="s" x="90" y="470" font-size="17" fill="#5d7d92">Cell voltages per pack on one axis · state of charge per pack ·</text>
+  <text class="s" x="90" y="496" font-size="17" fill="#5d7d92">round-trip efficiency across three timescales</text>
+
+  <text class="s" x="90" y="576" font-size="20" font-weight="600" fill="#9fb8c6">github.com/sphings79/marstek-modbus-suite</text>
+
+  <!-- the overview tab, as the panel actually draws it -->
+  <g transform="translate(676,74)">
+    <rect x="0" y="0" width="520" height="492" rx="10" fill="#080d13" stroke="#1b2b3d" stroke-width="1.5"/>
+
+    <text class="s" x="26" y="38" font-size="13" font-weight="700" fill="#eaf4f8">MARSTEK <tspan fill="#2ae6dc">Venus D</tspan></text>
+    <g class="m" font-size="10" letter-spacing="1.4">
+      <rect x="158" y="20" width="78" height="26" fill="#0e2b30"/>
+      <text x="197" y="38" fill="#2ae6dc" text-anchor="middle">OVERVIEW</text>
+      <text x="250" y="38" fill="#4a6478">CELLS</text>
+      <text x="298" y="38" fill="#4a6478">PACKS</text>
+      <text x="348" y="38" fill="#4a6478">SOLAR</text>
+      <text x="396" y="38" fill="#4a6478">ENERGY</text>
+      <text x="454" y="38" fill="#4a6478">SYSTEM</text>
+    </g>
+    <path d="M158 47H236" stroke="#2ae6dc" stroke-width="2"/>
+    <path d="M0 47H520" stroke="#1b2b3d" stroke-width="1"/>
+
+    <!-- left column -->
+    <g>
+      <rect x="22" y="72" width="130" height="196" fill="#0b131d" stroke="#1b2b3d"/>
+      <text class="m" x="34" y="94" font-size="8" letter-spacing="1.6" fill="#5d7d92">ELECTRICAL · NOW</text>
+      <g class="m" font-size="10">
+        <text x="34" y="120" fill="#5d7d92">AC power</text><text x="140" y="120" fill="#dff2f6" text-anchor="end" font-weight="600">715 W</text>
+        <text x="34" y="146" fill="#5d7d92">Battery</text><text x="140" y="146" fill="#ff3ea5" text-anchor="end" font-weight="600">−771 W</text>
+        <text x="34" y="172" fill="#5d7d92">Voltage</text><text x="140" y="172" fill="#dff2f6" text-anchor="end" font-weight="600">52,9 V</text>
+        <text x="34" y="198" fill="#5d7d92">Frequency</text><text x="140" y="198" fill="#dff2f6" text-anchor="end" font-weight="600">50,0 Hz</text>
+        <text x="34" y="224" fill="#5d7d92">Conversion</text><text x="140" y="224" fill="#35d67a" text-anchor="end" font-weight="600">92,7 %</text>
+        <text x="34" y="250" fill="#5d7d92">Mode</text><text x="140" y="250" fill="#dff2f6" text-anchor="end" font-weight="600">anti_feed</text>
+      </g>
+    </g>
+
+    <!-- the double ring -->
+    <g transform="translate(278,178)">
+      <circle r="72" fill="none" stroke="#132434" stroke-width="11"/>
+      <circle r="72" fill="none" stroke="url(#ring)" stroke-width="11" stroke-dasharray="321.3 452.4" transform="rotate(-90)"/>
+      <circle r="58" fill="none" stroke="#132434" stroke-width="4"/>
+      <circle r="58" fill="none" stroke="#ff3ea5" stroke-width="4" stroke-dasharray="244.2 364.4" transform="rotate(-90)"/>
+      <text class="m" x="-6" y="12" font-size="44" font-weight="600" fill="#dff2f6" text-anchor="middle">71</text>
+      <text class="m" x="26" y="12" font-size="15" fill="#5d7d92">%</text>
+      <text class="m" x="0" y="36" font-size="8.5" letter-spacing="2.2" fill="#5d7d92" text-anchor="middle">SOC · BMS</text>
+    </g>
+
+    <g>
+      <rect x="182" y="278" width="192" height="46" fill="#0b131d" stroke="#1b2b3d"/>
+      <path d="M246 278V324M310 278V324" stroke="#1b2b3d"/>
+      <g class="m" text-anchor="middle">
+        <text x="214" y="295" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">STORED</text>
+        <text x="214" y="315" font-size="14" font-weight="600" fill="#dff2f6">12,72</text>
+        <text x="278" y="295" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">CAPACITY</text>
+        <text x="278" y="315" font-size="14" font-weight="600" fill="#9fb8c6">17,92</text>
+        <text x="342" y="295" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">TO EMPTY</text>
+        <text x="342" y="315" font-size="14" font-weight="600" fill="#dff2f6">13,5 h</text>
+      </g>
+      <text class="m" x="278" y="352" font-size="19" font-weight="600" fill="#ff3ea5" text-anchor="middle">▼ 771 W</text>
+    </g>
+
+    <!-- right column -->
+    <g>
+      <rect x="368" y="72" width="130" height="196" fill="#0b131d" stroke="#1b2b3d"/>
+      <text class="m" x="380" y="94" font-size="8" letter-spacing="1.6" fill="#5d7d92">RESERVE · LIFETIME</text>
+      <g class="m" font-size="10">
+        <text x="380" y="120" fill="#5d7d92">Usable</text><text x="486" y="120" fill="#dff2f6" text-anchor="end" font-weight="600">10,57</text>
+        <text x="380" y="146" fill="#5d7d92">To full</text><text x="486" y="146" fill="#dff2f6" text-anchor="end" font-weight="600">5,20</text>
+        <text x="380" y="172" fill="#5d7d92">Cycles</text><text x="486" y="172" fill="#dff2f6" text-anchor="end" font-weight="600">5,32</text>
+        <text x="380" y="198" fill="#5d7d92">Remaining</text><text x="486" y="198" fill="#dff2f6" text-anchor="end" font-weight="600">5 995</text>
+        <text x="380" y="224" fill="#5d7d92">Health</text><text x="486" y="224" fill="#35d67a" text-anchor="end" font-weight="600">99,91 %</text>
+        <text x="380" y="250" fill="#5d7d92">Delta</text><text x="486" y="250" fill="#ffb020" text-anchor="end" font-weight="600">54 mV</text>
+      </g>
+    </g>
+
+    <!-- tiles -->
+    <g>
+      <rect x="22" y="378" width="128" height="86" fill="#0b131d" stroke="#1b2b3d"/>
+      <text class="m" x="36" y="400" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">CHARGED TODAY</text>
+      <text class="m" x="36" y="428" font-size="20" font-weight="600" fill="#dff2f6">9,13</text>
+      <rect x="36" y="442" width="100" height="4" fill="#132434"/><rect x="36" y="442" width="64" height="4" fill="#2ae6dc"/>
+
+      <rect x="164" y="378" width="128" height="86" fill="#0b131d" stroke="#1b2b3d"/>
+      <text class="m" x="178" y="400" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">DISCHARGED TODAY</text>
+      <text class="m" x="178" y="428" font-size="20" font-weight="600" fill="#ff3ea5">5,91</text>
+      <rect x="178" y="442" width="100" height="4" fill="#132434"/><rect x="178" y="442" width="41" height="4" fill="#ff3ea5"/>
+
+      <rect x="306" y="378" width="128" height="86" fill="#0b131d" stroke="#1b2b3d"/>
+      <text class="m" x="320" y="400" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">CELL DELTA</text>
+      <text class="m" x="320" y="428" font-size="20" font-weight="600" fill="#ffb020">54</text>
+      <rect x="320" y="442" width="100" height="4" fill="#132434"/><rect x="320" y="442" width="54" height="4" fill="#ffb020"/>
+
+      <rect x="412" y="378" width="86" height="86" fill="#0b131d" stroke="#1b2b3d"/>
+      <text class="m" x="426" y="400" font-size="7.5" letter-spacing="1.4" fill="#5d7d92">RTE</text>
+      <text class="m" x="426" y="428" font-size="20" font-weight="600" fill="#dff2f6">81,7</text>
+      <rect x="426" y="442" width="58" height="4" fill="#132434"/><rect x="426" y="442" width="47" height="4" fill="#2ae6dc"/>
+    </g>
+  </g>
 </svg>
