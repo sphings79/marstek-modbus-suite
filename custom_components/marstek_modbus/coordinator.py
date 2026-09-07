@@ -16,6 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     DEFAULT_TIMEOUT, DEFAULT_MESSAGE_WAIT_MS, CONF_MESSAGE_WAIT_MS,
                     CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
+                    CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR,
                     CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
                     RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET)
 
@@ -64,6 +65,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # Migration: der alte Sammelschalter aus 1.1.5-beta.1 schaltet beide
         # Gruppen, solange die neuen Schluessel noch nicht gesetzt sind.
         _legacy = bool(_opts.get(CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS))
+        # Clamped rather than validated: an out-of-range value must not make the
+        # usable-energy sensors disappear, and 0-100 is the only meaningful range.
+        self.discharge_floor = min(
+            max(float(_opts.get(CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR)), 0.0),
+            100.0,
+        )
         self.dev_unknown_enabled = bool(_opts.get(CONF_DEV_REGISTERS_UNKNOWN, _legacy))
         self.dev_duplicate_enabled = bool(_opts.get(CONF_DEV_REGISTERS_DUPLICATE, _legacy))
 
@@ -96,6 +103,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.CYCLE_SENSOR_DEFINITIONS = []
         self.RUNTIME_SENSOR_DEFINITIONS = []
         self.BATTERY_LIFE_SENSOR_DEFINITIONS = []
+        self.ENERGY_WINDOW_SENSOR_DEFINITIONS = []
         self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = []
         self.BITFIELD_TEXT_SENSOR_DEFINITIONS = []
         self.GRID_POWER_SENSOR_DEFINITIONS = []
@@ -715,6 +723,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.RUNTIME_SENSOR_DEFINITIONS = data.get("RUNTIME_SENSOR_DEFINITIONS", [])
             self.BATTERY_LIFE_SENSOR_DEFINITIONS = data.get(
                 "BATTERY_LIFE_SENSOR_DEFINITIONS", []
+            )
+            self.ENERGY_WINDOW_SENSOR_DEFINITIONS = data.get(
+                "ENERGY_WINDOW_SENSOR_DEFINITIONS", []
             )
             self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = data.get(
                 "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS", []
@@ -1513,6 +1524,7 @@ def get_registers(version: str):
     - CYCLE_SENSOR_DEFINITIONS
     - RUNTIME_SENSOR_DEFINITIONS
     - BATTERY_LIFE_SENSOR_DEFINITIONS
+    - ENERGY_WINDOW_SENSOR_DEFINITIONS
     - CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
     - BITFIELD_TEXT_SENSOR_DEFINITIONS
     - GRID_POWER_SENSOR_DEFINITIONS
@@ -1613,6 +1625,9 @@ def get_registers(version: str):
                     ),
                     "BATTERY_LIFE_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("BATTERY_LIFE_SENSOR_DEFINITIONS")
+                    ),
+                    "ENERGY_WINDOW_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("ENERGY_WINDOW_SENSOR_DEFINITIONS")
                     ),
                     "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS")

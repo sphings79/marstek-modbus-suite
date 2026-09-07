@@ -10,7 +10,7 @@ type Translate = (key: string, values?: Record<string, string | number>) => stri
 
 /** Below this many watts the battery is treated as resting, matching the
  *  integration's own idle threshold for the runtime sensors. */
-const IDLE_W = 5;
+const IDLE_W = 30;
 
 @customElement("mk-view-core")
 export class MkViewCore extends LitElement {

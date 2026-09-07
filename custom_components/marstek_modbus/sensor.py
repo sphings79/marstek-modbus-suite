@@ -39,6 +39,7 @@ async def async_setup_entry(
         (MarstekBatteryCycleSensor, coordinator.CYCLE_SENSOR_DEFINITIONS),
         (MarstekRuntimeSensor, coordinator.RUNTIME_SENSOR_DEFINITIONS),
         (MarstekBatteryLifeSensor, coordinator.BATTERY_LIFE_SENSOR_DEFINITIONS),
+        (MarstekEnergyWindowSensor, coordinator.ENERGY_WINDOW_SENSOR_DEFINITIONS),
         (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
@@ -736,29 +737,53 @@ class MarstekBatteryCycleSensor(MarstekCalculatedSensor):
         return cycles
 
 
-class MarstekRuntimeSensor(MarstekCalculatedSensor):
+class MarstekWindowSensor(MarstekCalculatedSensor):
     """
-    Hours until the battery is empty or full at the current power.
+    Base for sensors that measure against the usable state of charge window.
+
+    The floor is a configured percentage: Venus A, D and E v3 do not expose
+    discharging_cutoff_capacity, so what the user set in the Marstek app cannot
+    be read back over Modbus. The ceiling does have a register, charge_to_soc,
+    but a device that is not using it reports a value outside its own 10-100
+    range - a Venus D driven by an external controller reads a literal 0.
+    """
+
+    def _floor(self) -> float:
+        """Lower end of the window, in percent."""
+        return float(getattr(self.coordinator, "discharge_floor", 0.0))
+
+    def _ceiling(self) -> float:
+        """Upper end of the window, in percent, falling back to a full pack."""
+        data = self.coordinator.data if isinstance(self.coordinator.data, dict) else {}
+        try:
+            ceiling = float(data.get("charge_to_soc"))
+        except (TypeError, ValueError):
+            return 100.0
+        return ceiling if 10.0 <= ceiling <= 100.0 else 100.0
+
+
+class MarstekRuntimeSensor(MarstekWindowSensor):
+    """
+    Hours until the battery reaches the end of its usable window at the
+    current power.
 
     Mode is determined by 'mode' in the sensor definition:
-    - "to_empty": time until 0 % SoC, counts only while discharging
-    - "to_full":  time until 100 % SoC, counts only while charging
+    - "to_empty": time down to the configured floor, counts while discharging
+    - "to_full":  time up to the charge ceiling, counts while charging
 
     Idle, or flow in the other direction, yields 0 rather than None. The value
     is a countdown; an unknown state would read as a broken sensor on a
     dashboard instead of "not counting down right now".
-
-    Note that both ends are the raw SoC limits, not the configured charge and
-    discharge cutoffs: those registers exist on Venus E v1/v2 only, so using
-    them would make the sensor behave differently per model.
     """
 
-    # Below this many watts the battery counts as idle. Standby draw drifts
-    # around zero and would otherwise produce runtimes of thousands of hours.
-    IDLE_POWER_W = 5
+    # Below this many watts the battery counts as idle. A Venus D draws around
+    # 18 W doing nothing, and dividing the pack by that yields several hundred
+    # hours - arithmetically correct and completely useless.
+    IDLE_POWER_W = 30
 
-    # Anything beyond this is not a useful reading; report the ceiling instead.
-    MAX_HOURS = 999
+    # Past this point the number stops being a forecast. Report the ceiling
+    # instead of a figure that invites false precision.
+    MAX_HOURS = 48
 
     def calculate_value(self, dep_values: dict):
         soc = dep_values.get("soc")
@@ -771,17 +796,44 @@ class MarstekRuntimeSensor(MarstekCalculatedSensor):
         if mode == "to_empty":
             if power >= -self.IDLE_POWER_W:
                 return 0.0
-            energy = capacity * soc / 100
+            energy = capacity * max(soc - self._floor(), 0.0) / 100
         elif mode == "to_full":
             if power <= self.IDLE_POWER_W:
                 return 0.0
-            energy = capacity * (100 - soc) / 100
+            energy = capacity * max(self._ceiling() - soc, 0.0) / 100
         else:
             _LOGGER.warning("%s unknown runtime mode '%s'", self._key, mode)
             return None
 
         hours = energy / (abs(power) / 1000)
         return round(min(hours, self.MAX_HOURS), 2)
+
+
+class MarstekEnergyWindowSensor(MarstekWindowSensor):
+    """
+    Energy left to give, or energy still needed to fill up.
+
+    Mode is determined by 'mode' in the sensor definition:
+    - "usable":  what sits above the discharge floor
+    - "to_full": what is missing before the charge ceiling is reached
+    """
+
+    def calculate_value(self, dep_values: dict):
+        soc = dep_values.get("soc")
+        capacity = dep_values.get("capacity")
+        if soc is None or capacity is None:
+            return None
+
+        mode = self.definition.get("mode", "usable")
+        if mode == "usable":
+            span = max(soc - self._floor(), 0.0)
+        elif mode == "to_full":
+            span = max(self._ceiling() - soc, 0.0)
+        else:
+            _LOGGER.warning("%s unknown energy window mode '%s'", self._key, mode)
+            return None
+
+        return round(capacity * span / 100, 2)
 
 
 class MarstekBatteryLifeSensor(MarstekCalculatedSensor):

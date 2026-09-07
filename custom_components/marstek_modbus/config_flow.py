@@ -12,6 +12,8 @@ from .const import (
     CONF_DEV_REGISTERS_DUPLICATE,
     CONF_DEV_REGISTERS_LEGACY,
     CONF_DEV_REGISTERS_UNKNOWN,
+    CONF_DISCHARGE_FLOOR,
+    DEFAULT_DISCHARGE_FLOOR,
     CONF_MESSAGE_WAIT_MS,
     DEFAULT_DEV_REGISTERS,
     DEFAULT_MESSAGE_WAIT_MS,
@@ -53,6 +55,14 @@ SCHEMA_POLLING = vol.Schema(
     {
         vol.Required("high"): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3600)),
         vol.Required("low"): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3600)),
+    }
+)
+
+SCHEMA_LIMITS = vol.Schema(
+    {
+        vol.Required(CONF_DISCHARGE_FLOOR): vol.All(
+            vol.Coerce(float), vol.Clamp(min=0, max=100)
+        ),
     }
 )
 
@@ -233,7 +243,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         """Show the options menu."""
         return self.async_show_menu(
             step_id="menu",
-            menu_options=["connection", "polling", "dev"],
+            menu_options=["connection", "polling", "limits", "dev"],
         )
 
     async def async_step_polling(self, user_input=None):
@@ -285,6 +295,34 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
             ),
             errors=errors,
             description_placeholders={"lowest": str(lowest)},
+            last_step=True,
+        )
+
+    async def async_step_limits(self, user_input=None):
+        """Set the lower end of the usable energy window.
+
+        The upper end is read from the device's charge_to_soc register when it
+        holds a sensible value, so only the floor needs configuring here. On
+        Venus A, D and E v3 the floor itself is not exposed over Modbus at all,
+        which is why it cannot simply be read back from the battery.
+        """
+        config = self._config_entry
+
+        if user_input is not None:
+            self.hass.config_entries.async_update_entry(
+                config, options={**config.options, **user_input}
+            )
+            # The coordinator caches the value, so it has to be reloaded for the
+            # sensors to pick the new floor up.
+            await self.hass.config_entries.async_reload(config.entry_id)
+            return await self.async_step_menu()
+
+        current = config.options.get(CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR)
+        return self.async_show_form(
+            step_id="limits",
+            data_schema=self.add_suggested_values_to_schema(
+                SCHEMA_LIMITS, {CONF_DISCHARGE_FLOOR: current}
+            ),
             last_step=True,
         )
 

@@ -71,6 +71,13 @@
           "dev_registers_unknown": "Unbekannte Register anzeigen (117)",
           "dev_registers_duplicate": "Doppelungen anzeigen (14)"
         }
+      },
+      "limits": {
+        "title": "Energiefenster",
+        "description": "Wie viel des Speichers als nutzbar gilt. Die obere Grenze liest die Integration aus dem Gerät, sofern es sie meldet. Die untere lässt sich bei Venus A, D und E v3 nicht auslesen — trage hier die Entladegrenze ein, die du in der Marstek-App eingestellt hast.",
+        "data": {
+          "discharge_floor_percent": "Entladegrenze (%)"
+        }
       }
     }
   },
@@ -495,6 +502,12 @@
       },
       "battery_health": {
         "name": "Batteriezustand"
+      },
+      "usable_energy": {
+        "name": "Nutzbare Energie"
+      },
+      "energy_to_full": {
+        "name": "Energie bis voll"
       },
       "total_daily_charging_energy": {
         "name": "Tägliche Ladeenergie"

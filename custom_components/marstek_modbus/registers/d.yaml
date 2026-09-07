@@ -3313,6 +3313,36 @@ BATTERY_LIFE_SENSOR_DEFINITIONS:
             discharge: total_discharging_energy
             capacity: battery_total_energy
 
+ENERGY_WINDOW_SENSOR_DEFINITIONS:
+
+    # The window runs from the configured discharge floor up to the device's
+    # charge_to_soc register, falling back to a full pack when that register
+    # holds a value outside its own 10-100 range.
+    usable_energy:
+        key: usable_energy
+        unit: kWh
+        device_class: energy
+        state_class: total
+        precision: 2
+        icon: "mdi:battery-arrow-down-outline"
+        enabled_by_default: true
+        mode: usable
+        dependency_keys:
+            soc: battery_soc
+            capacity: battery_total_energy
+    energy_to_full:
+        key: energy_to_full
+        unit: kWh
+        device_class: energy
+        state_class: total
+        precision: 2
+        icon: "mdi:battery-arrow-up-outline"
+        enabled_by_default: true
+        mode: to_full
+        dependency_keys:
+            soc: battery_soc
+            capacity: battery_total_energy
+
 SOLAR_POWER_SENSOR_DEFINITIONS:
     solar_power_total:
         key: solar_power_total

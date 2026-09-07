@@ -71,6 +71,13 @@
           "dev_registers_unknown": "Show unknown registers (117)",
           "dev_registers_duplicate": "Show duplicates (14)"
         }
+      },
+      "limits": {
+        "title": "Energy window",
+        "description": "How much of the pack counts as usable. The upper end is read from the battery when it reports one; the lower end cannot be read on Venus A, D and E v3, so set here whatever discharge limit you configured in the Marstek app.",
+        "data": {
+          "discharge_floor_percent": "Discharge floor (%)"
+        }
       }
     }
   },
@@ -498,6 +505,12 @@
       },
       "battery_health": {
         "name": "Battery Health"
+      },
+      "usable_energy": {
+        "name": "Usable Energy"
+      },
+      "energy_to_full": {
+        "name": "Energy to Full"
       },
       "total_daily_charging_energy": {
         "name": "Daily Charging Energy"

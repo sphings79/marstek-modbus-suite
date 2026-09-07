@@ -33,6 +33,13 @@ SUPPORTED_VERSIONS = [
 #   unknown   - Register ohne geklaerte Bedeutung (117)
 #   duplicate - Register, die denselben Wert liefern wie ein bereits
 #               integrierter Sensor: Aliase, Spiegel, Folgeregister (14)
+# Lower end of the usable energy window, in percent of the pack.
+# Venus A, D and E v3 do not expose discharging_cutoff_capacity, so the floor
+# the user set in the Marstek app cannot be read back and is configured here
+# instead - per config entry, so two batteries can differ.
+CONF_DISCHARGE_FLOOR = "discharge_floor_percent"
+DEFAULT_DISCHARGE_FLOOR = 12
+
 CONF_DEV_REGISTERS_UNKNOWN = "dev_registers_unknown"
 CONF_DEV_REGISTERS_DUPLICATE = "dev_registers_duplicate"
 DEFAULT_DEV_REGISTERS = False

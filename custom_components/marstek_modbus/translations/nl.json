@@ -75,6 +75,13 @@
           "dev_registers_unknown": "Onbekende registers tonen (117)",
           "dev_registers_duplicate": "Dubbelingen tonen (14)"
         }
+      },
+      "limits": {
+        "title": "Energievenster",
+        "description": "Hoeveel van de accu als bruikbaar telt. De bovengrens leest de integratie uit het apparaat, als het die meldt. De ondergrens is bij Venus A, D en E v3 niet uitleesbaar — vul hier de ontlaadgrens in die je in de Marstek-app hebt ingesteld.",
+        "data": {
+          "discharge_floor_percent": "Ontlaadgrens (%)"
+        }
       }
     }
   },
@@ -502,6 +509,12 @@
       },
       "battery_health": {
         "name": "Batterijconditie"
+      },
+      "usable_energy": {
+        "name": "Bruikbare energie"
+      },
+      "energy_to_full": {
+        "name": "Energie tot vol"
       },
       "total_daily_charging_energy": {
         "name": "Dagelijkse Oplaadenergie"
