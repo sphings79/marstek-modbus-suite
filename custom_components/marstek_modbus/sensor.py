@@ -1,5 +1,5 @@
 """
-Marstek Venus Modbus sensor entities.
+Marstek Modbus Suite sensor entities.
 
 All sensors now derive their values from the shared coordinator data.
 No separate async_update needed; coordinator handles polling.

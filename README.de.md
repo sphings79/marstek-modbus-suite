@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="Marstek Venus Modbus — Home-Assistant-Integration für Marstek-Venus-Speicher über lokales Modbus TCP" width="100%">
+<img src="assets/banner.svg" alt="Marstek Modbus Suite — Home-Assistant-Integration für Marstek-Venus-Speicher über lokales Modbus TCP" width="100%">
 
-# Marstek Venus Modbus für Home Assistant
+# Marstek Modbus Suite für Home Assistant
 
 **Einen Marstek-Venus-Speicher über lokales Modbus TCP auslesen und steuern — ohne Cloud, ohne App, ohne YAML.**
 
@@ -104,7 +104,7 @@ derselben Quelle** wie alles andere in der Anlage.
 ## Installation
 
 1. Dieses Repository in HACS unter **Integrationen → Benutzerdefinierte Repositories** hinzufügen (Kategorie: Integration)
-2. **Marstek Venus Modbus** installieren
+2. **Marstek Modbus Suite** installieren
 3. Home Assistant neu starten
 4. Die Integration über **Einstellungen → Geräte & Dienste** hinzufügen
 

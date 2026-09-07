@@ -141,7 +141,7 @@ export const en: Record<string, string> = {
   // ---- empty states ----
   "empty.no_device": "No Marstek battery found",
   "empty.no_device_hint":
-    "This panel reads the Marstek Venus Modbus integration. Add a battery there first.",
+    "This panel reads the Marstek Modbus Suite integration. Add a battery there first.",
 
   "common.unavailable": "—",
 };

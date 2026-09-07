@@ -35,7 +35,7 @@ def get_entity_type(entity) -> str:
 
 
 class MarstekCoordinator(DataUpdateCoordinator):
-    """Coordinator managing all Marstek Venus Modbus sensors."""
+    """Coordinator managing all Marstek Modbus Suite sensors."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
         """Initialize the coordinator with connection parameters and update interval."""        

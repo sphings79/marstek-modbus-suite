@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Marstek Venus Modbus - Home Assistant integration for Marstek Venus battery storage over Modbus TCP">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Marstek Modbus Suite - Home Assistant integration for Marstek Venus battery storage over Modbus TCP">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#0B1B2B"/><stop offset="55%" stop-color="#10293F"/><stop offset="100%" stop-color="#0A2233"/>
@@ -11,7 +11,7 @@
   <rect x="0" y="0" width="1280" height="7" fill="url(#accent)"/>
   <g stroke="#41BDF5" stroke-opacity="0.06" stroke-width="1"><path d="M0 80H1280M0 160H1280M0 240H1280M0 320H1280M0 400H1280M0 480H1280M0 560H1280M160 0V640M320 0V640M480 0V640M640 0V640M800 0V640M960 0V640M1120 0V640"/></g>
   <text x="90" y="150" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="21" font-weight="700" fill="#41BDF5" letter-spacing="2.4">HOME ASSISTANT · CUSTOM INTEGRATION</text>
-  <text x="90" y="214" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="68" font-weight="700" fill="#F2F8FC">Marstek Venus Modbus</text>
+  <text x="90" y="214" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="68" font-weight="700" fill="#F2F8FC">Marstek Modbus Suite</text>
   <text x="90" y="338" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="24" fill="#9FB6C6">Monitor and control a Marstek Venus storage</text>
   <text x="90" y="372" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="24" fill="#9FB6C6">over local Modbus TCP. No cloud, no app.</text>
   <rect x="90" y="432" width="181" height="40" rx="20" fill="#41BDF5" fill-opacity="0.13" stroke="#41BDF5" stroke-opacity="0.45"/>

@@ -1,5 +1,5 @@
 {
-  "name": "Marstek Venus Modbus",
+  "name": "Marstek Modbus Suite",
   "hide_default_branch": true,
   "homeassistant": "2025.9.0"
 }

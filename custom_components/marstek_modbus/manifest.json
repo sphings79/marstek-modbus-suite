@@ -1,7 +1,7 @@
 {
   "domain": "marstek_modbus",
-  "name": "Marstek Venus Modbus",
-  "version": "2.0.0-beta.5",
+  "name": "Marstek Modbus Suite",
+  "version": "2.0.0-beta.6",
   "config_flow": true,
   "dependencies": [
     "frontend",

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report an issue with the Marstek Venus Modbus integration
+about: Report an issue with the Marstek Modbus Suite integration
 labels: bug
 ---
 

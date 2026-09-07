@@ -1,4 +1,4 @@
-"""Config flow for Marstek Venus Modbus integration."""
+"""Config flow for Marstek Modbus Suite integration."""
 import asyncio
 import logging
 import socket
@@ -68,7 +68,7 @@ SCHEMA_LIMITS = vol.Schema(
 
 
 class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle the configuration flow for the Marstek Venus Modbus integration."""
+    """Handle the configuration flow for the Marstek Modbus Suite integration."""
 
     VERSION = 1
 
@@ -140,7 +140,7 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # Create configuration entry if no errors
                 if not errors["base"]:
                     title = translations.get(
-                        "config.step.user.title", "Marstek Venus Modbus"
+                        "config.step.user.title", "Marstek Modbus Suite"
                     )
                     data = {
                         CONF_HOST: host,
@@ -229,7 +229,7 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class MarstekOptionsFlow(config_entries.OptionsFlow):
-    """Handle Marstek Venus Modbus options flow."""
+    """Handle Marstek Modbus Suite options flow."""
 
     def __init__(self, config_entry):
         """Initialize options flow."""

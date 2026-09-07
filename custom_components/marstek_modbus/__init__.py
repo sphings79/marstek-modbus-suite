@@ -1,5 +1,5 @@
 """
-Main integration setup for Marstek Venus Modbus component.
+Main integration setup for Marstek Modbus Suite component.
 
 Handles setting up and unloading config entries, initializing
 the data coordinator, and forwarding setup to sensor and select platforms.

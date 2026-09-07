@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="Marstek Venus Modbus — Home Assistant integration for Marstek Venus battery storage over local Modbus TCP" width="100%">
+<img src="assets/banner.svg" alt="Marstek Modbus Suite — Home Assistant integration for Marstek Venus battery storage over local Modbus TCP" width="100%">
 
-# Marstek Venus Modbus for Home Assistant
+# Marstek Modbus Suite for Home Assistant
 
 **Read and control a Marstek Venus battery over local Modbus TCP — no cloud, no app, no YAML.**
 
@@ -103,7 +103,7 @@ your setup.
 ## Installation
 
 1. Add this repository to HACS under **Integrations → Custom repositories** (category: Integration)
-2. Install **Marstek Venus Modbus**
+2. Install **Marstek Modbus Suite**
 3. Restart Home Assistant
 4. Add the integration via **Settings → Devices & Services**
 
@@ -122,7 +122,7 @@ the register map, so it has to match the actual hardware.
 ## Entities
 
 <div align="center">
-<img src="assets/entities.svg" alt="Device page in Home Assistant showing sensors created by the Marstek Venus Modbus integration" width="70%">
+<img src="assets/entities.svg" alt="Device page in Home Assistant showing sensors created by the Marstek Modbus Suite integration" width="70%">
 </div>
 
 Everything lands on one device. Advanced and diagnostic entities ship disabled by default — enable

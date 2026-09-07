@@ -133,7 +133,7 @@ export const de: Record<string, string> = {
   // ---- Leerzustände ----
   "empty.no_device": "Kein Marstek-Speicher gefunden",
   "empty.no_device_hint":
-    "Dieses Panel liest die Integration Marstek Venus Modbus. Lege dort zuerst einen Speicher an.",
+    "Dieses Panel liest die Integration Marstek Modbus Suite. Lege dort zuerst einen Speicher an.",
 
   "common.unavailable": "—",
 };

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Verbind met Marstek Venus Modbus",
+        "title": "Verbind met Marstek Modbus Suite",
         "description": "Voer de Modbus TCP-verbindingsgegevens in",
         "data": {
           "host": "IP-adres",
