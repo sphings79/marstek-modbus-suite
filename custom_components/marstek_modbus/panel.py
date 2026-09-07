@@ -24,15 +24,26 @@ STATIC_URL = f"/{DOMAIN}-frontend"
 COMPONENT_NAME = "marstek-modbus-panel"
 BUNDLE_NAME = "marstek-modbus-panel.js"
 
+# The icon set has to be on the page before anyone opens the panel, because the
+# sidebar draws its entry first. So it is its own small bundle, added to every
+# page, while the panel bundle stays lazy.
+ICONS_BUNDLE_NAME = "marstek-modbus-icons.js"
+ICONSET_PREFIX = "marstek"
+
 PANEL_TITLE = "Marstek Modbus"
-PANEL_ICON = "mdi:home-battery"
+PANEL_ICON = f"{ICONSET_PREFIX}:logo"
+# Used when the icon bundle is missing, so the entry still has a picture.
+PANEL_ICON_FALLBACK = "mdi:home-battery"
 
 DATA_PANEL_REGISTERED = "panel_registered"
 DATA_STATIC_REGISTERED = "static_registered"
+DATA_ICONS_REGISTERED = "icons_registered"
 
 # Keys this module owns inside hass.data[DOMAIN]; everything else there is a
 # coordinator stored under its config entry id.
-_OWN_DATA_KEYS = frozenset({DATA_PANEL_REGISTERED, DATA_STATIC_REGISTERED})
+_OWN_DATA_KEYS = frozenset(
+    {DATA_PANEL_REGISTERED, DATA_STATIC_REGISTERED, DATA_ICONS_REGISTERED}
+)
 
 
 async def _version(hass: HomeAssistant) -> str:
@@ -71,6 +82,19 @@ async def async_register_panel(hass: HomeAssistant) -> None:
         )
         data[DATA_STATIC_REGISTERED] = True
 
+    version = await _version(hass)
+
+    # The icon set goes on every page; without it the sidebar would ask for an
+    # icon nobody registered and draw nothing at all.
+    icon = PANEL_ICON_FALLBACK
+    if (frontend_dir / ICONS_BUNDLE_NAME).is_file():
+        if not data.get(DATA_ICONS_REGISTERED):
+            frontend.add_extra_js_url(
+                hass, f"{STATIC_URL}/{ICONS_BUNDLE_NAME}?v={version}"
+            )
+            data[DATA_ICONS_REGISTERED] = True
+        icon = PANEL_ICON
+
     if data.get(DATA_PANEL_REGISTERED):
         return
 
@@ -78,9 +102,9 @@ async def async_register_panel(hass: HomeAssistant) -> None:
         hass,
         frontend_url_path=PANEL_URL_PATH,
         webcomponent_name=COMPONENT_NAME,
-        module_url=f"{STATIC_URL}/{BUNDLE_NAME}?v={await _version(hass)}",
+        module_url=f"{STATIC_URL}/{BUNDLE_NAME}?v={version}",
         sidebar_title=PANEL_TITLE,
-        sidebar_icon=PANEL_ICON,
+        sidebar_icon=icon,
         require_admin=False,
     )
     data[DATA_PANEL_REGISTERED] = True

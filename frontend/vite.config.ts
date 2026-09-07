@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 
-// One entry point plus a chunk per language. The build output is committed to
+// Two entry points plus a chunk per language. The build output is committed to
 // the repository because HACS does not run a build step.
 export default defineConfig({
   build: {
@@ -15,6 +15,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         "marstek-modbus-panel": "src/marstek-panel.ts",
+        // Loaded on every page, so it stays as small as it can be.
+        "marstek-modbus-icons": "src/iconset.ts",
       },
       output: {
         entryFileNames: "[name].js",

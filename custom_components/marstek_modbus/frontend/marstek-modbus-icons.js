@@ -1,0 +1,1 @@
+const t="M1.2 3h3.2v18.5H1.2z M5.8 10.5h3.2V21.5H5.8z M10.4 15h3.2v6.5h-3.2z M15 10.5h3.2V21.5H15z M19.6 3h3.2v18.5h-3.2z",o={logo:{path:t}};window.customIconsets=window.customIconsets||{};window.customIconsets.marstek=s=>o[s]??o.logo;
