@@ -274,7 +274,9 @@ export class MkViewPacks extends MkView {
             </tbody>
           </table>
         </div>
-        <div class="note">${t("packs.table_legend")}</div>
+        <div class="note">
+          ${t("packs.table_legend", { points: SPREAD_WARN_PP })}
+        </div>
       </div>
     `;
   }

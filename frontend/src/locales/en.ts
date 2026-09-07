@@ -134,7 +134,7 @@ export const en: Record<string, string> = {
   "packs.none": "This battery reports no per-pack state of charge.",
   "packs.table_title": "Every pack in detail",
   "packs.table_legend":
-    "Highlighted rows sit more than 5 points away from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
+    "Highlighted rows sit {points} points or further from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
   "packs.col_soc": "SOC",
   "packs.col_energy": "kWh",
   "packs.col_min": "Cell min",

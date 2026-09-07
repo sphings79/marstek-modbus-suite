@@ -32,3 +32,16 @@ export function cellDeltaFlag(delta: number | null): string {
   const tone = cellDeltaTone(delta);
   return tone === "ok" ? "" : tone;
 }
+
+/**
+ * How far apart the packs' states of charge may sit before it means anything.
+ *
+ * The device works one pack at a time rather than all of them in parallel, so
+ * during a charge or a discharge the packs are routinely around ten points
+ * apart. That is the design working, not a fault, and flagging it would train
+ * the reader to ignore both the tile and the table.
+ */
+export const SPREAD_WARN_PP = 12;
+export const SPREAD_CRIT_PP = 20;
+/** Bar scale, so an ordinary working spread does not sit at the end of it. */
+export const SPREAD_SCALE_PP = 25;

@@ -126,7 +126,7 @@ export const de: Record<string, string> = {
   "packs.none": "Dieser Speicher meldet keinen Ladezustand je Pack.",
   "packs.table_title": "Alle Packs im Detail",
   "packs.table_legend":
-    "Hervorgehobene Zeilen liegen mehr als 5 Punkte vom mittleren Pack entfernt. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
+    "Hervorgehobene Zeilen liegen {points} Punkte oder weiter vom mittleren Pack entfernt. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
   "packs.col_soc": "SoC",
   "packs.col_energy": "kWh",
   "packs.col_min": "Zelle min",
