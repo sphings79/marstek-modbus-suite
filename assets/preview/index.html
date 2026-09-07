@@ -1,0 +1,102 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Marstek Modbus Suite — panel preview</title>
+<!--
+  The panel, driven by a fixed set of readings, for the README screenshots.
+  Served from the repository root:
+
+      python3 -m http.server 8899
+
+  then http://127.0.0.1:8899/assets/preview/?tab=control
+
+  Query parameters: tab=core|cells|packs|solar|energy|control|system,
+  view=settings to open the gear instead, theme=light for the light ground.
+  assets/make_ui_shots.sh drives all of this.
+-->
+<style>
+  html, body { margin: 0; background: #05090f; }
+  body.light { background: #eef2f6; }
+</style>
+<script type="module" src="/custom_components/marstek_modbus/frontend/marstek-modbus-panel.js"></script>
+<script type="module">
+  import { VALUES, CONTROLS } from "./data.js";
+
+  const params = new URLSearchParams(location.search);
+  const light = params.get("theme") === "light";
+  const DEVICE = "Marstek Venus D";
+
+  // Names come from the integration's own catalogue, so a screenshot cannot
+  // show a label the integration does not actually ship.
+  const catalogue = await fetch(
+    "/custom_components/marstek_modbus/translations/en.json",
+  ).then((r) => r.json());
+
+  const named = (domain, key) =>
+    `${DEVICE} ${catalogue.entity?.[domain]?.[key]?.name ?? key}`;
+
+  const states = {};
+  const entities = {};
+  const now = () => new Date().toISOString();
+
+  const add = (domain, key, state, attributes) => {
+    const id = `${domain}.marstek_venus_d_${key}`;
+    states[id] = {
+      entity_id: id,
+      state,
+      attributes: { ...attributes, friendly_name: named(domain, key) },
+      last_changed: now(),
+      last_updated: now(),
+    };
+    entities[id] = {
+      entity_id: id,
+      device_id: "dev1",
+      platform: "marstek_modbus",
+      translation_key: key,
+    };
+  };
+
+  for (const [key, [state, unit]] of Object.entries(VALUES)) {
+    add("sensor", key, state, { unit_of_measurement: unit });
+  }
+  for (const [spec, [state, attrs]] of Object.entries(CONTROLS)) {
+    const [domain, key] = spec.split(".");
+    add(domain, key, state, attrs);
+  }
+
+  // The reserve sensor carries the two percentages the pack columns draw.
+  const reserve = states["sensor.marstek_venus_d_backup_reserve_energy"];
+  reserve.attributes.backup_floor_percent = 8;
+  reserve.attributes.discharge_floor_percent = 12;
+
+  const panel = document.createElement("marstek-modbus-panel");
+  panel.hass = {
+    states,
+    entities,
+    devices: { dev1: { id: "dev1", name: DEVICE, name_by_user: null } },
+    language: "en",
+    themes: { darkMode: !light },
+    callWS: async () => ({}),
+    callService: async () => {},
+  };
+  document.body.classList.toggle("light", light);
+  document.body.append(panel);
+
+  await panel.updateComplete;
+
+  const TABS = {
+    core: "OVERVIEW", cells: "CELLS", packs: "PACKS", solar: "SOLAR",
+    energy: "ENERGY", control: "CONTROL", system: "SYSTEM",
+  };
+  const wanted = TABS[params.get("tab") ?? "core"];
+  const button = [...panel.renderRoot.querySelectorAll("button.tab")].find(
+    (b) => b.textContent.trim() === wanted,
+  );
+  button?.click();
+  if (params.get("view") === "settings") {
+    panel.renderRoot.querySelector("button.gear")?.click();
+  }
+
+  await panel.updateComplete;
+  // The shot script waits for this, rather than for a fixed delay.
+  document.title = "ready";
+</script>

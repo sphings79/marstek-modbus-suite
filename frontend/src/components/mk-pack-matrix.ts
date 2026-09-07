@@ -104,6 +104,39 @@ export class MkPackMatrix extends LitElement {
         margin: 0 0 0 10px;
         display: inline;
       }
+      /* The shared axis is the point of this card, and on a phone it is two
+         centimetres wide - every pack lands on the same pixel. Below that
+         width the range is written out instead. */
+      /* Only one of the two copies is ever visible; which one depends on
+         whether the row still has a bar to sit beside. */
+      .span {
+        display: none;
+        font-family: var(--mk-mono);
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+        color: var(--mk-fg-2);
+      }
+      @media (max-width: 640px) {
+        .axis,
+        .rail {
+          display: none;
+        }
+        .row {
+          grid-template-columns: 1fr auto;
+          row-gap: 3px;
+          padding: 9px 0;
+        }
+        .span {
+          display: block;
+          grid-column: 1 / -1;
+        }
+        .note {
+          margin-left: 8px;
+        }
+        .note.wide {
+          display: none;
+        }
+      }
     `,
   ];
 
@@ -160,6 +193,12 @@ export class MkPackMatrix extends LitElement {
             </div>
             <div class="right">
               <span class="delta ${tone}">${Math.round(delta * 1000)} mV</span>
+              ${range.note
+                ? html`<span class="label note wide">${range.note}</span>`
+                : nothing}
+            </div>
+            <div class="span">
+              ${this.formatVolts(range.min)} – ${this.formatVolts(range.max)} V
               ${range.note
                 ? html`<span class="label note">${range.note}</span>`
                 : nothing}

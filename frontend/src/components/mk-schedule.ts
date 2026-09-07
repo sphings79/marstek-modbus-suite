@@ -58,6 +58,14 @@ export class MkSchedule extends LitElement {
   static styles = [
     baseStyles,
     css`
+      /* The editor needs its width - a time field cannot usefully shrink -
+         so it scrolls inside the card rather than pushing the page. */
+      .scroll {
+        overflow-x: auto;
+      }
+      .inner {
+        min-width: 560px;
+      }
       .head-row,
       .row {
         display: grid;
@@ -163,6 +171,8 @@ export class MkSchedule extends LitElement {
     const l = this.labels;
 
     return html`
+      <div class="scroll">
+      <div class="inner">
       <div class="head-row">
         <span class="label"></span>
         <span class="label">${l.active}</span>
@@ -232,6 +242,8 @@ export class MkSchedule extends LitElement {
           </div>
         `;
       })}
+      </div>
+      </div>
     `;
   }
 

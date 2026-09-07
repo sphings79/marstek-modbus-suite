@@ -43,6 +43,13 @@ export class MkPackBars extends LitElement {
   static styles = [
     baseStyles,
     css`
+      /* Seven columns do not fit a phone, and shrinking them further turns the
+         numbers inside into a smear. The rack scrolls in its own box instead,
+         so reaching pack 7 does not drag the whole page sideways. */
+      .scroll {
+        overflow-x: auto;
+      }
+
       .rack {
         display: grid;
         gap: 14px;
@@ -186,9 +193,10 @@ export class MkPackBars extends LitElement {
       : null;
 
     return html`
+      <div class="scroll">
       <div
         class="rack"
-        style="grid-template-columns: repeat(${this.packs.length}, 1fr)"
+        style="grid-template-columns: repeat(${this.packs.length}, minmax(52px, 1fr))"
       >
         ${this.packs.map((pack) => {
           const flagged =
@@ -240,6 +248,7 @@ export class MkPackBars extends LitElement {
             </div>
           `;
         })}
+      </div>
       </div>
     `;
   }

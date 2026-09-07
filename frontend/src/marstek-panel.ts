@@ -111,11 +111,23 @@ export class MarstekPanel extends LitElement {
         color: var(--mk-accent);
       }
 
+      /* The strip scrolls inside itself. Left to overflow, it drags the whole
+         document sideways on a phone - every card moves when you meant to
+         reach the next tab. */
       nav {
         display: flex;
         gap: 1px;
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      nav::-webkit-scrollbar {
+        display: none;
       }
       button.tab {
+        flex: none;
+        white-space: nowrap;
         font-family: var(--mk-mono);
         font-size: 11.5px;
         letter-spacing: 0.15em;
@@ -210,6 +222,25 @@ export class MarstekPanel extends LitElement {
 
       main {
         padding-top: 20px;
+      }
+
+      @media (max-width: 700px) {
+        .shell {
+          padding: 0 12px 32px;
+        }
+        header {
+          gap: 10px;
+        }
+        .status {
+          margin-left: 0;
+          flex-wrap: wrap;
+          gap: 12px;
+          white-space: normal;
+        }
+        button.tab {
+          padding: 9px 11px 12px;
+          letter-spacing: 0.1em;
+        }
       }
 
       .empty {

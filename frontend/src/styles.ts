@@ -103,6 +103,12 @@ export const baseStyles = css`
     display: grid;
     gap: var(--mk-gap);
   }
+  /* Grid items default to min-width:auto and grow to fit their content, which
+     silently defeats any overflow-x container inside them: the card widens
+     instead of the box scrolling, and the whole page moves sideways. */
+  .grid > * {
+    min-width: 0;
+  }
 
   .ok {
     color: var(--mk-ok);
