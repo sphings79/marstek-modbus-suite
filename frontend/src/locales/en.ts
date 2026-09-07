@@ -184,6 +184,39 @@ export const en: Record<string, string> = {
   "system.ceiling_ignored":
     "This register reads {value} %, outside its own 10-100 range, so the device is not using it. The panel charges towards 100 % instead.",
 
+  // ---- settings ----
+  "settings.title": "Settings",
+  "settings.scheme": "Colour scheme",
+  "settings.scheme_hint":
+    "Each scheme brings its own light and dark version. The swatch is painted in the scheme it offers.",
+  "settings.scheme_theme": "follows your theme",
+  "settings.appearance": "Appearance",
+  "settings.mode": "Light or dark",
+  "settings.mode.auto": "Home Assistant",
+  "settings.mode.dark": "Dark",
+  "settings.mode.light": "Light",
+  "settings.mode_ha":
+    "This scheme takes its colours from your Home Assistant theme, which already decides light or dark.",
+  "settings.digits": "Decimal places",
+  "settings.digits.normal": "Normal",
+  "settings.digits.more": "One more",
+  "settings.start_tab": "Tab when opening",
+  "settings.start_tab.last": "Last used",
+  "settings.start_tab_hint":
+    "A fixed tab that the battery cannot fill falls back to the overview.",
+  "settings.tabs": "Tabs",
+  "settings.tabs_hint":
+    "Greyed out means this battery does not report what the tab shows, so hiding it is not a choice you have to make.",
+  "settings.always": "always shown",
+  "settings.unavail.cells": "no per-cell voltages",
+  "settings.unavail.packs": "no state of charge per pack",
+  "settings.unavail.solar": "no PV inputs",
+  "settings.unavail.control": "no writable registers",
+  "settings.storage": "Stored settings",
+  "settings.reset": "Reset to defaults",
+  "settings.storage_hint":
+    "These settings live in this browser only. Another browser, or another device, keeps its own.",
+
   // ---- empty states ----
   "empty.no_device": "No Marstek battery found",
   "empty.no_device_hint":

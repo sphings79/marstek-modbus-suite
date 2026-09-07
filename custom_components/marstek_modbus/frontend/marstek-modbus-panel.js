@@ -2,33 +2,33 @@
  * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const it=globalThis,kt=it.ShadowRoot&&(it.ShadyCSS===void 0||it.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,yt=Symbol(),Et=new WeakMap;let Yt=class{constructor(t,e,a){if(this._$cssResult$=!0,a!==yt)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o;const e=this.t;if(kt&&t===void 0){const a=e!==void 0&&e.length===1;a&&(t=Et.get(e)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),a&&Et.set(e,t))}return t}toString(){return this.cssText}};const se=s=>new Yt(typeof s=="string"?s:s+"",void 0,yt),f=(s,...t)=>{const e=s.length===1?s[0]:t.reduce((a,n,i)=>a+(r=>{if(r._$cssResult$===!0)return r.cssText;if(typeof r=="number")return r;throw Error("Value passed to 'css' function must be a 'css' function result: "+r+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(n)+s[i+1],s[0]);return new Yt(e,s,yt)},ae=(s,t)=>{if(kt)s.adoptedStyleSheets=t.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet);else for(const e of t){const a=document.createElement("style"),n=it.litNonce;n!==void 0&&a.setAttribute("nonce",n),a.textContent=e.cssText,s.appendChild(a)}},Ot=kt?s=>s:s=>s instanceof CSSStyleSheet?(t=>{let e="";for(const a of t.cssRules)e+=a.cssText;return se(e)})(s):s;/**
+ */const lt=globalThis,At=lt.ShadowRoot&&(lt.ShadyCSS===void 0||lt.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,Pt=Symbol(),zt=new WeakMap;let se=class{constructor(t,e,a){if(this._$cssResult$=!0,a!==Pt)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o;const e=this.t;if(At&&t===void 0){const a=e!==void 0&&e.length===1;a&&(t=zt.get(e)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),a&&zt.set(e,t))}return t}toString(){return this.cssText}};const he=s=>new se(typeof s=="string"?s:s+"",void 0,Pt),g=(s,...t)=>{const e=s.length===1?s[0]:t.reduce((a,i,n)=>a+(r=>{if(r._$cssResult$===!0)return r.cssText;if(typeof r=="number")return r;throw Error("Value passed to 'css' function must be a 'css' function result: "+r+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+s[n+1],s[0]);return new se(e,s,Pt)},me=(s,t)=>{if(At)s.adoptedStyleSheets=t.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet);else for(const e of t){const a=document.createElement("style"),i=lt.litNonce;i!==void 0&&a.setAttribute("nonce",i),a.textContent=e.cssText,s.appendChild(a)}},jt=At?s=>s:s=>s instanceof CSSStyleSheet?(t=>{let e="";for(const a of t.cssRules)e+=a.cssText;return he(e)})(s):s;/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const{is:ne,defineProperty:ie,getOwnPropertyDescriptor:re,getOwnPropertyNames:oe,getOwnPropertySymbols:le,getPrototypeOf:ce}=Object,ct=globalThis,Mt=ct.trustedTypes,de=Mt?Mt.emptyScript:"",pe=ct.reactiveElementPolyfillSupport,Z=(s,t)=>s,rt={toAttribute(s,t){switch(t){case Boolean:s=s?de:null;break;case Object:case Array:s=s==null?s:JSON.stringify(s)}return s},fromAttribute(s,t){let e=s;switch(t){case Boolean:e=s!==null;break;case Number:e=s===null?null:Number(s);break;case Object:case Array:try{e=JSON.parse(s)}catch{e=null}}return e}},xt=(s,t)=>!ne(s,t),Tt={attribute:!0,type:String,converter:rt,reflect:!1,useDefault:!1,hasChanged:xt};Symbol.metadata??=Symbol("metadata"),ct.litPropertyMetadata??=new WeakMap;let W=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=Tt){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){const a=Symbol(),n=this.getPropertyDescriptor(t,a,e);n!==void 0&&ie(this.prototype,t,n)}}static getPropertyDescriptor(t,e,a){const{get:n,set:i}=re(this.prototype,t)??{get(){return this[e]},set(r){this[e]=r}};return{get:n,set(r){const o=n?.call(this);i?.call(this,r),this.requestUpdate(t,o,a)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??Tt}static _$Ei(){if(this.hasOwnProperty(Z("elementProperties")))return;const t=ce(this);t.finalize(),t.l!==void 0&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(Z("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(Z("properties"))){const e=this.properties,a=[...oe(e),...le(e)];for(const n of a)this.createProperty(n,e[n])}const t=this[Symbol.metadata];if(t!==null){const e=litPropertyMetadata.get(t);if(e!==void 0)for(const[a,n]of e)this.elementProperties.set(a,n)}this._$Eh=new Map;for(const[e,a]of this.elementProperties){const n=this._$Eu(e,a);n!==void 0&&this._$Eh.set(n,e)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){const e=[];if(Array.isArray(t)){const a=new Set(t.flat(1/0).reverse());for(const n of a)e.unshift(Ot(n))}else t!==void 0&&e.push(Ot(t));return e}static _$Eu(t,e){const a=e.attribute;return a===!1?void 0:typeof a=="string"?a:typeof t=="string"?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),this.renderRoot!==void 0&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){const t=new Map,e=this.constructor.elementProperties;for(const a of e.keys())this.hasOwnProperty(a)&&(t.set(a,this[a]),delete this[a]);t.size>0&&(this._$Ep=t)}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return ae(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,a){this._$AK(t,a)}_$ET(t,e){const a=this.constructor.elementProperties.get(t),n=this.constructor._$Eu(t,a);if(n!==void 0&&a.reflect===!0){const i=(a.converter?.toAttribute!==void 0?a.converter:rt).toAttribute(e,a.type);this._$Em=t,i==null?this.removeAttribute(n):this.setAttribute(n,i),this._$Em=null}}_$AK(t,e){const a=this.constructor,n=a._$Eh.get(t);if(n!==void 0&&this._$Em!==n){const i=a.getPropertyOptions(n),r=typeof i.converter=="function"?{fromAttribute:i.converter}:i.converter?.fromAttribute!==void 0?i.converter:rt;this._$Em=n;const o=r.fromAttribute(e,i.type);this[n]=o??this._$Ej?.get(n)??o,this._$Em=null}}requestUpdate(t,e,a,n=!1,i){if(t!==void 0){const r=this.constructor;if(n===!1&&(i=this[t]),a??=r.getPropertyOptions(t),!((a.hasChanged??xt)(i,e)||a.useDefault&&a.reflect&&i===this._$Ej?.get(t)&&!this.hasAttribute(r._$Eu(t,a))))return;this.C(t,e,a)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(t,e,{useDefault:a,reflect:n,wrapped:i},r){a&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??e??this[t]),i!==!0||r!==void 0)||(this._$AL.has(t)||(this.hasUpdated||a||(e=void 0),this._$AL.set(t,e)),n===!0&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(e){Promise.reject(e)}const t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[n,i]of this._$Ep)this[n]=i;this._$Ep=void 0}const a=this.constructor.elementProperties;if(a.size>0)for(const[n,i]of a){const{wrapped:r}=i,o=this[n];r!==!0||this._$AL.has(n)||o===void 0||this.C(n,void 0,i,o)}}let t=!1;const e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(a=>a.hostUpdate?.()),this.update(e)):this._$EM()}catch(a){throw t=!1,this._$EM(),a}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(e=>e.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(e=>this._$ET(e,this[e])),this._$EM()}updated(t){}firstUpdated(t){}};W.elementStyles=[],W.shadowRootOptions={mode:"open"},W[Z("elementProperties")]=new Map,W[Z("finalized")]=new Map,pe?.({ReactiveElement:W}),(ct.reactiveElementVersions??=[]).push("2.1.2");/**
+ */const{is:ue,defineProperty:fe,getOwnPropertyDescriptor:ge,getOwnPropertyNames:ve,getOwnPropertySymbols:be,getPrototypeOf:$e}=Object,ht=globalThis,It=ht.trustedTypes,ke=It?It.emptyScript:"",_e=ht.reactiveElementPolyfillSupport,X=(s,t)=>s,ct={toAttribute(s,t){switch(t){case Boolean:s=s?ke:null;break;case Object:case Array:s=s==null?s:JSON.stringify(s)}return s},fromAttribute(s,t){let e=s;switch(t){case Boolean:e=s!==null;break;case Number:e=s===null?null:Number(s);break;case Object:case Array:try{e=JSON.parse(s)}catch{e=null}}return e}},Ct=(s,t)=>!ue(s,t),Ut={attribute:!0,type:String,converter:ct,reflect:!1,useDefault:!1,hasChanged:Ct};Symbol.metadata??=Symbol("metadata"),ht.litPropertyMetadata??=new WeakMap;let K=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=Ut){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){const a=Symbol(),i=this.getPropertyDescriptor(t,a,e);i!==void 0&&fe(this.prototype,t,i)}}static getPropertyDescriptor(t,e,a){const{get:i,set:n}=ge(this.prototype,t)??{get(){return this[e]},set(r){this[e]=r}};return{get:i,set(r){const o=i?.call(this);n?.call(this,r),this.requestUpdate(t,o,a)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??Ut}static _$Ei(){if(this.hasOwnProperty(X("elementProperties")))return;const t=$e(this);t.finalize(),t.l!==void 0&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(X("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(X("properties"))){const e=this.properties,a=[...ve(e),...be(e)];for(const i of a)this.createProperty(i,e[i])}const t=this[Symbol.metadata];if(t!==null){const e=litPropertyMetadata.get(t);if(e!==void 0)for(const[a,i]of e)this.elementProperties.set(a,i)}this._$Eh=new Map;for(const[e,a]of this.elementProperties){const i=this._$Eu(e,a);i!==void 0&&this._$Eh.set(i,e)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){const e=[];if(Array.isArray(t)){const a=new Set(t.flat(1/0).reverse());for(const i of a)e.unshift(jt(i))}else t!==void 0&&e.push(jt(t));return e}static _$Eu(t,e){const a=e.attribute;return a===!1?void 0:typeof a=="string"?a:typeof t=="string"?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),this.renderRoot!==void 0&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){const t=new Map,e=this.constructor.elementProperties;for(const a of e.keys())this.hasOwnProperty(a)&&(t.set(a,this[a]),delete this[a]);t.size>0&&(this._$Ep=t)}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return me(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,a){this._$AK(t,a)}_$ET(t,e){const a=this.constructor.elementProperties.get(t),i=this.constructor._$Eu(t,a);if(i!==void 0&&a.reflect===!0){const n=(a.converter?.toAttribute!==void 0?a.converter:ct).toAttribute(e,a.type);this._$Em=t,n==null?this.removeAttribute(i):this.setAttribute(i,n),this._$Em=null}}_$AK(t,e){const a=this.constructor,i=a._$Eh.get(t);if(i!==void 0&&this._$Em!==i){const n=a.getPropertyOptions(i),r=typeof n.converter=="function"?{fromAttribute:n.converter}:n.converter?.fromAttribute!==void 0?n.converter:ct;this._$Em=i;const o=r.fromAttribute(e,n.type);this[i]=o??this._$Ej?.get(i)??o,this._$Em=null}}requestUpdate(t,e,a,i=!1,n){if(t!==void 0){const r=this.constructor;if(i===!1&&(n=this[t]),a??=r.getPropertyOptions(t),!((a.hasChanged??Ct)(n,e)||a.useDefault&&a.reflect&&n===this._$Ej?.get(t)&&!this.hasAttribute(r._$Eu(t,a))))return;this.C(t,e,a)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(t,e,{useDefault:a,reflect:i,wrapped:n},r){a&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??e??this[t]),n!==!0||r!==void 0)||(this._$AL.has(t)||(this.hasUpdated||a||(e=void 0),this._$AL.set(t,e)),i===!0&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(e){Promise.reject(e)}const t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[i,n]of this._$Ep)this[i]=n;this._$Ep=void 0}const a=this.constructor.elementProperties;if(a.size>0)for(const[i,n]of a){const{wrapped:r}=n,o=this[i];r!==!0||this._$AL.has(i)||o===void 0||this.C(i,void 0,n,o)}}let t=!1;const e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(a=>a.hostUpdate?.()),this.update(e)):this._$EM()}catch(a){throw t=!1,this._$EM(),a}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(e=>e.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(e=>this._$ET(e,this[e])),this._$EM()}updated(t){}firstUpdated(t){}};K.elementStyles=[],K.shadowRootOptions={mode:"open"},K[X("elementProperties")]=new Map,K[X("finalized")]=new Map,_e?.({ReactiveElement:K}),(ht.reactiveElementVersions??=[]).push("2.1.2");/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const wt=globalThis,Nt=s=>s,ot=wt.trustedTypes,Dt=ot?ot.createPolicy("lit-html",{createHTML:s=>s}):void 0,Gt="$lit$",M=`lit$${Math.random().toFixed(9).slice(2)}$`,Zt="?"+M,he=`<${Zt}>`,U=document,J=()=>U.createComment(""),Q=s=>s===null||typeof s!="object"&&typeof s!="function",St=Array.isArray,me=s=>St(s)||typeof s?.[Symbol.iterator]=="function",mt=`[ 	
-\f\r]`,Y=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,Rt=/-->/g,zt=/>/g,R=RegExp(`>|${mt}(?:([^\\s"'>=/]+)(${mt}*=${mt}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),Ut=/'/g,jt=/"/g,Jt=/^(?:script|style|textarea|title)$/i,Qt=s=>(t,...e)=>({_$litType$:s,strings:t,values:e}),c=Qt(1),It=Qt(2),H=Symbol.for("lit-noChange"),p=Symbol.for("lit-nothing"),Lt=new WeakMap,z=U.createTreeWalker(U,129);function Xt(s,t){if(!St(s)||!s.hasOwnProperty("raw"))throw Error("invalid template strings array");return Dt!==void 0?Dt.createHTML(t):t}const ue=(s,t)=>{const e=s.length-1,a=[];let n,i=t===2?"<svg>":t===3?"<math>":"",r=Y;for(let o=0;o<e;o++){const l=s[o];let d,u,m=-1,v=0;for(;v<l.length&&(r.lastIndex=v,u=r.exec(l),u!==null);)v=r.lastIndex,r===Y?u[1]==="!--"?r=Rt:u[1]!==void 0?r=zt:u[2]!==void 0?(Jt.test(u[2])&&(n=RegExp("</"+u[2],"g")),r=R):u[3]!==void 0&&(r=R):r===R?u[0]===">"?(r=n??Y,m=-1):u[1]===void 0?m=-2:(m=r.lastIndex-u[2].length,d=u[1],r=u[3]===void 0?R:u[3]==='"'?jt:Ut):r===jt||r===Ut?r=R:r===Rt||r===zt?r=Y:(r=R,n=void 0);const b=r===R&&s[o+1].startsWith("/>")?" ":"";i+=r===Y?l+he:m>=0?(a.push(d),l.slice(0,m)+Gt+l.slice(m)+M+b):l+M+(m===-2?o:b)}return[Xt(s,i+(s[e]||"<?>")+(t===2?"</svg>":t===3?"</math>":"")),a]};class X{constructor({strings:t,_$litType$:e},a){let n;this.parts=[];let i=0,r=0;const o=t.length-1,l=this.parts,[d,u]=ue(t,e);if(this.el=X.createElement(d,a),z.currentNode=this.el.content,e===2||e===3){const m=this.el.content.firstChild;m.replaceWith(...m.childNodes)}for(;(n=z.nextNode())!==null&&l.length<o;){if(n.nodeType===1){if(n.hasAttributes())for(const m of n.getAttributeNames())if(m.endsWith(Gt)){const v=u[r++],b=n.getAttribute(m).split(M),V=/([.?@])?(.*)/.exec(v);l.push({type:1,index:i,name:V[2],strings:b,ctor:V[1]==="."?fe:V[1]==="?"?ge:V[1]==="@"?be:dt}),n.removeAttribute(m)}else m.startsWith(M)&&(l.push({type:6,index:i}),n.removeAttribute(m));if(Jt.test(n.tagName)){const m=n.textContent.split(M),v=m.length-1;if(v>0){n.textContent=ot?ot.emptyScript:"";for(let b=0;b<v;b++)n.append(m[b],J()),z.nextNode(),l.push({type:2,index:++i});n.append(m[v],J())}}}else if(n.nodeType===8)if(n.data===Zt)l.push({type:2,index:i});else{let m=-1;for(;(m=n.data.indexOf(M,m+1))!==-1;)l.push({type:7,index:i}),m+=M.length-1}i++}}static createElement(t,e){const a=U.createElement("template");return a.innerHTML=t,a}}function B(s,t,e=s,a){if(t===H)return t;let n=a!==void 0?e._$Co?.[a]:e._$Cl;const i=Q(t)?void 0:t._$litDirective$;return n?.constructor!==i&&(n?._$AO?.(!1),i===void 0?n=void 0:(n=new i(s),n._$AT(s,e,a)),a!==void 0?(e._$Co??=[])[a]=n:e._$Cl=n),n!==void 0&&(t=B(s,n._$AS(s,t.values),n,a)),t}class ve{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:e},parts:a}=this._$AD,n=(t?.creationScope??U).importNode(e,!0);z.currentNode=n;let i=z.nextNode(),r=0,o=0,l=a[0];for(;l!==void 0;){if(r===l.index){let d;l.type===2?d=new et(i,i.nextSibling,this,t):l.type===1?d=new l.ctor(i,l.name,l.strings,this,t):l.type===6&&(d=new $e(i,this,t)),this._$AV.push(d),l=a[++o]}r!==l?.index&&(i=z.nextNode(),r++)}return z.currentNode=U,n}p(t){let e=0;for(const a of this._$AV)a!==void 0&&(a.strings!==void 0?(a._$AI(t,a,e),e+=a.strings.length-2):a._$AI(t[e])),e++}}class et{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,a,n){this.type=2,this._$AH=p,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=a,this.options=n,this._$Cv=n?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode;const e=this._$AM;return e!==void 0&&t?.nodeType===11&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=B(this,t,e),Q(t)?t===p||t==null||t===""?(this._$AH!==p&&this._$AR(),this._$AH=p):t!==this._$AH&&t!==H&&this._(t):t._$litType$!==void 0?this.$(t):t.nodeType!==void 0?this.T(t):me(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==p&&Q(this._$AH)?this._$AA.nextSibling.data=t:this.T(U.createTextNode(t)),this._$AH=t}$(t){const{values:e,_$litType$:a}=t,n=typeof a=="number"?this._$AC(t):(a.el===void 0&&(a.el=X.createElement(Xt(a.h,a.h[0]),this.options)),a);if(this._$AH?._$AD===n)this._$AH.p(e);else{const i=new ve(n,this),r=i.u(this.options);i.p(e),this.T(r),this._$AH=i}}_$AC(t){let e=Lt.get(t.strings);return e===void 0&&Lt.set(t.strings,e=new X(t)),e}k(t){St(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let a,n=0;for(const i of t)n===e.length?e.push(a=new et(this.O(J()),this.O(J()),this,this.options)):a=e[n],a._$AI(i),n++;n<e.length&&(this._$AR(a&&a._$AB.nextSibling,n),e.length=n)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){const a=Nt(t).nextSibling;Nt(t).remove(),t=a}}setConnected(t){this._$AM===void 0&&(this._$Cv=t,this._$AP?.(t))}}class dt{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,a,n,i){this.type=1,this._$AH=p,this._$AN=void 0,this.element=t,this.name=e,this._$AM=n,this.options=i,a.length>2||a[0]!==""||a[1]!==""?(this._$AH=Array(a.length-1).fill(new String),this.strings=a):this._$AH=p}_$AI(t,e=this,a,n){const i=this.strings;let r=!1;if(i===void 0)t=B(this,t,e,0),r=!Q(t)||t!==this._$AH&&t!==H,r&&(this._$AH=t);else{const o=t;let l,d;for(t=i[0],l=0;l<i.length-1;l++)d=B(this,o[a+l],e,l),d===H&&(d=this._$AH[l]),r||=!Q(d)||d!==this._$AH[l],d===p?t=p:t!==p&&(t+=(d??"")+i[l+1]),this._$AH[l]=d}r&&!n&&this.j(t)}j(t){t===p?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}}class fe extends dt{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===p?void 0:t}}class ge extends dt{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==p)}}class be extends dt{constructor(t,e,a,n,i){super(t,e,a,n,i),this.type=5}_$AI(t,e=this){if((t=B(this,t,e,0)??p)===H)return;const a=this._$AH,n=t===p&&a!==p||t.capture!==a.capture||t.once!==a.once||t.passive!==a.passive,i=t!==p&&(a===p||n);n&&this.element.removeEventListener(this.name,this,a),i&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}}class $e{constructor(t,e,a){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=a}get _$AU(){return this._$AM._$AU}_$AI(t){B(this,t)}}const _e=wt.litHtmlPolyfillSupport;_e?.(X,et),(wt.litHtmlVersions??=[]).push("3.3.3");const ke=(s,t,e)=>{const a=e?.renderBefore??t;let n=a._$litPart$;if(n===void 0){const i=e?.renderBefore??null;a._$litPart$=n=new et(t.insertBefore(J(),i),i,void 0,e??{})}return n._$AI(s),n};/**
+ */const Et=globalThis,Lt=s=>s,dt=Et.trustedTypes,Ht=dt?dt.createPolicy("lit-html",{createHTML:s=>s}):void 0,ae="$lit$",N=`lit$${Math.random().toFixed(9).slice(2)}$`,ie="?"+N,ye=`<${ie}>`,L=document,tt=()=>L.createComment(""),et=s=>s===null||typeof s!="object"&&typeof s!="function",Ot=Array.isArray,we=s=>Ot(s)||typeof s?.[Symbol.iterator]=="function",gt=`[ 	
+\f\r]`,J=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,Vt=/-->/g,Wt=/>/g,j=RegExp(`>|${gt}(?:([^\\s"'>=/]+)(${gt}*=${gt}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`,"g"),Bt=/'/g,Ft=/"/g,ne=/^(?:script|style|textarea|title)$/i,re=s=>(t,...e)=>({_$litType$:s,strings:t,values:e}),l=re(1),Kt=re(2),q=Symbol.for("lit-noChange"),h=Symbol.for("lit-nothing"),qt=new WeakMap,U=L.createTreeWalker(L,129);function oe(s,t){if(!Ot(s)||!s.hasOwnProperty("raw"))throw Error("invalid template strings array");return Ht!==void 0?Ht.createHTML(t):t}const xe=(s,t)=>{const e=s.length-1,a=[];let i,n=t===2?"<svg>":t===3?"<math>":"",r=J;for(let o=0;o<e;o++){const c=s[o];let d,u,m=-1,f=0;for(;f<c.length&&(r.lastIndex=f,u=r.exec(c),u!==null);)f=r.lastIndex,r===J?u[1]==="!--"?r=Vt:u[1]!==void 0?r=Wt:u[2]!==void 0?(ne.test(u[2])&&(i=RegExp("</"+u[2],"g")),r=j):u[3]!==void 0&&(r=j):r===j?u[0]===">"?(r=i??J,m=-1):u[1]===void 0?m=-2:(m=r.lastIndex-u[2].length,d=u[1],r=u[3]===void 0?j:u[3]==='"'?Ft:Bt):r===Ft||r===Bt?r=j:r===Vt||r===Wt?r=J:(r=j,i=void 0);const $=r===j&&s[o+1].startsWith("/>")?" ":"";n+=r===J?c+ye:m>=0?(a.push(d),c.slice(0,m)+ae+c.slice(m)+N+$):c+N+(m===-2?o:$)}return[oe(s,n+(s[e]||"<?>")+(t===2?"</svg>":t===3?"</math>":"")),a]};class st{constructor({strings:t,_$litType$:e},a){let i;this.parts=[];let n=0,r=0;const o=t.length-1,c=this.parts,[d,u]=xe(t,e);if(this.el=st.createElement(d,a),U.currentNode=this.el.content,e===2||e===3){const m=this.el.content.firstChild;m.replaceWith(...m.childNodes)}for(;(i=U.nextNode())!==null&&c.length<o;){if(i.nodeType===1){if(i.hasAttributes())for(const m of i.getAttributeNames())if(m.endsWith(ae)){const f=u[r++],$=i.getAttribute(m).split(N),F=/([.?@])?(.*)/.exec(f);c.push({type:1,index:n,name:F[2],strings:$,ctor:F[1]==="."?Ae:F[1]==="?"?Pe:F[1]==="@"?Ce:mt}),i.removeAttribute(m)}else m.startsWith(N)&&(c.push({type:6,index:n}),i.removeAttribute(m));if(ne.test(i.tagName)){const m=i.textContent.split(N),f=m.length-1;if(f>0){i.textContent=dt?dt.emptyScript:"";for(let $=0;$<f;$++)i.append(m[$],tt()),U.nextNode(),c.push({type:2,index:++n});i.append(m[f],tt())}}}else if(i.nodeType===8)if(i.data===ie)c.push({type:2,index:n});else{let m=-1;for(;(m=i.data.indexOf(N,m+1))!==-1;)c.push({type:7,index:n}),m+=N.length-1}n++}}static createElement(t,e){const a=L.createElement("template");return a.innerHTML=t,a}}function G(s,t,e=s,a){if(t===q)return t;let i=a!==void 0?e._$Co?.[a]:e._$Cl;const n=et(t)?void 0:t._$litDirective$;return i?.constructor!==n&&(i?._$AO?.(!1),n===void 0?i=void 0:(i=new n(s),i._$AT(s,e,a)),a!==void 0?(e._$Co??=[])[a]=i:e._$Cl=i),i!==void 0&&(t=G(s,i._$AS(s,t.values),i,a)),t}class Se{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:e},parts:a}=this._$AD,i=(t?.creationScope??L).importNode(e,!0);U.currentNode=i;let n=U.nextNode(),r=0,o=0,c=a[0];for(;c!==void 0;){if(r===c.index){let d;c.type===2?d=new it(n,n.nextSibling,this,t):c.type===1?d=new c.ctor(n,c.name,c.strings,this,t):c.type===6&&(d=new Ee(n,this,t)),this._$AV.push(d),c=a[++o]}r!==c?.index&&(n=U.nextNode(),r++)}return U.currentNode=L,i}p(t){let e=0;for(const a of this._$AV)a!==void 0&&(a.strings!==void 0?(a._$AI(t,a,e),e+=a.strings.length-2):a._$AI(t[e])),e++}}class it{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,a,i){this.type=2,this._$AH=h,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=a,this.options=i,this._$Cv=i?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode;const e=this._$AM;return e!==void 0&&t?.nodeType===11&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=G(this,t,e),et(t)?t===h||t==null||t===""?(this._$AH!==h&&this._$AR(),this._$AH=h):t!==this._$AH&&t!==q&&this._(t):t._$litType$!==void 0?this.$(t):t.nodeType!==void 0?this.T(t):we(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==h&&et(this._$AH)?this._$AA.nextSibling.data=t:this.T(L.createTextNode(t)),this._$AH=t}$(t){const{values:e,_$litType$:a}=t,i=typeof a=="number"?this._$AC(t):(a.el===void 0&&(a.el=st.createElement(oe(a.h,a.h[0]),this.options)),a);if(this._$AH?._$AD===i)this._$AH.p(e);else{const n=new Se(i,this),r=n.u(this.options);n.p(e),this.T(r),this._$AH=n}}_$AC(t){let e=qt.get(t.strings);return e===void 0&&qt.set(t.strings,e=new st(t)),e}k(t){Ot(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let a,i=0;for(const n of t)i===e.length?e.push(a=new it(this.O(tt()),this.O(tt()),this,this.options)):a=e[i],a._$AI(n),i++;i<e.length&&(this._$AR(a&&a._$AB.nextSibling,i),e.length=i)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){const a=Lt(t).nextSibling;Lt(t).remove(),t=a}}setConnected(t){this._$AM===void 0&&(this._$Cv=t,this._$AP?.(t))}}class mt{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,a,i,n){this.type=1,this._$AH=h,this._$AN=void 0,this.element=t,this.name=e,this._$AM=i,this.options=n,a.length>2||a[0]!==""||a[1]!==""?(this._$AH=Array(a.length-1).fill(new String),this.strings=a):this._$AH=h}_$AI(t,e=this,a,i){const n=this.strings;let r=!1;if(n===void 0)t=G(this,t,e,0),r=!et(t)||t!==this._$AH&&t!==q,r&&(this._$AH=t);else{const o=t;let c,d;for(t=n[0],c=0;c<n.length-1;c++)d=G(this,o[a+c],e,c),d===q&&(d=this._$AH[c]),r||=!et(d)||d!==this._$AH[c],d===h?t=h:t!==h&&(t+=(d??"")+n[c+1]),this._$AH[c]=d}r&&!i&&this.j(t)}j(t){t===h?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}}class Ae extends mt{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===h?void 0:t}}class Pe extends mt{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==h)}}class Ce extends mt{constructor(t,e,a,i,n){super(t,e,a,i,n),this.type=5}_$AI(t,e=this){if((t=G(this,t,e,0)??h)===q)return;const a=this._$AH,i=t===h&&a!==h||t.capture!==a.capture||t.once!==a.once||t.passive!==a.passive,n=t!==h&&(a===h||i);i&&this.element.removeEventListener(this.name,this,a),n&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}}class Ee{constructor(t,e,a){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=a}get _$AU(){return this._$AM._$AU}_$AI(t){G(this,t)}}const Oe=Et.litHtmlPolyfillSupport;Oe?.(st,it),(Et.litHtmlVersions??=[]).push("3.3.3");const Te=(s,t,e)=>{const a=e?.renderBefore??t;let i=a._$litPart$;if(i===void 0){const n=e?.renderBefore??null;a._$litPart$=i=new it(t.insertBefore(tt(),n),n,void 0,e??{})}return i._$AI(s),i};/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const At=globalThis;class _ extends W{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=ke(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return H}}_._$litElement$=!0,_.finalized=!0,At.litElementHydrateSupport?.({LitElement:_});const ye=At.litElementPolyfillSupport;ye?.({LitElement:_});(At.litElementVersions??=[]).push("4.2.2");/**
+ */const Tt=globalThis;class k extends K{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=Te(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return q}}k._$litElement$=!0,k.finalized=!0,Tt.litElementHydrateSupport?.({LitElement:k});const Me=Tt.litElementPolyfillSupport;Me?.({LitElement:k});(Tt.litElementVersions??=[]).push("4.2.2");/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const $=s=>(t,e)=>{e!==void 0?e.addInitializer(()=>{customElements.define(s,t)}):customElements.define(s,t)};/**
+ */const b=s=>(t,e)=>{e!==void 0?e.addInitializer(()=>{customElements.define(s,t)}):customElements.define(s,t)};/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const xe={attribute:!0,type:String,converter:rt,reflect:!1,hasChanged:xt},we=(s=xe,t,e)=>{const{kind:a,metadata:n}=e;let i=globalThis.litPropertyMetadata.get(n);if(i===void 0&&globalThis.litPropertyMetadata.set(n,i=new Map),a==="setter"&&((s=Object.create(s)).wrapped=!0),i.set(e.name,s),a==="accessor"){const{name:r}=e;return{set(o){const l=t.get.call(this);t.set.call(this,o),this.requestUpdate(r,l,s,!0,o)},init(o){return o!==void 0&&this.C(r,void 0,s,o),o}}}if(a==="setter"){const{name:r}=e;return function(o){const l=this[r];t.call(this,o),this.requestUpdate(r,l,s,!0,o)}}throw Error("Unsupported decorator location: "+a)};function h(s){return(t,e)=>typeof e=="object"?we(s,t,e):((a,n,i)=>{const r=n.hasOwnProperty(i);return n.constructor.createProperty(i,a),r?Object.getOwnPropertyDescriptor(n,i):void 0})(s,t,e)}/**
+ */const Ne={attribute:!0,type:String,converter:ct,reflect:!1,hasChanged:Ct},De=(s=Ne,t,e)=>{const{kind:a,metadata:i}=e;let n=globalThis.litPropertyMetadata.get(i);if(n===void 0&&globalThis.litPropertyMetadata.set(i,n=new Map),a==="setter"&&((s=Object.create(s)).wrapped=!0),n.set(e.name,s),a==="accessor"){const{name:r}=e;return{set(o){const c=t.get.call(this);t.set.call(this,o),this.requestUpdate(r,c,s,!0,o)},init(o){return o!==void 0&&this.C(r,void 0,s,o),o}}}if(a==="setter"){const{name:r}=e;return function(o){const c=this[r];t.call(this,o),this.requestUpdate(r,c,s,!0,o)}}throw Error("Unsupported decorator location: "+a)};function p(s){return(t,e)=>typeof e=="object"?De(s,t,e):((a,i,n)=>{const r=i.hasOwnProperty(n);return i.constructor.createProperty(n,a),r?Object.getOwnPropertyDescriptor(i,n):void 0})(s,t,e)}/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */function E(s){return h({...s,state:!0,attribute:!1})}const Se=f`
+ */function S(s){return p({...s,state:!0,attribute:!1})}const Re=g`
   :host {
     /* dark, the design this was drawn in */
     --mk-bg: #05090f;
@@ -76,7 +76,7 @@
     --mk-track: #dae3ea;
     --mk-on-accent: #ffffff;
   }
-`,g=f`
+`,v=g`
   :host {
     --mk-gap: 12px;
     --mk-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
@@ -221,22 +221,22 @@
       animation: none !important;
     }
   }
-`,Ae="marstek_modbus";function Pe(s){const t=new Map;for(const e of Object.values(s.entities)){if(e.platform!==Ae||!e.device_id||!e.translation_key)continue;let a=t.get(e.device_id);if(!a){const n=s.devices[e.device_id];a={deviceId:e.device_id,name:n?.name_by_user||n?.name||"Marstek Venus",byKey:{}},t.set(e.device_id,a)}a.byKey[e.translation_key]=e.entity_id}return[...t.values()].sort((e,a)=>e.name.localeCompare(a.name))}class Ce{constructor(t,e){this.hass=t,this.device=e}get name(){return this.device.name}entityId(t){return this.device.byKey[t]}has(t){return this.state(t)!==null}state(t){const e=this.device.byKey[t];if(!e)return null;const a=this.hass.states[e];return!a||a.state==="unavailable"||a.state==="unknown"?null:a}num(t){const e=this.state(t);if(!e)return null;const a=Number(e.state);return Number.isFinite(a)?a:null}str(t){return this.state(t)?.state??null}unit(t){return this.state(t)?.attributes.unit_of_measurement??""}rawState(t){const e=this.device.byKey[t];return e&&this.hass.states[e]||null}attr(t,e,a){return this.rawState(t)?.attributes[e]??a}writable(t){const e=this.rawState(t);return!!e&&e.state!=="unavailable"}label(t){const e=this.hass.states[this.device.byKey[t]??""]?.attributes.friendly_name;if(!e)return t;const a=this.device.name;return a&&e.startsWith(a)&&e.length>a.length+1?e.slice(a.length).trim():e}sum(t){let e=0,a=!1;for(const n of t){const i=this.num(n);i!==null&&(e+=i,a=!0)}return a?e:null}packCount(){let t=0;for(;this.device.byKey[`battery_${t+1}_max_cell_voltage`];)t++;return t}}class Ee{constructor(t,e){this.hass=t,this.reader=e}call(t,e,a,n){const i=this.reader.entityId(a);i&&this.hass.callService(t,e,{entity_id:i,...n})}setNumber(t,e){this.call("number","set_value",t,{value:e})}selectOption(t,e){this.call("select","select_option",t,{option:e})}setSwitch(t,e){this.call("switch",e?"turn_on":"turn_off",t,{})}press(t){this.call("button","press",t,{})}}const Oe="modulepreload",Me=function(s){return"/"+s},Vt={},Te=function(t,e,a){let n=Promise.resolve();if(e&&e.length>0){let r=function(d){return Promise.all(d.map(u=>Promise.resolve(u).then(m=>({status:"fulfilled",value:m}),m=>({status:"rejected",reason:m}))))};document.getElementsByTagName("link");const o=document.querySelector("meta[property=csp-nonce]"),l=o?.nonce||o?.getAttribute("nonce");n=r(e.map(d=>{if(d=Me(d),d in Vt)return;Vt[d]=!0;const u=d.endsWith(".css"),m=u?'[rel="stylesheet"]':"";if(document.querySelector(`link[href="${d}"]${m}`))return;const v=document.createElement("link");if(v.rel=u?"stylesheet":Oe,u||(v.as="script"),v.crossOrigin="",v.href=d,l&&v.setAttribute("nonce",l),document.head.appendChild(v),u)return new Promise((b,V)=>{v.addEventListener("load",b),v.addEventListener("error",()=>V(new Error(`Unable to preload CSS for ${d}`)))})}))}function i(r){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=r,window.dispatchEvent(o),!o.defaultPrevented)throw r}return n.then(r=>{for(const o of r||[])o.status==="rejected"&&i(o.reason);return t().catch(i)})},tt={"tab.core":"OVERVIEW","tab.cells":"CELLS","tab.packs":"PACKS","tab.solar":"SOLAR","tab.energy":"ENERGY","tab.system":"SYSTEM","tab.control":"CONTROL","control.power":"Power now","control.power_hint":"These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.","control.limits":"Limits","control.mode":"Mode","control.backup_hint":"Keeps a reserve for the off-grid output.","control.rs485_hint":"Switching this off hands control back to the device, and this page stops having any effect.","control.overwritten":"Something else changed {names} right after this panel did. An external controller is writing the same registers.","control.schedules":"Schedules","control.schedules_axis":"times are the device's own, in its local time","control.schedules_hint":"A schedule needs a window, a power and a day before switching it on does anything. Power is signed: the sign decides the direction. The device takes one day per schedule, not a set of them.","control.no_schedules":"This battery exposes no schedules.","control.window":"Window","control.sched_power":"Power","control.days":"Day","control.active":"On","control.unset":"not set","control.device":"Device","control.reset":"Restart device","control.reset_confirm":"Really restart","control.cancel":"Cancel","control.reset_hint":"Reconnects after a few seconds. A factory reset is deliberately not offered here — it is in the entity list.","control.opt.manual":"Manual","control.opt.anti_feed":"Anti-feed","control.opt.trade_mode":"Trade","control.opt.standby":"Standby","control.opt.charge":"Charge","control.opt.discharge":"Discharge","control.day.monday":"Mon","control.day.tuesday":"Tue","control.day.wednesday":"Wed","control.day.thursday":"Thu","control.day.friday":"Fri","control.day.saturday":"Sat","control.day.sunday":"Sun","status.modbus":"MODBUS","status.wifi":"WIFI","common.pack":"PACK","common.device":"Device","core.electrical":"Electrical · now","core.reserve":"Reserve · lifetime","core.stored":"Stored","core.capacity":"Capacity","core.soc_bms":"SOC · BMS","core.soc_usable":"usable {value} %","core.discharging_to_house":"discharging","core.charging_from_grid":"charging","core.at_rest":"at rest","core.today_charged":"Charged today","core.today_discharged":"Discharged today","core.cell_delta":"Cell delta","core.internal_temp":"Internal temperature","core.mppt_total":"MPPT total","core.pack_spread":"across {count} packs","core.no_delta":"no per-pack readings","cells.highest":"Highest cell","cells.lowest":"Lowest cell","cells.in_pack":"pack {pack}","cells.stack_spread":"Spread across stack","cells.limit_hint":"100 mV is the usual limit","cells.mean_delta":"Mean delta in pack","cells.worst_pack":"widest: pack {pack}, {value} mV","cells.temp_span":"Cell temperature span","cells.packs_online":"Packs reporting","cells.cells_total":"{count} cells","cells.matrix_title":"Cell voltage range per pack · shared axis","cells.matrix_axis":"bar = lowest to highest cell","cells.matrix_legend":"The tick inside each bar is the pack's midpoint. A narrow bar is a balanced pack, a wide one is drift inside it, and a bar sitting apart from the others is a pack at a different level than the rest.","cells.no_ranges":"This battery reports no per-pack cell voltages.","cells.protection":"Protection and faults","cells.protection_all":"Protection · all {count} packs","cells.clear":"clear","cells.raised":"raised","cells.bms":"BMS","cells.bms_version":"BMS version","cells.uniform":"same on every pack","packs.device_reading":"as the device reports it","packs.mean_soc":"Mean of the packs","packs.from_n_packs":"from {count} packs","packs.spread":"Spread","packs.stored_total":"Stored energy","packs.summed":"packs add up to {value} kWh","packs.per_pack":"Per pack","packs.nominal":"nominal, capacity ÷ packs","packs.cycles_sum":"Cycles, all packs","packs.cycles_partial":"{have} of {total} packs report","packs.fill_title":"State of charge per pack","packs.fill_axis":"column height = SOC · figure inside = kWh","packs.fill_legend":"The dashed line marks the discharge floor at {floor} %. Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.","packs.fill_legend_nofloor":"Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.","packs.none":"This battery reports no per-pack state of charge.","packs.table_title":"Every pack in detail","packs.table_legend":"Highlighted rows sit more than 5 points away from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.","packs.col_soc":"SOC","packs.col_energy":"kWh","packs.col_min":"Cell min","packs.col_max":"Cell max","packs.col_delta":"Delta","packs.col_voltage":"Voltage","packs.col_current":"Current","packs.col_cycles":"Cycles","packs.col_mos":"MOSFET","packs.col_env":"Ambient","packs.col_ntc":"NTC 1–4","solar.active":"ACTIVE","solar.floating":"FLOATING","solar.summary":"All inputs","solar.some_active":"carrying power","solar.all_idle":"nothing connected","solar.note_active":"Voltage follows the panels and power follows the sun through the day.","solar.note_floating":"All inputs sit at a low voltage without current, which is what an unused MPPT input looks like. Connect panels and the voltage rises to module level.","solar.diagnostics":"Diagnostics","solar.channels_reporting":"Inputs reporting","solar.none":"This battery has no MPPT inputs.","energy.today":"Today","energy.month":"This month","energy.lifetime":"Since commissioning","energy.charged":"charged kWh","energy.discharged":"discharged kWh","energy.loss":"Loss","energy.returned":"Returned","energy.rte":"Round trip","energy.rte_hint":"Round-trip efficiency is how much of the energy put into the battery comes back out of it. Conversion efficiency is the loss in the moment, at the current operating point.","energy.efficiency":"Efficiency compared","energy.throughput":"Throughput and wear","energy.gap_hint":"The monthly figure sits {value} points below the lifetime one. That gap is not conversion loss but standby draw between cycles: the shallower the cycling, the heavier it weighs.","system.no_faults":"No fault register is raised.","system.faults_raised":"Raised: {list}","system.device":"Device","system.packs":"Battery packs","system.firmware":"Firmware","system.connection":"Connection","system.faults":"Fault registers","system.control":"Control and limits","system.thermal":"Thermal and electrical","system.ceiling_used":"The panel treats {value} % as the charge ceiling, read from this register.","system.ceiling_ignored":"This register reads {value} %, outside its own 10-100 range, so the device is not using it. The panel charges towards 100 % instead.","empty.no_device":"No Marstek battery found","empty.no_device_hint":"This panel reads the Marstek Modbus Suite integration. Add a battery there first.","common.unavailable":"—"},te={de:()=>Te(()=>import("./marstek-modbus-lang-de.js"),[]).then(s=>s.de)};["en",...Object.keys(te)].sort();const at={en:tt};function Ne(s){return s.split("-")[0].toLowerCase()}async function De(s){const t=Ne(s);if(at[t])return at[t];const e=te[t];if(!e)return tt;try{return at[t]=await e(),at[t]}catch{return tt}}function Re(s,t,e){let a=s[t]??tt[t]??t;if(e)for(const[n,i]of Object.entries(e))a=a.replace(`{${n}}`,String(i));return a}const nt="—";class Wt{constructor(t){this.language=t,this.cache=new Map}formatter(t){const e=String(t);let a=this.cache.get(e);return a||(a=new Intl.NumberFormat(this.language||"en",{minimumFractionDigits:t,maximumFractionDigits:t}),this.cache.set(e,a)),a}num(t,e=0){return t==null||!Number.isFinite(t)?nt:this.formatter(e).format(t)}signed(t,e=0){if(t==null||!Number.isFinite(t))return nt;const a=this.formatter(e).format(Math.abs(t));return t>0?`+${a}`:t<0?`−${a}`:a}version(t){return t==null||t===""?nt:/^\d{4}$/.test(t)?`${t.slice(0,3)}.${t.slice(3)}`:t}millivolts(t){return t==null||!Number.isFinite(t)?nt:this.formatter(0).format(Math.round(t*1e3))}}var ze=Object.defineProperty,Pt=(s,t,e,a)=>{for(var n=void 0,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(t,e,n)||n);return n&&ze(t,e,n),n};const Ct=class Ct extends _{kv(t,e=1,a={}){const n=this.reader;if(!n.entityId(t))return p;const i=n.state(t);if(!i)return p;if(a.version)return c`
+`,ze="marstek_modbus";function je(s){const t=new Map;for(const e of Object.values(s.entities)){if(e.platform!==ze||!e.device_id||!e.translation_key)continue;let a=t.get(e.device_id);if(!a){const i=s.devices[e.device_id];a={deviceId:e.device_id,name:i?.name_by_user||i?.name||"Marstek Venus",byKey:{}},t.set(e.device_id,a)}a.byKey[e.translation_key]=e.entity_id}return[...t.values()].sort((e,a)=>e.name.localeCompare(a.name))}class Ie{constructor(t,e){this.hass=t,this.device=e}get name(){return this.device.name}entityId(t){return this.device.byKey[t]}has(t){return this.state(t)!==null}state(t){const e=this.device.byKey[t];if(!e)return null;const a=this.hass.states[e];return!a||a.state==="unavailable"||a.state==="unknown"?null:a}num(t){const e=this.state(t);if(!e)return null;const a=Number(e.state);return Number.isFinite(a)?a:null}str(t){return this.state(t)?.state??null}unit(t){return this.state(t)?.attributes.unit_of_measurement??""}rawState(t){const e=this.device.byKey[t];return e&&this.hass.states[e]||null}attr(t,e,a){return this.rawState(t)?.attributes[e]??a}writable(t){const e=this.rawState(t);return!!e&&e.state!=="unavailable"}label(t){const e=this.hass.states[this.device.byKey[t]??""]?.attributes.friendly_name;if(!e)return t;const a=this.device.name;return a&&e.startsWith(a)&&e.length>a.length+1?e.slice(a.length).trim():e}sum(t){let e=0,a=!1;for(const i of t){const n=this.num(i);n!==null&&(e+=n,a=!0)}return a?e:null}packCount(){let t=0;for(;this.device.byKey[`battery_${t+1}_max_cell_voltage`];)t++;return t}}class Ue{constructor(t,e){this.hass=t,this.reader=e}call(t,e,a,i){const n=this.reader.entityId(a);n&&this.hass.callService(t,e,{entity_id:n,...i})}setNumber(t,e){this.call("number","set_value",t,{value:e})}selectOption(t,e){this.call("select","select_option",t,{option:e})}setSwitch(t,e){this.call("switch",e?"turn_on":"turn_off",t,{})}press(t){this.call("button","press",t,{})}}const Le="modulepreload",He=function(s){return"/"+s},Gt={},Ve=function(t,e,a){let i=Promise.resolve();if(e&&e.length>0){let r=function(d){return Promise.all(d.map(u=>Promise.resolve(u).then(m=>({status:"fulfilled",value:m}),m=>({status:"rejected",reason:m}))))};document.getElementsByTagName("link");const o=document.querySelector("meta[property=csp-nonce]"),c=o?.nonce||o?.getAttribute("nonce");i=r(e.map(d=>{if(d=He(d),d in Gt)return;Gt[d]=!0;const u=d.endsWith(".css"),m=u?'[rel="stylesheet"]':"";if(document.querySelector(`link[href="${d}"]${m}`))return;const f=document.createElement("link");if(f.rel=u?"stylesheet":Le,u||(f.as="script"),f.crossOrigin="",f.href=d,c&&f.setAttribute("nonce",c),document.head.appendChild(f),u)return new Promise(($,F)=>{f.addEventListener("load",$),f.addEventListener("error",()=>F(new Error(`Unable to preload CSS for ${d}`)))})}))}function n(r){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=r,window.dispatchEvent(o),!o.defaultPrevented)throw r}return i.then(r=>{for(const o of r||[])o.status==="rejected"&&n(o.reason);return t().catch(n)})},at={"tab.core":"OVERVIEW","tab.cells":"CELLS","tab.packs":"PACKS","tab.solar":"SOLAR","tab.energy":"ENERGY","tab.system":"SYSTEM","tab.control":"CONTROL","control.power":"Power now","control.power_hint":"These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.","control.limits":"Limits","control.mode":"Mode","control.backup_hint":"Keeps a reserve for the off-grid output.","control.rs485_hint":"Switching this off hands control back to the device, and this page stops having any effect.","control.overwritten":"Something else changed {names} right after this panel did. An external controller is writing the same registers.","control.schedules":"Schedules","control.schedules_axis":"times are the device's own, in its local time","control.schedules_hint":"A schedule needs a window, a power and a day before switching it on does anything. Power is signed: the sign decides the direction. The device takes one day per schedule, not a set of them.","control.no_schedules":"This battery exposes no schedules.","control.window":"Window","control.sched_power":"Power","control.days":"Day","control.active":"On","control.unset":"not set","control.device":"Device","control.reset":"Restart device","control.reset_confirm":"Really restart","control.cancel":"Cancel","control.reset_hint":"Reconnects after a few seconds. A factory reset is deliberately not offered here — it is in the entity list.","control.opt.manual":"Manual","control.opt.anti_feed":"Anti-feed","control.opt.trade_mode":"Trade","control.opt.standby":"Standby","control.opt.charge":"Charge","control.opt.discharge":"Discharge","control.day.monday":"Mon","control.day.tuesday":"Tue","control.day.wednesday":"Wed","control.day.thursday":"Thu","control.day.friday":"Fri","control.day.saturday":"Sat","control.day.sunday":"Sun","status.modbus":"MODBUS","status.wifi":"WIFI","common.pack":"PACK","common.device":"Device","core.electrical":"Electrical · now","core.reserve":"Reserve · lifetime","core.stored":"Stored","core.capacity":"Capacity","core.soc_bms":"SOC · BMS","core.soc_usable":"usable {value} %","core.discharging_to_house":"discharging","core.charging_from_grid":"charging","core.at_rest":"at rest","core.today_charged":"Charged today","core.today_discharged":"Discharged today","core.cell_delta":"Cell delta","core.internal_temp":"Internal temperature","core.mppt_total":"MPPT total","core.pack_spread":"across {count} packs","core.no_delta":"no per-pack readings","cells.highest":"Highest cell","cells.lowest":"Lowest cell","cells.in_pack":"pack {pack}","cells.stack_spread":"Spread across stack","cells.limit_hint":"100 mV is the usual limit","cells.mean_delta":"Mean delta in pack","cells.worst_pack":"widest: pack {pack}, {value} mV","cells.temp_span":"Cell temperature span","cells.packs_online":"Packs reporting","cells.cells_total":"{count} cells","cells.matrix_title":"Cell voltage range per pack · shared axis","cells.matrix_axis":"bar = lowest to highest cell","cells.matrix_legend":"The tick inside each bar is the pack's midpoint. A narrow bar is a balanced pack, a wide one is drift inside it, and a bar sitting apart from the others is a pack at a different level than the rest.","cells.no_ranges":"This battery reports no per-pack cell voltages.","cells.protection":"Protection and faults","cells.protection_all":"Protection · all {count} packs","cells.clear":"clear","cells.raised":"raised","cells.bms":"BMS","cells.bms_version":"BMS version","cells.uniform":"same on every pack","packs.device_reading":"as the device reports it","packs.mean_soc":"Mean of the packs","packs.from_n_packs":"from {count} packs","packs.spread":"Spread","packs.stored_total":"Stored energy","packs.summed":"packs add up to {value} kWh","packs.per_pack":"Per pack","packs.nominal":"nominal, capacity ÷ packs","packs.cycles_sum":"Cycles, all packs","packs.cycles_partial":"{have} of {total} packs report","packs.fill_title":"State of charge per pack","packs.fill_axis":"column height = SOC · figure inside = kWh","packs.fill_legend":"The dashed line marks the discharge floor at {floor} %. Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.","packs.fill_legend_nofloor":"Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.","packs.none":"This battery reports no per-pack state of charge.","packs.table_title":"Every pack in detail","packs.table_legend":"Highlighted rows sit more than 5 points away from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.","packs.col_soc":"SOC","packs.col_energy":"kWh","packs.col_min":"Cell min","packs.col_max":"Cell max","packs.col_delta":"Delta","packs.col_voltage":"Voltage","packs.col_current":"Current","packs.col_cycles":"Cycles","packs.col_mos":"MOSFET","packs.col_env":"Ambient","packs.col_ntc":"NTC 1–4","solar.active":"ACTIVE","solar.floating":"FLOATING","solar.summary":"All inputs","solar.some_active":"carrying power","solar.all_idle":"nothing connected","solar.note_active":"Voltage follows the panels and power follows the sun through the day.","solar.note_floating":"All inputs sit at a low voltage without current, which is what an unused MPPT input looks like. Connect panels and the voltage rises to module level.","solar.diagnostics":"Diagnostics","solar.channels_reporting":"Inputs reporting","solar.none":"This battery has no MPPT inputs.","energy.today":"Today","energy.month":"This month","energy.lifetime":"Since commissioning","energy.charged":"charged kWh","energy.discharged":"discharged kWh","energy.loss":"Loss","energy.returned":"Returned","energy.rte":"Round trip","energy.rte_hint":"Round-trip efficiency is how much of the energy put into the battery comes back out of it. Conversion efficiency is the loss in the moment, at the current operating point.","energy.efficiency":"Efficiency compared","energy.throughput":"Throughput and wear","energy.gap_hint":"The monthly figure sits {value} points below the lifetime one. That gap is not conversion loss but standby draw between cycles: the shallower the cycling, the heavier it weighs.","system.no_faults":"No fault register is raised.","system.faults_raised":"Raised: {list}","system.device":"Device","system.packs":"Battery packs","system.firmware":"Firmware","system.connection":"Connection","system.faults":"Fault registers","system.control":"Control and limits","system.thermal":"Thermal and electrical","system.ceiling_used":"The panel treats {value} % as the charge ceiling, read from this register.","system.ceiling_ignored":"This register reads {value} %, outside its own 10-100 range, so the device is not using it. The panel charges towards 100 % instead.","settings.title":"Settings","settings.scheme":"Colour scheme","settings.scheme_hint":"Each scheme brings its own light and dark version. The swatch is painted in the scheme it offers.","settings.scheme_theme":"follows your theme","settings.appearance":"Appearance","settings.mode":"Light or dark","settings.mode.auto":"Home Assistant","settings.mode.dark":"Dark","settings.mode.light":"Light","settings.mode_ha":"This scheme takes its colours from your Home Assistant theme, which already decides light or dark.","settings.digits":"Decimal places","settings.digits.normal":"Normal","settings.digits.more":"One more","settings.start_tab":"Tab when opening","settings.start_tab.last":"Last used","settings.start_tab_hint":"A fixed tab that the battery cannot fill falls back to the overview.","settings.tabs":"Tabs","settings.tabs_hint":"Greyed out means this battery does not report what the tab shows, so hiding it is not a choice you have to make.","settings.always":"always shown","settings.unavail.cells":"no per-cell voltages","settings.unavail.packs":"no state of charge per pack","settings.unavail.solar":"no PV inputs","settings.unavail.control":"no writable registers","settings.storage":"Stored settings","settings.reset":"Reset to defaults","settings.storage_hint":"These settings live in this browser only. Another browser, or another device, keeps its own.","empty.no_device":"No Marstek battery found","empty.no_device_hint":"This panel reads the Marstek Modbus Suite integration. Add a battery there first.","common.unavailable":"—"},le={de:()=>Ve(()=>import("./marstek-modbus-lang-de.js"),[]).then(s=>s.de)};["en",...Object.keys(le)].sort();const rt={en:at};function We(s){return s.split("-")[0].toLowerCase()}async function Be(s){const t=We(s);if(rt[t])return rt[t];const e=le[t];if(!e)return at;try{return rt[t]=await e(),rt[t]}catch{return at}}function Fe(s,t,e){let a=s[t]??at[t]??t;if(e)for(const[i,n]of Object.entries(e))a=a.replace(`{${i}}`,String(n));return a}const ot="—";class Yt{constructor(t,e=0){this.language=t,this.extra=e,this.cache=new Map}get extraDigits(){return this.extra}formatter(t){const e=String(t);let a=this.cache.get(e);return a||(a=new Intl.NumberFormat(this.language||"en",{minimumFractionDigits:t,maximumFractionDigits:t}),this.cache.set(e,a)),a}num(t,e=0){return t==null||!Number.isFinite(t)?ot:this.formatter(e+this.extra).format(t)}signed(t,e=0){if(t==null||!Number.isFinite(t))return ot;const a=this.formatter(e+this.extra).format(Math.abs(t));return t>0?`+${a}`:t<0?`−${a}`:a}version(t){return t==null||t===""?ot:/^\d{4}$/.test(t)?`${t.slice(0,3)}.${t.slice(3)}`:t}millivolts(t){return t==null||!Number.isFinite(t)?ot:this.formatter(0).format(Math.round(t*1e3))}}var Ke=Object.defineProperty,Mt=(s,t,e,a)=>{for(var i=void 0,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(t,e,i)||i);return i&&Ke(t,e,i),i};const Rt=class Rt extends k{kv(t,e=1,a={}){const i=this.reader;if(!i.entityId(t))return h;const n=i.state(t);if(!n)return h;if(a.version)return l`
         <div class="kv">
-          <span>${a.label??n.label(t)}</span>
-          <b class=${a.tone??""}>${this.fmt.version(i.state)}</b>
+          <span>${a.label??i.label(t)}</span>
+          <b class=${a.tone??""}>${this.fmt.version(n.state)}</b>
         </div>
-      `;const r=a.raw?null:n.num(t),o=n.unit(t),l=r===null?i.state:`${this.fmt.num(r,e)}${o?` ${o}`:""}`;return c`
+      `;const r=a.raw?null:i.num(t),o=i.unit(t),c=r===null?n.state:`${this.fmt.num(r,e)}${o?` ${o}`:""}`;return l`
       <div class="kv">
-        <span>${a.label??n.label(t)}</span>
-        <b class=${a.tone??""}>${l}</b>
+        <span>${a.label??i.label(t)}</span>
+        <b class=${a.tone??""}>${c}</b>
       </div>
-    `}row(t,e,a=""){return c`
+    `}row(t,e,a=""){return l`
       <div class="kv">
         <span>${t}</span>
         <b class=${a}>${e}</b>
       </div>
-    `}get packs(){return Array.from({length:this.reader.packCount()},(t,e)=>e+1)}};Ct.styles=[g];let y=Ct;Pt([h({attribute:!1})],y.prototype,"reader");Pt([h({attribute:!1})],y.prototype,"fmt");Pt([h({attribute:!1})],y.prototype,"t");var Ue=Object.defineProperty,je=Object.getOwnPropertyDescriptor,st=(s,t,e,a)=>{for(var n=a>1?void 0:a?je(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&Ue(t,e,n),n};const ut=118,vt=97,Ie=2*Math.PI*ut,Le=2*Math.PI*vt;let j=class extends _{constructor(){super(...arguments),this.soc=null,this.usable=null,this.caption="",this.sub=""}arc(s,t){const e=s===null?0:Math.min(Math.max(s,0),100);return`${t*e/100} ${t}`}render(){const s=this.soc===null?"—":Math.round(this.soc).toString();return c`
+    `}get packs(){return Array.from({length:this.reader.packCount()},(t,e)=>e+1)}};Rt.styles=[v];let y=Rt;Mt([p({attribute:!1})],y.prototype,"reader");Mt([p({attribute:!1})],y.prototype,"fmt");Mt([p({attribute:!1})],y.prototype,"t");var qe=Object.defineProperty,Ge=Object.getOwnPropertyDescriptor,nt=(s,t,e,a)=>{for(var i=a>1?void 0:a?Ge(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&qe(t,e,i),i};const bt=118,$t=97,Ye=2*Math.PI*bt,Ze=2*Math.PI*$t;let H=class extends k{constructor(){super(...arguments),this.soc=null,this.usable=null,this.caption="",this.sub=""}arc(s,t){const e=s===null?0:Math.min(Math.max(s,0),100);return`${t*e/100} ${t}`}render(){const s=this.soc===null?"—":Math.round(this.soc).toString();return l`
       <svg
         viewBox="0 0 300 268"
         role="img"
@@ -249,23 +249,23 @@
           </linearGradient>
         </defs>
 
-        <circle class="track" cx="150" cy="134" r=${ut} stroke-width="15" />
+        <circle class="track" cx="150" cy="134" r=${bt} stroke-width="15" />
         <circle
           class="arc-outer"
           cx="150"
           cy="134"
-          r=${ut}
+          r=${bt}
           stroke-width="15"
-          stroke-dasharray=${this.arc(this.soc,Ie)}
+          stroke-dasharray=${this.arc(this.soc,Ye)}
           transform="rotate(-90 150 134)"
         />
 
-        ${this.usable===null?p:It`
-              <circle class="track" cx="150" cy="134" r=${vt} stroke-width="5" />
+        ${this.usable===null?h:Kt`
+              <circle class="track" cx="150" cy="134" r=${$t} stroke-width="5" />
               <circle
                 class="arc-inner"
-                cx="150" cy="134" r=${vt} stroke-width="5"
-                stroke-dasharray=${this.arc(this.usable,Le)}
+                cx="150" cy="134" r=${$t} stroke-width="5"
+                stroke-dasharray=${this.arc(this.usable,Ze)}
                 transform="rotate(-90 150 134)"
               />
             `}
@@ -273,9 +273,9 @@
         <text class="num" x="146" y="132" text-anchor="middle">${s}</text>
         <text class="pct" x="196" y="132" text-anchor="start">%</text>
         <text class="cap" x="150" y="158" text-anchor="middle">${this.caption}</text>
-        ${this.sub?It`<text class="sub" x="150" y="186" text-anchor="middle">${this.sub}</text>`:p}
+        ${this.sub?Kt`<text class="sub" x="150" y="186" text-anchor="middle">${this.sub}</text>`:h}
       </svg>
-    `}};j.styles=[g,f`
+    `}};H.styles=[v,g`
       :host {
         display: block;
       }
@@ -321,14 +321,14 @@
         fill: var(--mk-magenta);
         font-size: 14px;
       }
-    `];st([h({type:Number})],j.prototype,"soc",2);st([h({type:Number})],j.prototype,"usable",2);st([h({type:String})],j.prototype,"caption",2);st([h({type:String})],j.prototype,"sub",2);j=st([$("mk-gauge")],j);var Ve=Object.defineProperty,We=Object.getOwnPropertyDescriptor,N=(s,t,e,a)=>{for(var n=a>1?void 0:a?We(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&Ve(t,e,n),n};let S=class extends _{constructor(){super(...arguments),this.label="",this.value="—",this.unit="",this.foot="",this.tone="",this.bar=null,this.max=null}get fill(){return this.bar===null||this.max===null||this.max===0?null:Math.min(Math.max(this.bar/this.max*100,0),100)}render(){const s=this.fill;return c`
+    `];nt([p({type:Number})],H.prototype,"soc",2);nt([p({type:Number})],H.prototype,"usable",2);nt([p({type:String})],H.prototype,"caption",2);nt([p({type:String})],H.prototype,"sub",2);H=nt([b("mk-gauge")],H);var Je=Object.defineProperty,Qe=Object.getOwnPropertyDescriptor,D=(s,t,e,a)=>{for(var i=a>1?void 0:a?Qe(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&Je(t,e,i),i};let A=class extends k{constructor(){super(...arguments),this.label="",this.value="—",this.unit="",this.foot="",this.tone="",this.bar=null,this.max=null}get fill(){return this.bar===null||this.max===null||this.max===0?null:Math.min(Math.max(this.bar/this.max*100,0),100)}render(){const s=this.fill;return l`
       <div class="label">${this.label}</div>
       <div class="num ${this.tone}">
-        ${this.value}${this.unit?c`<span class="unit">${this.unit}</span>`:p}
+        ${this.value}${this.unit?l`<span class="unit">${this.unit}</span>`:h}
       </div>
-      ${s===null?p:c`<div class="track"><i style="width:${s}%"></i></div>`}
-      ${this.foot?c`<div class="foot">${this.foot}</div>`:p}
-    `}};S.styles=[g,f`
+      ${s===null?h:l`<div class="track"><i style="width:${s}%"></i></div>`}
+      ${this.foot?l`<div class="foot">${this.foot}</div>`:h}
+    `}};A.styles=[v,g`
       :host {
         display: block;
         background: var(--mk-surface);
@@ -382,7 +382,7 @@
       :host([tone="magenta"]) .track > i {
         background: var(--mk-magenta);
       }
-    `];N([h({type:String})],S.prototype,"label",2);N([h({type:String})],S.prototype,"value",2);N([h({type:String})],S.prototype,"unit",2);N([h({type:String})],S.prototype,"foot",2);N([h({type:String})],S.prototype,"tone",2);N([h({type:Number})],S.prototype,"bar",2);N([h({type:Number})],S.prototype,"max",2);S=N([$("mk-stat")],S);var He=Object.getOwnPropertyDescriptor,Be=(s,t,e,a)=>{for(var n=a>1?void 0:a?He(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(n)||n);return n};const Fe=30;let ft=class extends y{render(){const s=this.reader,t=this.fmt,e=this.t,a=s.num("battery_soc"),n=s.num("battery_total_energy"),i=s.num("stored_energy"),r=s.num("battery_power"),o=s.num("usable_energy"),l=o!==null&&n?o/n*100:null,d=r!==null&&Math.abs(r)>Fe,u=d&&r<0;return c`
+    `];D([p({type:String})],A.prototype,"label",2);D([p({type:String})],A.prototype,"value",2);D([p({type:String})],A.prototype,"unit",2);D([p({type:String})],A.prototype,"foot",2);D([p({type:String})],A.prototype,"tone",2);D([p({type:Number})],A.prototype,"bar",2);D([p({type:Number})],A.prototype,"max",2);A=D([b("mk-stat")],A);var Xe=Object.getOwnPropertyDescriptor,ts=(s,t,e,a)=>{for(var i=a>1?void 0:a?Xe(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(i)||i);return i};const es=30;let kt=class extends y{render(){const s=this.reader,t=this.fmt,e=this.t,a=s.num("battery_soc"),i=s.num("battery_total_energy"),n=s.num("stored_energy"),r=s.num("battery_power"),o=s.num("usable_energy"),c=o!==null&&i?o/i*100:null,d=r!==null&&Math.abs(r)>es,u=d&&r<0;return l`
       <div class="top">
         <div class="panel">
           <div class="label" style="margin-bottom:12px">${e("core.electrical")}</div>
@@ -395,22 +395,22 @@
         <div class="centre">
           <mk-gauge
             .soc=${a}
-            .usable=${l}
+            .usable=${c}
             caption=${e("core.soc_bms")}
-            sub=${l===null?"":e("core.soc_usable",{value:t.num(l,1)})}
+            sub=${c===null?"":e("core.soc_usable",{value:t.num(c,1)})}
           ></mk-gauge>
 
           <div class="split">
             <div>
               <div class="label">${e("core.stored")}</div>
               <div class="value">
-                ${t.num(i,2)}<span class="unit">kWh</span>
+                ${t.num(n,2)}<span class="unit">kWh</span>
               </div>
             </div>
             <div>
               <div class="label">${e("core.capacity")}</div>
               <div class="value" style="color:var(--mk-fg-2)">
-                ${t.num(n,2)}<span class="unit">kWh</span>
+                ${t.num(i,2)}<span class="unit">kWh</span>
               </div>
             </div>
             <div>
@@ -475,17 +475,17 @@
           .max=${100}
         ></mk-stat>
       </div>
-    `}deltaTile(){const s=this.reader,t=s.packCount(),e=[],a=[];for(let r=1;r<=t;r++){const o=s.num(`battery_${r}_max_cell_voltage`),l=s.num(`battery_${r}_min_cell_voltage`);o!==null&&e.push(o),l!==null&&a.push(l)}const n=e.length&&a.length?Math.max(...e)-Math.min(...a):null,i=n===null?"":n>.1?"crit":n>.05?"warn":"ok";return c`
+    `}deltaTile(){const s=this.reader,t=s.packCount(),e=[],a=[];for(let r=1;r<=t;r++){const o=s.num(`battery_${r}_max_cell_voltage`),c=s.num(`battery_${r}_min_cell_voltage`);o!==null&&e.push(o),c!==null&&a.push(c)}const i=e.length&&a.length?Math.max(...e)-Math.min(...a):null,n=i===null?"":i>.1?"crit":i>.05?"warn":"ok";return l`
       <mk-stat
         label=${this.t("core.cell_delta")}
-        value=${this.fmt.millivolts(n)}
+        value=${this.fmt.millivolts(i)}
         unit="mV"
-        tone=${i}
-        .bar=${n}
+        tone=${n}
+        .bar=${i}
         .max=${.1}
         foot=${t?this.t("core.pack_spread",{count:t}):this.t("core.no_delta")}
       ></mk-stat>
-    `}};ft.styles=[g,f`
+    `}};kt.styles=[v,g`
       .top {
         display: grid;
         grid-template-columns: 262px 1fr 262px;
@@ -553,29 +553,29 @@
           grid-template-columns: repeat(2, 1fr);
         }
       }
-    `];ft=Be([$("mk-view-core")],ft);var Ke=Object.defineProperty,qe=Object.getOwnPropertyDescriptor,pt=(s,t,e,a)=>{for(var n=a>1?void 0:a?qe(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&Ke(t,e,n),n};const Ye=.005,Ge=.01;let F=class extends _{constructor(){super(...arguments),this.ranges=[],this.packLabel="PACK",this.formatVolts=s=>s.toFixed(3)}get bounds(){const s=this.ranges.flatMap(n=>[n.min,n.max]);if(!s.length)return{lo:3.2,hi:3.4};const t=Math.min(...s),e=Math.max(...s),a=Math.max((e-t)*.15,.005);return{lo:t-a,hi:e+a}}pct(s){const{lo:t,hi:e}=this.bounds,a=e-t||1;return(s-t)/a*100}render(){if(!this.ranges.length)return p;const{lo:s,hi:t}=this.bounds,e=[0,.25,.5,.75].map(a=>({at:a*100,value:s+(t-s)*a}));return c`
+    `];kt=ts([b("mk-view-core")],kt);var ss=Object.defineProperty,as=Object.getOwnPropertyDescriptor,ut=(s,t,e,a)=>{for(var i=a>1?void 0:a?as(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&ss(t,e,i),i};const is=.005,ns=.01;let Y=class extends k{constructor(){super(...arguments),this.ranges=[],this.packLabel="PACK",this.formatVolts=s=>s.toFixed(3)}get bounds(){const s=this.ranges.flatMap(i=>[i.min,i.max]);if(!s.length)return{lo:3.2,hi:3.4};const t=Math.min(...s),e=Math.max(...s),a=Math.max((e-t)*.15,.005);return{lo:t-a,hi:e+a}}pct(s){const{lo:t,hi:e}=this.bounds,a=e-t||1;return(s-t)/a*100}render(){if(!this.ranges.length)return h;const{lo:s,hi:t}=this.bounds,e=[0,.25,.5,.75].map(a=>({at:a*100,value:s+(t-s)*a}));return l`
       <div class="axis">
         <div></div>
         <div class="ticks">
-          ${e.map(a=>c`<span style="left:${a.at}%">${this.formatVolts(a.value)}</span>`)}
+          ${e.map(a=>l`<span style="left:${a.at}%">${this.formatVolts(a.value)}</span>`)}
         </div>
         <div class="right"><span class="label">Δ</span></div>
       </div>
 
-      ${this.ranges.map(a=>{const n=a.max-a.min,i=n>=Ge?"crit":n>=Ye?"warn":"",r=this.pct(a.min),o=Math.max(this.pct(a.max)-r,.6),l=this.pct((a.min+a.max)/2);return c`
+      ${this.ranges.map(a=>{const i=a.max-a.min,n=i>=ns?"crit":i>=is?"warn":"",r=this.pct(a.min),o=Math.max(this.pct(a.max)-r,.6),c=this.pct((a.min+a.max)/2);return l`
           <div class="row">
-            <div><span class="name ${i}">${this.packLabel} ${a.index}</span></div>
+            <div><span class="name ${n}">${this.packLabel} ${a.index}</span></div>
             <div class="rail">
-              <i class="bar ${i}" style="left:${r}%;width:${o}%"></i>
-              <i class="mid" style="left:${l}%"></i>
+              <i class="bar ${n}" style="left:${r}%;width:${o}%"></i>
+              <i class="mid" style="left:${c}%"></i>
             </div>
             <div class="right">
-              <span class="delta ${i}">${Math.round(n*1e3)} mV</span>
-              ${a.note?c`<span class="label note">${a.note}</span>`:p}
+              <span class="delta ${n}">${Math.round(i*1e3)} mV</span>
+              ${a.note?l`<span class="label note">${a.note}</span>`:h}
             </div>
           </div>
         `})}
-    `}};F.styles=[g,f`
+    `}};Y.styles=[v,g`
       .axis {
         display: grid;
         grid-template-columns: 104px 1fr 172px;
@@ -649,19 +649,19 @@
         margin: 0 0 0 10px;
         display: inline;
       }
-    `];pt([h({attribute:!1})],F.prototype,"ranges",2);pt([h({type:String})],F.prototype,"packLabel",2);pt([h({attribute:!1})],F.prototype,"formatVolts",2);F=pt([$("mk-pack-matrix")],F);var Ze=Object.getOwnPropertyDescriptor,Je=(s,t,e,a)=>{for(var n=a>1?void 0:a?Ze(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(n)||n);return n};const Qe=.05,Ht=.1;let gt=class extends y{get ranges(){const s=this.reader,t=[];for(const e of this.packs){const a=s.num(`battery_${e}_min_cell_voltage`),n=s.num(`battery_${e}_max_cell_voltage`);if(a===null||n===null)continue;const i=s.num(`battery_${e}_cycle_count`),r=s.num(`battery_${e}_mos_temperature`),o=[i===null?null:`${this.fmt.num(i,0)} ⟳`,r===null?null:`${this.fmt.num(r,1)} °C`].filter(Boolean).join(" · ");t.push({index:e,min:a,max:n,note:o})}return t}render(){const s=this.reader,t=this.fmt,e=this.t,a=this.ranges,n=a.map(m=>m.max),i=a.map(m=>m.min),r=a.length?Math.max(...n)-Math.min(...i):null,o=a.reduce((m,v)=>!m||v.max-v.min>m.max-m.min?v:m,null),l=a.map(m=>m.max-m.min),d=l.length?l.reduce((m,v)=>m+v,0)/l.length:null,u=r===null?"":r>=Ht?"crit":r>=Qe?"warn":"ok";return c`
+    `];ut([p({attribute:!1})],Y.prototype,"ranges",2);ut([p({type:String})],Y.prototype,"packLabel",2);ut([p({attribute:!1})],Y.prototype,"formatVolts",2);Y=ut([b("mk-pack-matrix")],Y);var rs=Object.getOwnPropertyDescriptor,os=(s,t,e,a)=>{for(var i=a>1?void 0:a?rs(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(i)||i);return i};const ls=.05,Zt=.1;let _t=class extends y{get ranges(){const s=this.reader,t=[];for(const e of this.packs){const a=s.num(`battery_${e}_min_cell_voltage`),i=s.num(`battery_${e}_max_cell_voltage`);if(a===null||i===null)continue;const n=s.num(`battery_${e}_cycle_count`),r=s.num(`battery_${e}_mos_temperature`),o=[n===null?null:`${this.fmt.num(n,0)} ⟳`,r===null?null:`${this.fmt.num(r,1)} °C`].filter(Boolean).join(" · ");t.push({index:e,min:a,max:i,note:o})}return t}render(){const s=this.reader,t=this.fmt,e=this.t,a=this.ranges,i=a.map(m=>m.max),n=a.map(m=>m.min),r=a.length?Math.max(...i)-Math.min(...n):null,o=a.reduce((m,f)=>!m||f.max-f.min>m.max-m.min?f:m,null),c=a.map(m=>m.max-m.min),d=c.length?c.reduce((m,f)=>m+f,0)/c.length:null,u=r===null?"":r>=Zt?"crit":r>=ls?"warn":"ok";return l`
       <div class="grid tiles">
         <mk-stat
           label=${e("cells.highest")}
-          value=${t.num(n.length?Math.max(...n):null,3)}
+          value=${t.num(i.length?Math.max(...i):null,3)}
           unit="V"
-          foot=${n.length?e("cells.in_pack",{pack:a[n.indexOf(Math.max(...n))].index}):""}
+          foot=${i.length?e("cells.in_pack",{pack:a[i.indexOf(Math.max(...i))].index}):""}
         ></mk-stat>
         <mk-stat
           label=${e("cells.lowest")}
-          value=${t.num(i.length?Math.min(...i):null,3)}
+          value=${t.num(n.length?Math.min(...n):null,3)}
           unit="V"
-          foot=${i.length?e("cells.in_pack",{pack:a[i.indexOf(Math.min(...i))].index}):""}
+          foot=${n.length?e("cells.in_pack",{pack:a[n.indexOf(Math.min(...n))].index}):""}
         ></mk-stat>
         <mk-stat
           label=${e("cells.stack_spread")}
@@ -669,7 +669,7 @@
           unit="mV"
           tone=${u}
           .bar=${r}
-          .max=${Ht}
+          .max=${Zt}
           foot=${e("cells.limit_hint")}
         ></mk-stat>
         <mk-stat
@@ -696,13 +696,13 @@
           <div class="label">${e("cells.matrix_title")}</div>
           <div class="label">${e("cells.matrix_axis")}</div>
         </div>
-        ${a.length?c`
+        ${a.length?l`
               <mk-pack-matrix
                 .ranges=${a}
                 packLabel=${e("common.pack")}
                 .formatVolts=${m=>t.num(m,3)}
               ></mk-pack-matrix>
-            `:c`<div class="note">${e("cells.no_ranges")}</div>`}
+            `:l`<div class="note">${e("cells.no_ranges")}</div>`}
         <div class="note">${e("cells.matrix_legend")}</div>
       </div>
 
@@ -718,11 +718,11 @@
           ${this.kv("bms_charge_voltage_limit",2)} ${this.kv("alarm_status",0)}
         </div>
       </div>
-    `}tempSpan(){const s=this.reader.num("max_cell_temperature"),t=this.reader.num("min_cell_temperature");return s===null||t===null?null:s-t}protectionRows(){const s=this.reader,t=this.t,e=[];for(const a of this.packs){const n=s.num(`battery_${a}_protection_1`),i=s.num(`battery_${a}_protection_2`),r=s.num(`battery_${a}_mos_status`),o=[];n&&o.push(`P1 ${n}`),i&&o.push(`P2 ${i}`),r&&o.push(`MOS ${r}`),o.length&&e.push(`${t("common.pack")} ${a}: ${o.join(", ")}`)}return this.packs.length?c`
+    `}tempSpan(){const s=this.reader.num("max_cell_temperature"),t=this.reader.num("min_cell_temperature");return s===null||t===null?null:s-t}protectionRows(){const s=this.reader,t=this.t,e=[];for(const a of this.packs){const i=s.num(`battery_${a}_protection_1`),n=s.num(`battery_${a}_protection_2`),r=s.num(`battery_${a}_mos_status`),o=[];i&&o.push(`P1 ${i}`),n&&o.push(`P2 ${n}`),r&&o.push(`MOS ${r}`),o.length&&e.push(`${t("common.pack")} ${a}: ${o.join(", ")}`)}return this.packs.length?l`
       ${e.length?e.map(a=>this.row(a,t("cells.raised"),"crit")):this.row(t("cells.protection_all",{count:this.packs.length}),t("cells.clear"),"ok")}
       ${this.kv("fault_status",0)} ${this.kv("fault_status_2",0)}
       ${this.bmsVersions()}
-    `:c`<div class="note">${t("cells.no_ranges")}</div>`}bmsVersions(){const s=this.reader,t=new Map;for(const e of this.packs){const a=s.str(`battery_${e}_bms_version`);a!==null&&t.set(a,[...t.get(a)??[],e])}if(!t.size)return p;if(t.size===1){const[e]=[...t.keys()];return this.row(this.t("cells.bms_version"),`${this.fmt.version(e)} · ${this.t("cells.uniform")}`)}return[...t.entries()].map(([e,a])=>this.row(`${this.t("cells.bms_version")} ${this.fmt.version(e)}`,a.map(n=>`#${n}`).join(" "),"warn"))}};gt.styles=[g,f`
+    `:l`<div class="note">${t("cells.no_ranges")}</div>`}bmsVersions(){const s=this.reader,t=new Map;for(const e of this.packs){const a=s.str(`battery_${e}_bms_version`);a!==null&&t.set(a,[...t.get(a)??[],e])}if(!t.size)return h;if(t.size===1){const[e]=[...t.keys()];return this.row(this.t("cells.bms_version"),`${this.fmt.version(e)} · ${this.t("cells.uniform")}`)}return[...t.entries()].map(([e,a])=>this.row(`${this.t("cells.bms_version")} ${this.fmt.version(e)}`,a.map(i=>`#${i}`).join(" "),"warn"))}};_t.styles=[v,g`
       .tiles {
         grid-template-columns: repeat(6, 1fr);
         margin-bottom: var(--mk-gap);
@@ -746,39 +746,39 @@
           grid-template-columns: 1fr;
         }
       }
-    `];gt=Je([$("mk-view-cells")],gt);var Xe=Object.defineProperty,ts=Object.getOwnPropertyDescriptor,I=(s,t,e,a)=>{for(var n=a>1?void 0:a?ts(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&Xe(t,e,n),n};let P=class extends _{constructor(){super(...arguments),this.packs=[],this.floor=null,this.packLabel="PACK",this.energyUnit="kWh",this.formatNumber=s=>s===null?"—":String(s),this.tolerance=5}fill(s){if(s===null)return"var(--mk-track)";const t=Math.min(Math.max(s,0),100)/100,e=t<.5?4+41*(t/.5):45+95*((t-.5)/.5);return`linear-gradient(180deg, hsl(${e.toFixed(0)} 74% 56%), hsl(${e.toFixed(0)} 68% 43%))`}render(){if(!this.packs.length)return p;const s=this.packs.map(e=>e.soc).filter(e=>e!==null).sort((e,a)=>e-a),t=s.length?s[Math.floor(s.length/2)]:null;return c`
+    `];_t=os([b("mk-view-cells")],_t);var cs=Object.defineProperty,ds=Object.getOwnPropertyDescriptor,V=(s,t,e,a)=>{for(var i=a>1?void 0:a?ds(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&cs(t,e,i),i};let E=class extends k{constructor(){super(...arguments),this.packs=[],this.floor=null,this.packLabel="PACK",this.energyUnit="kWh",this.formatNumber=s=>s===null?"—":String(s),this.tolerance=5}fill(s){if(s===null)return"var(--mk-track)";const t=Math.min(Math.max(s,0),100)/100,e=t<.5?4+41*(t/.5):45+95*((t-.5)/.5);return`linear-gradient(180deg, hsl(${e.toFixed(0)} 74% 56%), hsl(${e.toFixed(0)} 68% 43%))`}render(){if(!this.packs.length)return h;const s=this.packs.map(e=>e.soc).filter(e=>e!==null).sort((e,a)=>e-a),t=s.length?s[Math.floor(s.length/2)]:null;return l`
       <div
         class="rack"
         style="grid-template-columns: repeat(${this.packs.length}, 1fr)"
       >
-        ${this.packs.map(e=>{const a=t!==null&&e.soc!==null&&Math.abs(e.soc-t)>this.tolerance,n=e.soc===null?0:Math.min(Math.max(e.soc,0),100);return c`
+        ${this.packs.map(e=>{const a=t!==null&&e.soc!==null&&Math.abs(e.soc-t)>this.tolerance,i=e.soc===null?0:Math.min(Math.max(e.soc,0),100);return l`
             <div>
               <div class="soc ${a?"warn":""}">
                 ${this.formatNumber(e.soc,1)}<span class="pct">%</span>
               </div>
               <div class="column ${a?"flagged":""}">
-                <div class="fill" style="height:${n}%;background:${this.fill(e.soc)}"></div>
-                ${this.floor===null?p:c`<div class="floor" style="bottom:${this.floor}%"></div>`}
-                ${e.energy===null?p:c`
+                <div class="fill" style="height:${i}%;background:${this.fill(e.soc)}"></div>
+                ${this.floor===null?h:l`<div class="floor" style="bottom:${this.floor}%"></div>`}
+                ${e.energy===null?h:l`
                       <div
-                        class="readings ${n>=26?"inside":"outside"}"
-                        style=${n>=26?`bottom:${n}%;transform:translateY(100%);padding-top:7px`:`bottom:${n}%;transform:translateY(-4px)`}
+                        class="readings ${i>=26?"inside":"outside"}"
+                        style=${i>=26?`bottom:${i}%;transform:translateY(100%);padding-top:7px`:`bottom:${i}%;transform:translateY(-4px)`}
                       >
                         <span class="kwh">
                           ${this.formatNumber(e.energy,2)}<span class="unit">${this.energyUnit}</span>
                         </span>
-                        ${e.socLabel?c`<span class="pct-line">${e.socLabel}</span>`:p}
+                        ${e.socLabel?l`<span class="pct-line">${e.socLabel}</span>`:h}
                       </div>
                     `}
               </div>
               <div class="name ${a?"warn":""}">
                 ${this.packLabel} ${e.index}
               </div>
-              ${e.note?c`<div class="label note">${e.note}</div>`:p}
+              ${e.note?l`<div class="label note">${e.note}</div>`:h}
             </div>
           `})}
       </div>
-    `}};P.styles=[g,f`
+    `}};E.styles=[v,g`
       .rack {
         display: grid;
         gap: 14px;
@@ -884,7 +884,7 @@
         text-align: center;
         margin-top: 3px;
       }
-    `];I([h({attribute:!1})],P.prototype,"packs",2);I([h({type:Number})],P.prototype,"floor",2);I([h({type:String})],P.prototype,"packLabel",2);I([h({type:String})],P.prototype,"energyUnit",2);I([h({attribute:!1})],P.prototype,"formatNumber",2);I([h({type:Number})],P.prototype,"tolerance",2);P=I([$("mk-pack-bars")],P);var es=Object.getOwnPropertyDescriptor,ss=(s,t,e,a)=>{for(var n=a>1?void 0:a?es(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(n)||n);return n};let lt=class extends y{constructor(){super(),this.floor=null}get packCapacity(){const s=this.reader.num("battery_total_energy"),t=this.packs.length;return s!==null&&t?s/t:null}get fills(){const s=this.reader,t=this.fmt,e=this.packCapacity;return this.packs.map(a=>{const n=s.num(`battery_soc_${a}`),i=s.num(`battery_${a}_min_cell_voltage`),r=s.num(`battery_${a}_max_cell_voltage`);return{index:a,soc:n,energy:n===null||e===null?null:n/100*e,socLabel:n===null?void 0:`${t.num(n,1)} %`,note:i===null||r===null?void 0:`${t.num(i,3)} – ${t.num(r,3)} V`}})}render(){const s=this.reader,t=this.fmt,e=this.t,a=this.fills,n=a.map(d=>d.soc).filter(d=>d!==null),i=n.length?n.reduce((d,u)=>d+u,0)/n.length:null,r=n.length?Math.max(...n)-Math.min(...n):null,o=a.reduce((d,u)=>u.energy===null?d:d+u.energy,0),l=this.packs.map(d=>s.num(`battery_${d}_cycle_count`)).filter(d=>d!==null);return c`
+    `];V([p({attribute:!1})],E.prototype,"packs",2);V([p({type:Number})],E.prototype,"floor",2);V([p({type:String})],E.prototype,"packLabel",2);V([p({type:String})],E.prototype,"energyUnit",2);V([p({attribute:!1})],E.prototype,"formatNumber",2);V([p({type:Number})],E.prototype,"tolerance",2);E=V([b("mk-pack-bars")],E);var ps=Object.getOwnPropertyDescriptor,hs=(s,t,e,a)=>{for(var i=a>1?void 0:a?ps(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(i)||i);return i};let pt=class extends y{constructor(){super(),this.floor=null}get packCapacity(){const s=this.reader.num("battery_total_energy"),t=this.packs.length;return s!==null&&t?s/t:null}get fills(){const s=this.reader,t=this.fmt,e=this.packCapacity;return this.packs.map(a=>{const i=s.num(`battery_soc_${a}`),n=s.num(`battery_${a}_min_cell_voltage`),r=s.num(`battery_${a}_max_cell_voltage`);return{index:a,soc:i,energy:i===null||e===null?null:i/100*e,socLabel:i===null?void 0:`${t.num(i,1)} %`,note:n===null||r===null?void 0:`${t.num(n,3)} – ${t.num(r,3)} V`}})}render(){const s=this.reader,t=this.fmt,e=this.t,a=this.fills,i=a.map(d=>d.soc).filter(d=>d!==null),n=i.length?i.reduce((d,u)=>d+u,0)/i.length:null,r=i.length?Math.max(...i)-Math.min(...i):null,o=a.reduce((d,u)=>u.energy===null?d:d+u.energy,0),c=this.packs.map(d=>s.num(`battery_${d}_cycle_count`)).filter(d=>d!==null);return l`
       <div class="grid tiles">
         <mk-stat
           label=${s.label("battery_soc")}
@@ -894,7 +894,7 @@
         ></mk-stat>
         <mk-stat
           label=${e("packs.mean_soc")}
-          value=${t.num(i,1)}
+          value=${t.num(n,1)}
           unit="%"
           foot=${e("packs.from_n_packs",{count:a.length})}
         ></mk-stat>
@@ -920,8 +920,8 @@
         ></mk-stat>
         <mk-stat
           label=${e("packs.cycles_sum")}
-          value=${t.num(l.length?l.reduce((d,u)=>d+u,0):null,0)}
-          foot=${l.length<this.packs.length?e("packs.cycles_partial",{have:l.length,total:this.packs.length}):""}
+          value=${t.num(c.length?c.reduce((d,u)=>d+u,0):null,0)}
+          foot=${c.length<this.packs.length?e("packs.cycles_partial",{have:c.length,total:this.packs.length}):""}
         ></mk-stat>
       </div>
 
@@ -930,7 +930,7 @@
           <div class="label">${e("packs.fill_title")}</div>
           <div class="label">${e("packs.fill_axis")}</div>
         </div>
-        ${a.length?c`
+        ${a.length?l`
               <mk-pack-bars
                 .packs=${a}
                 .floor=${this.floor}
@@ -938,14 +938,14 @@
                 energyUnit=${s.unit("battery_total_energy")||"kWh"}
                 .formatNumber=${(d,u=0)=>t.num(d,u)}
               ></mk-pack-bars>
-            `:c`<div class="note">${e("packs.none")}</div>`}
+            `:l`<div class="note">${e("packs.none")}</div>`}
         <div class="note">
           ${this.floor===null?e("packs.fill_legend_nofloor"):e("packs.fill_legend",{floor:t.num(this.floor,0)})}
         </div>
       </div>
 
-      ${a.length?this.table():p}
-    `}table(){const s=this.reader,t=this.fmt,e=this.t,a=this.packCapacity,n=this.packs.map(r=>s.num(`battery_soc_${r}`)).filter(r=>r!==null).sort((r,o)=>r-o),i=n.length?n[Math.floor(n.length/2)]:null;return c`
+      ${a.length?this.table():h}
+    `}table(){const s=this.reader,t=this.fmt,e=this.t,a=this.packCapacity,i=this.packs.map(r=>s.num(`battery_soc_${r}`)).filter(r=>r!==null).sort((r,o)=>r-o),n=i.length?i[Math.floor(i.length/2)]:null;return l`
       <div class="panel table-wrap">
         <div class="head"><div class="label">${e("packs.table_title")}</div></div>
         <div class="scroll">
@@ -967,14 +967,14 @@
               </tr>
             </thead>
             <tbody>
-              ${this.packs.map(r=>{const o=s.num(`battery_soc_${r}`),l=s.num(`battery_${r}_min_cell_voltage`),d=s.num(`battery_${r}_max_cell_voltage`),u=l!==null&&d!==null?d-l:null,m=[1,2,3,4].map(b=>s.num(`battery_${r}_cell_temperature_${b}`)).filter(b=>b!==null).map(b=>t.num(b,1)).join(" · "),v=i!==null&&o!==null&&Math.abs(o-i)>5;return c`
-                  <tr class=${v?"flagged":""}>
-                    <td class=${v?"warn":""}>${e("common.pack")} ${r}</td>
-                    <td class="n ${v?"warn":""}">${t.num(o,1)} %</td>
+              ${this.packs.map(r=>{const o=s.num(`battery_soc_${r}`),c=s.num(`battery_${r}_min_cell_voltage`),d=s.num(`battery_${r}_max_cell_voltage`),u=c!==null&&d!==null?d-c:null,m=[1,2,3,4].map($=>s.num(`battery_${r}_cell_temperature_${$}`)).filter($=>$!==null).map($=>t.num($,1)).join(" · "),f=n!==null&&o!==null&&Math.abs(o-n)>5;return l`
+                  <tr class=${f?"flagged":""}>
+                    <td class=${f?"warn":""}>${e("common.pack")} ${r}</td>
+                    <td class="n ${f?"warn":""}">${t.num(o,1)} %</td>
                     <td class="n">
                       ${t.num(o===null||a===null?null:o/100*a,2)}
                     </td>
-                    <td class="n">${t.num(l,3)}</td>
+                    <td class="n">${t.num(c,3)}</td>
                     <td class="n">${t.num(d,3)}</td>
                     <td class="n ${u!==null&&u>=.01?"crit":""}">
                       ${t.millivolts(u)} mV
@@ -992,7 +992,7 @@
         </div>
         <div class="note">${e("packs.table_legend")}</div>
       </div>
-    `}};lt.properties={floor:{type:Number}};lt.styles=[g,f`
+    `}};pt.properties={floor:{type:Number}};pt.styles=[v,g`
       .tiles {
         grid-template-columns: repeat(6, 1fr);
         margin-bottom: var(--mk-gap);
@@ -1010,9 +1010,9 @@
       .table-wrap {
         margin-top: var(--mk-gap);
       }
-    `];lt=ss([$("mk-view-packs")],lt);var as=Object.getOwnPropertyDescriptor,ns=(s,t,e,a)=>{for(var n=a>1?void 0:a?as(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(n)||n);return n};const G=[1,2,3,4],Bt=1;let bt=class extends y{render(){const s=this.reader,t=this.fmt,e=this.t,a=G.map(o=>s.num(`mppt${o}_power`)),n=s.sum(G.map(o=>`mppt${o}_power`)),i=Math.max(...a.map(o=>o??0),1),r=a.some(o=>o!==null&&o>Bt);return G.some(o=>s.entityId(`mppt${o}_power`))?c`
+    `];pt=hs([b("mk-view-packs")],pt);var ms=Object.getOwnPropertyDescriptor,us=(s,t,e,a)=>{for(var i=a>1?void 0:a?ms(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(i)||i);return i};const Q=[1,2,3,4],Jt=1;let yt=class extends y{render(){const s=this.reader,t=this.fmt,e=this.t,a=Q.map(o=>s.num(`mppt${o}_power`)),i=s.sum(Q.map(o=>`mppt${o}_power`)),n=Math.max(...a.map(o=>o??0),1),r=a.some(o=>o!==null&&o>Jt);return Q.some(o=>s.entityId(`mppt${o}_power`))?l`
       <div class="grid channels">
-        ${G.map(o=>{const l=s.num(`mppt${o}_power`),d=l!==null&&l>Bt;return c`
+        ${Q.map(o=>{const c=s.num(`mppt${o}_power`),d=c!==null&&c>Jt;return l`
             <div class="panel">
               <div class="head">
                 <div class="label">MPPT ${o}</div>
@@ -1021,10 +1021,10 @@
                 </span>
               </div>
               <div class="chan-value">
-                ${t.num(l,0)}<span class="chan-unit">W</span>
+                ${t.num(c,0)}<span class="chan-unit">W</span>
               </div>
               <div class="track">
-                <i style="width:${l===null?0:l/i*100}%"></i>
+                <i style="width:${c===null?0:c/n*100}%"></i>
               </div>
               <div style="margin-top:13px">
                 ${this.kv(`mppt${o}_voltage`,1)} ${this.kv(`mppt${o}_current`,2)}
@@ -1040,7 +1040,7 @@
             <div class="label">${e(r?"solar.some_active":"solar.all_idle")}</div>
           </div>
           <div class="chan-value">
-            ${t.num(n,0)}<span class="chan-unit">W</span>
+            ${t.num(i,0)}<span class="chan-unit">W</span>
           </div>
           <div class="note">
             ${e(r?"solar.note_active":"solar.note_floating")}
@@ -1052,10 +1052,10 @@
           ${this.kv("mppt_error",0,{tone:s.num("mppt_error")?"crit":"ok"})}
           ${this.kv("mppt_warning",0,{tone:s.num("mppt_warning")?"warn":"ok"})}
           ${this.kv("mppt_version",0)}
-          ${n===null?p:this.row(e("solar.channels_reporting"),`${a.filter(o=>o!==null).length} / ${G.length}`)}
+          ${i===null?h:this.row(e("solar.channels_reporting"),`${a.filter(o=>o!==null).length} / ${Q.length}`)}
         </div>
       </div>
-    `:c`<div class="panel"><div class="note">${e("solar.none")}</div></div>`}};bt.styles=[g,f`
+    `:l`<div class="panel"><div class="note">${e("solar.none")}</div></div>`}};yt.styles=[v,g`
       .channels {
         grid-template-columns: repeat(4, 1fr);
       }
@@ -1111,8 +1111,8 @@
         display: block;
         background: var(--mk-accent);
       }
-    `];bt=ns([$("mk-view-solar")],bt);var is=Object.getOwnPropertyDescriptor,rs=(s,t,e,a)=>{for(var n=a>1?void 0:a?is(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(n)||n);return n};const os=[{titleKey:"energy.today",charge:"total_daily_charging_energy",discharge:"total_daily_discharging_energy"},{titleKey:"energy.month",charge:"total_monthly_charging_energy",discharge:"total_monthly_discharging_energy",efficiency:"round_trip_efficiency_monthly"},{titleKey:"energy.lifetime",charge:"total_charging_energy",discharge:"total_discharging_energy",efficiency:"round_trip_efficiency_total"}];let $t=class extends y{render(){const s=this.t;return c`
-      <div class="grid periods">${os.map(t=>this.period(t))}</div>
+    `];yt=us([b("mk-view-solar")],yt);var fs=Object.getOwnPropertyDescriptor,gs=(s,t,e,a)=>{for(var i=a>1?void 0:a?fs(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(i)||i);return i};const vs=[{titleKey:"energy.today",charge:"total_daily_charging_energy",discharge:"total_daily_discharging_energy"},{titleKey:"energy.month",charge:"total_monthly_charging_energy",discharge:"total_monthly_discharging_energy",efficiency:"round_trip_efficiency_monthly"},{titleKey:"energy.lifetime",charge:"total_charging_energy",discharge:"total_discharging_energy",efficiency:"round_trip_efficiency_total"}];let wt=class extends y{render(){const s=this.t;return l`
+      <div class="grid periods">${vs.map(t=>this.period(t))}</div>
       <div class="grid below">
         ${this.efficiencyPanel()}
         <div class="panel">
@@ -1123,21 +1123,21 @@
           ${this.kv("remaining_cycles",0)} ${this.kv("battery_health",2)}
         </div>
       </div>
-    `}period(s){const t=this.reader,e=this.fmt,a=this.t,n=t.num(s.charge),i=t.num(s.discharge);if(n===null&&i===null)return p;const r=n?(i??0)/n*100:null,o=n!==null&&i!==null?n-i:null,l=s.efficiency?t.num(s.efficiency):null;return c`
+    `}period(s){const t=this.reader,e=this.fmt,a=this.t,i=t.num(s.charge),n=t.num(s.discharge);if(i===null&&n===null)return h;const r=i?(n??0)/i*100:null,o=i!==null&&n!==null?i-n:null,c=s.efficiency?t.num(s.efficiency):null;return l`
       <div class="panel">
         <div class="head">
           <div class="label">${a(s.titleKey)}</div>
-          ${l===null?p:c`<span class="pill ${l<70?"w":"on"}">
-                ${a("energy.rte")} ${e.num(l,1)} %
+          ${c===null?h:l`<span class="pill ${c<70?"w":"on"}">
+                ${a("energy.rte")} ${e.num(c,1)} %
               </span>`}
         </div>
         <div class="pair">
           <div>
-            <div class="big">${e.num(n,2)}</div>
+            <div class="big">${e.num(i,2)}</div>
             <div class="label" style="margin-top:2px">${a("energy.charged")}</div>
           </div>
           <div>
-            <div class="big magenta">${e.num(i,2)}</div>
+            <div class="big magenta">${e.num(n,2)}</div>
             <div class="label" style="margin-top:2px">${a("energy.discharged")}</div>
           </div>
         </div>
@@ -1146,36 +1146,36 @@
           <i style="width:${r===null?0:Math.min(r,100)}%"></i>
         </div>
         <div style="margin-top:14px">
-          ${o===null?p:this.row(a("energy.loss"),`${e.num(o,2)} kWh`,o/(n||1)>.25?"warn":"")}
-          ${r===null?p:this.row(a("energy.returned"),`${e.num(r,1)} %`)}
+          ${o===null?h:this.row(a("energy.loss"),`${e.num(o,2)} kWh`,o/(i||1)>.25?"warn":"")}
+          ${r===null?h:this.row(a("energy.returned"),`${e.num(r,1)} %`)}
         </div>
       </div>
-    `}efficiencyPanel(){const s=this.reader,t=this.fmt,e=this.t,a=[[s.label("round_trip_efficiency_total"),s.num("round_trip_efficiency_total"),""],[s.label("round_trip_efficiency_monthly"),s.num("round_trip_efficiency_monthly"),"warn"],[s.label("conversion_efficiency"),s.num("conversion_efficiency"),"ok"]],n=s.num("round_trip_efficiency_total"),i=s.num("round_trip_efficiency_monthly"),r=n!==null&&i!==null?n-i:null;return c`
+    `}efficiencyPanel(){const s=this.reader,t=this.fmt,e=this.t,a=[[s.label("round_trip_efficiency_total"),s.num("round_trip_efficiency_total"),""],[s.label("round_trip_efficiency_monthly"),s.num("round_trip_efficiency_monthly"),"warn"],[s.label("conversion_efficiency"),s.num("conversion_efficiency"),"ok"]],i=s.num("round_trip_efficiency_total"),n=s.num("round_trip_efficiency_monthly"),r=i!==null&&n!==null?i-n:null;return l`
       <div class="panel">
         <div class="head"><div class="label">${e("energy.efficiency")}</div></div>
         <div class="note" style="margin-top:0;margin-bottom:16px">
           ${e("energy.rte_hint")}
         </div>
-        ${a.map(([o,l,d])=>l===null?p:c`
+        ${a.map(([o,c,d])=>c===null?h:l`
                 <div class="meter">
                   <div class="meter-head">
                     <span class="label">${o}</span>
                     <span class="value ${d}" style="font-size:13px">
-                      ${t.num(l,1)} %
+                      ${t.num(c,1)} %
                     </span>
                   </div>
                   <div class="track">
                     <i
-                      style="width:${Math.min(Math.max(l,0),100)}%;background:var(--mk-${d||"accent"})"
+                      style="width:${Math.min(Math.max(c,0),100)}%;background:var(--mk-${d||"accent"})"
                     ></i>
                   </div>
                 </div>
               `)}
-        ${r===null||Math.abs(r)<5?p:c`<div class="note">
+        ${r===null||Math.abs(r)<5?h:l`<div class="note">
               ${e("energy.gap_hint",{value:t.num(Math.abs(r),1)})}
             </div>`}
       </div>
-    `}};$t.styles=[g,f`
+    `}};wt.styles=[v,g`
       .periods {
         grid-template-columns: repeat(3, 1fr);
       }
@@ -1245,7 +1245,7 @@
         justify-content: space-between;
         align-items: baseline;
       }
-    `];$t=rs([$("mk-view-energy")],$t);var ls=Object.getOwnPropertyDescriptor,cs=(s,t,e,a)=>{for(var n=a>1?void 0:a?ls(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=r(n)||n);return n};const Ft=["alarm_status","fault_status","fault_status_low","fault_status_2","fault_status_2_low","mppt_error","mppt_warning"];let _t=class extends y{render(){const s=this.reader,t=this.t,e=Ft.filter(a=>{const n=s.num(a);return n!==null&&n!==0});return c`
+    `];wt=gs([b("mk-view-energy")],wt);var bs=Object.getOwnPropertyDescriptor,$s=(s,t,e,a)=>{for(var i=a>1?void 0:a?bs(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=r(i)||i);return i};const Qt=["alarm_status","fault_status","fault_status_low","fault_status_2","fault_status_2_low","mppt_error","mppt_warning"];let xt=class extends y{render(){const s=this.reader,t=this.t,e=Qt.filter(a=>{const i=s.num(a);return i!==null&&i!==0});return l`
       <div class="banner ${e.length?"crit":"ok"}">
         <span class="dot"></span>
         ${e.length?t("system.faults_raised",{list:e.map(a=>s.label(a)).join(", ")}):t("system.no_faults")}
@@ -1277,7 +1277,7 @@
 
         <div class="panel">
           <div class="head"><div class="label">${t("system.faults")}</div></div>
-          ${Ft.map(a=>this.kv(a,0,{tone:s.num(a)?"crit":"ok"}))}
+          ${Qt.map(a=>this.kv(a,0,{tone:s.num(a)?"crit":"ok"}))}
         </div>
       </div>
 
@@ -1298,11 +1298,11 @@
           ${this.kv("ac_voltage",1)} ${this.kv("ac_frequency",2)}
         </div>
       </div>
-    `}ceilingNote(){const s=this.reader.num("charge_to_soc");if(s===null)return p;const t=s>=10&&s<=100;return c`
+    `}ceilingNote(){const s=this.reader.num("charge_to_soc");if(s===null)return h;const t=s>=10&&s<=100;return l`
       <div class="note">
         ${t?this.t("system.ceiling_used",{value:this.fmt.num(s,0)}):this.t("system.ceiling_ignored",{value:this.fmt.num(s,0)})}
       </div>
-    `}};_t.styles=[g,f`
+    `}};xt.styles=[v,g`
       .quad {
         grid-template-columns: repeat(4, 1fr);
       }
@@ -1352,11 +1352,11 @@
       .banner.crit .dot {
         background: var(--mk-crit);
       }
-    `];_t=cs([$("mk-view-system")],_t);var ds=Object.defineProperty,ps=Object.getOwnPropertyDescriptor,x=(s,t,e,a)=>{for(var n=a>1?void 0:a?ps(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&ds(t,e,n),n};let k=class extends _{constructor(){super(...arguments),this.label="",this.value=null,this.min=0,this.max=100,this.step=1,this.unit="",this.disabled=!1,this.formatNumber=s=>s===null?"—":String(s),this.dragging=null,this.pending=null}willUpdate(s){s.has("value")&&this.pending!==null&&this.value===this.pending&&(this.pending=null)}get shown(){return this.dragging??this.pending??this.value}render(){const s=this.shown;return c`
+    `];xt=$s([b("mk-view-system")],xt);var ks=Object.defineProperty,_s=Object.getOwnPropertyDescriptor,w=(s,t,e,a)=>{for(var i=a>1?void 0:a?_s(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&ks(t,e,i),i};let _=class extends k{constructor(){super(...arguments),this.label="",this.value=null,this.min=0,this.max=100,this.step=1,this.unit="",this.disabled=!1,this.formatNumber=s=>s===null?"—":String(s),this.dragging=null,this.pending=null}willUpdate(s){s.has("value")&&this.pending!==null&&this.value===this.pending&&(this.pending=null)}get shown(){return this.dragging??this.pending??this.value}render(){const s=this.shown;return l`
       <div class="row">
         <span class="label">${this.label}</span>
         <span class="val ${this.pending!==null?"pending":""}">
-          ${this.formatNumber(s)}${this.unit?c`<span class="unit">${this.unit}</span>`:p}
+          ${this.formatNumber(s)}${this.unit?l`<span class="unit">${this.unit}</span>`:h}
         </span>
       </div>
       <input
@@ -1374,7 +1374,7 @@
         <span class="label">${this.formatNumber(this.min)}</span>
         <span class="label">${this.formatNumber(this.max)}</span>
       </div>
-    `}commit(s){this.dragging=null,s!==this.value&&(this.pending=s,this.onCommit?.(s))}};k.styles=[g,f`
+    `}commit(s){this.dragging=null,s!==this.value&&(this.pending=s,this.onCommit?.(s))}};_.styles=[v,g`
       :host {
         display: block;
       }
@@ -1439,10 +1439,10 @@
         justify-content: space-between;
         margin-top: 5px;
       }
-    `];x([h({type:String})],k.prototype,"label",2);x([h({type:Number})],k.prototype,"value",2);x([h({type:Number})],k.prototype,"min",2);x([h({type:Number})],k.prototype,"max",2);x([h({type:Number})],k.prototype,"step",2);x([h({type:String})],k.prototype,"unit",2);x([h({type:Boolean})],k.prototype,"disabled",2);x([h({attribute:!1})],k.prototype,"formatNumber",2);x([h({attribute:!1})],k.prototype,"onCommit",2);x([E()],k.prototype,"dragging",2);x([E()],k.prototype,"pending",2);k=x([$("mk-slider")],k);var hs=Object.defineProperty,ms=Object.getOwnPropertyDescriptor,L=(s,t,e,a)=>{for(var n=a>1?void 0:a?ms(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&hs(t,e,n),n};let C=class extends _{constructor(){super(...arguments),this.label="",this.options=[],this.value=null,this.disabled=!1,this.pending=null}willUpdate(s){s.has("value")&&this.pending!==null&&this.value===this.pending&&(this.pending=null)}render(){const s=this.pending??this.value;return c`
+    `];w([p({type:String})],_.prototype,"label",2);w([p({type:Number})],_.prototype,"value",2);w([p({type:Number})],_.prototype,"min",2);w([p({type:Number})],_.prototype,"max",2);w([p({type:Number})],_.prototype,"step",2);w([p({type:String})],_.prototype,"unit",2);w([p({type:Boolean})],_.prototype,"disabled",2);w([p({attribute:!1})],_.prototype,"formatNumber",2);w([p({attribute:!1})],_.prototype,"onCommit",2);w([S()],_.prototype,"dragging",2);w([S()],_.prototype,"pending",2);_=w([b("mk-slider")],_);var ys=Object.defineProperty,ws=Object.getOwnPropertyDescriptor,W=(s,t,e,a)=>{for(var i=a>1?void 0:a?ws(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&ys(t,e,i),i};let O=class extends k{constructor(){super(...arguments),this.label="",this.options=[],this.value=null,this.disabled=!1,this.pending=null}willUpdate(s){s.has("value")&&this.pending!==null&&this.value===this.pending&&(this.pending=null)}render(){const s=this.pending??this.value;return l`
       <span class="label">${this.label}</span>
       <div class="bar" role="group" aria-label=${this.label}>
-        ${this.options.map(t=>c`
+        ${this.options.map(t=>l`
             <button
               class=${this.pending===t.value?"pending":""}
               aria-pressed=${s===t.value}
@@ -1453,7 +1453,7 @@
             </button>
           `)}
       </div>
-    `}pick(s){s!==this.value&&(this.pending=s,this.onSelect?.(s))}};C.styles=[g,f`
+    `}pick(s){s!==this.value&&(this.pending=s,this.onSelect?.(s))}};O.styles=[v,g`
       :host {
         display: block;
       }
@@ -1505,11 +1505,11 @@
         outline: 2px solid var(--mk-accent);
         outline-offset: -2px;
       }
-    `];L([h({type:String})],C.prototype,"label",2);L([h({attribute:!1})],C.prototype,"options",2);L([h({type:String})],C.prototype,"value",2);L([h({type:Boolean})],C.prototype,"disabled",2);L([h({attribute:!1})],C.prototype,"onSelect",2);L([E()],C.prototype,"pending",2);C=L([$("mk-segment")],C);var us=Object.defineProperty,vs=Object.getOwnPropertyDescriptor,D=(s,t,e,a)=>{for(var n=a>1?void 0:a?vs(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&us(t,e,n),n};let A=class extends _{constructor(){super(...arguments),this.label="",this.hint="",this.bare=!1,this.checked=null,this.disabled=!1,this.pending=null}willUpdate(s){s.has("checked")&&this.pending!==null&&this.checked===this.pending&&(this.pending=null)}render(){const s=this.pending??this.checked;return c`
-      ${this.bare?p:c`
+    `];W([p({type:String})],O.prototype,"label",2);W([p({attribute:!1})],O.prototype,"options",2);W([p({type:String})],O.prototype,"value",2);W([p({type:Boolean})],O.prototype,"disabled",2);W([p({attribute:!1})],O.prototype,"onSelect",2);W([S()],O.prototype,"pending",2);O=W([b("mk-segment")],O);var xs=Object.defineProperty,Ss=Object.getOwnPropertyDescriptor,R=(s,t,e,a)=>{for(var i=a>1?void 0:a?Ss(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&xs(t,e,i),i};let P=class extends k{constructor(){super(...arguments),this.label="",this.hint="",this.bare=!1,this.checked=null,this.disabled=!1,this.pending=null}willUpdate(s){s.has("checked")&&this.pending!==null&&this.checked===this.pending&&(this.pending=null)}render(){const s=this.pending??this.checked;return l`
+      ${this.bare?h:l`
             <div class="text">
               <div class="name">${this.label}</div>
-              ${this.hint?c`<div class="hint">${this.hint}</div>`:p}
+              ${this.hint?l`<div class="hint">${this.hint}</div>`:h}
             </div>
           `}
       <button
@@ -1522,7 +1522,7 @@
       >
         <i></i>
       </button>
-    `}flip(){const s=!(this.pending??this.checked);this.pending=s,this.onToggle?.(s)}};A.styles=[g,f`
+    `}flip(){const s=!(this.pending??this.checked);this.pending=s,this.onToggle?.(s)}};P.styles=[v,g`
       :host {
         display: flex;
         align-items: center;
@@ -1599,7 +1599,7 @@
         outline: 2px solid var(--mk-accent);
         outline-offset: 2px;
       }
-    `];D([h({type:String})],A.prototype,"label",2);D([h({type:String})],A.prototype,"hint",2);D([h({type:Boolean})],A.prototype,"bare",2);D([h({type:Boolean})],A.prototype,"checked",2);D([h({type:Boolean})],A.prototype,"disabled",2);D([h({attribute:!1})],A.prototype,"onToggle",2);D([E()],A.prototype,"pending",2);A=D([$("mk-toggle")],A);var fs=Object.defineProperty,gs=Object.getOwnPropertyDescriptor,O=(s,t,e,a)=>{for(var n=a>1?void 0:a?gs(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&fs(t,e,n),n};let w=class extends _{constructor(){super(...arguments),this.rows=[],this.dayLabel=s=>s,this.formatNumber=s=>s===null?"—":String(s)}toClock(s){if(s===null||s<0||s>2359)return"";const t=Math.floor(s/100),e=s%100;return t>23||e>59?"":`${String(t).padStart(2,"0")}:${String(e).padStart(2,"0")}`}fromClock(s){const t=/^(\d{1,2}):(\d{2})$/.exec(s);return t?Number(t[1])*100+Number(t[2]):null}render(){if(!this.rows.length)return p;const s=this.labels;return c`
+    `];R([p({type:String})],P.prototype,"label",2);R([p({type:String})],P.prototype,"hint",2);R([p({type:Boolean})],P.prototype,"bare",2);R([p({type:Boolean})],P.prototype,"checked",2);R([p({type:Boolean})],P.prototype,"disabled",2);R([p({attribute:!1})],P.prototype,"onToggle",2);R([S()],P.prototype,"pending",2);P=R([b("mk-toggle")],P);var As=Object.defineProperty,Ps=Object.getOwnPropertyDescriptor,M=(s,t,e,a)=>{for(var i=a>1?void 0:a?Ps(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&As(t,e,i),i};let x=class extends k{constructor(){super(...arguments),this.rows=[],this.dayLabel=s=>s,this.formatNumber=s=>s===null?"—":String(s)}toClock(s){if(s===null||s<0||s>2359)return"";const t=Math.floor(s/100),e=s%100;return t>23||e>59?"":`${String(t).padStart(2,"0")}:${String(e).padStart(2,"0")}`}fromClock(s){const t=/^(\d{1,2}):(\d{2})$/.exec(s);return t?Number(t[1])*100+Number(t[2]):null}render(){if(!this.rows.length)return h;const s=this.labels;return l`
       <div class="head-row">
         <span class="label"></span>
         <span class="label">${s.active}</span>
@@ -1608,7 +1608,7 @@
         <span class="label">${s.days}</span>
       </div>
 
-      ${this.rows.map(t=>{const e=t.enabled!==!0;return c`
+      ${this.rows.map(t=>{const e=t.enabled!==!0;return l`
           <div class="row ${e?"off":""}">
             <span class="name">${t.index}</span>
 
@@ -1652,8 +1652,8 @@
               aria-label=${`${s.days} ${t.index}`}
               @change=${a=>this.onDays?.(t.index,a.target.value)}
             >
-              ${t.days===null?c`<option value="" selected>${s.unset}</option>`:p}
-              ${t.dayOptions.map(a=>c`
+              ${t.days===null?l`<option value="" selected>${s.unset}</option>`:h}
+              ${t.dayOptions.map(a=>l`
                   <option value=${a} ?selected=${t.days===a}>
                     ${this.dayLabel(a)}
                   </option>
@@ -1661,7 +1661,7 @@
             </select>
           </div>
         `})}
-    `}time(s,t,e){const a=this.fromClock(e.target.value);a!==null&&this.onTime?.(s,t,a)}power(s,t){const e=Number(t.target.value);Number.isFinite(e)&&this.onPower?.(s,e)}};w.styles=[g,f`
+    `}time(s,t,e){const a=this.fromClock(e.target.value);a!==null&&this.onTime?.(s,t,a)}power(s,t){const e=Number(t.target.value);Number.isFinite(e)&&this.onPower?.(s,e)}};x.styles=[v,g`
       .head-row,
       .row {
         display: grid;
@@ -1743,7 +1743,7 @@
         border-bottom: 0;
         padding: 0;
       }
-    `];O([h({attribute:!1})],w.prototype,"rows",2);O([h({attribute:!1})],w.prototype,"labels",2);O([h({attribute:!1})],w.prototype,"dayLabel",2);O([h({attribute:!1})],w.prototype,"formatNumber",2);O([h({attribute:!1})],w.prototype,"onEnable",2);O([h({attribute:!1})],w.prototype,"onTime",2);O([h({attribute:!1})],w.prototype,"onPower",2);O([h({attribute:!1})],w.prototype,"onDays",2);w=O([$("mk-schedule")],w);var bs=Object.defineProperty,$s=Object.getOwnPropertyDescriptor,ht=(s,t,e,a)=>{for(var n=a>1?void 0:a?$s(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&bs(t,e,n),n};const Kt=["set_charge_power","set_discharge_power"],qt=["max_charge_power","max_discharge_power"],_s=[1,2,3,4,5,6],ks=30;let K=class extends y{constructor(){super(...arguments),this.wrote={},this.confirmReset=!1}note(s){this.wrote={...this.wrote,[s]:Date.now()}}overwritten(s){const t=this.wrote[s];if(!t)return!1;const e=this.reader.rawState(s)?.last_updated;if(!e)return!1;const a=(new Date(e).getTime()-t)/1e3;return a>.5&&a<ks}slider(s){const t=this.reader;return t.entityId(s)?c`
+    `];M([p({attribute:!1})],x.prototype,"rows",2);M([p({attribute:!1})],x.prototype,"labels",2);M([p({attribute:!1})],x.prototype,"dayLabel",2);M([p({attribute:!1})],x.prototype,"formatNumber",2);M([p({attribute:!1})],x.prototype,"onEnable",2);M([p({attribute:!1})],x.prototype,"onTime",2);M([p({attribute:!1})],x.prototype,"onPower",2);M([p({attribute:!1})],x.prototype,"onDays",2);x=M([b("mk-schedule")],x);var Cs=Object.defineProperty,Es=Object.getOwnPropertyDescriptor,ft=(s,t,e,a)=>{for(var i=a>1?void 0:a?Es(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&Cs(t,e,i),i};const Xt=["set_charge_power","set_discharge_power"],te=["max_charge_power","max_discharge_power"],Os=[1,2,3,4,5,6],Ts=30;let Z=class extends y{constructor(){super(...arguments),this.wrote={},this.confirmReset=!1}note(s){this.wrote={...this.wrote,[s]:Date.now()}}overwritten(s){const t=this.wrote[s];if(!t)return!1;const e=this.reader.rawState(s)?.last_updated;if(!e)return!1;const a=(new Date(e).getTime()-t)/1e3;return a>.5&&a<Ts}slider(s){const t=this.reader;return t.entityId(s)?l`
       <mk-slider
         label=${t.label(s)}
         .value=${t.num(s)}
@@ -1755,7 +1755,7 @@
         .formatNumber=${e=>this.fmt.num(e,0)}
         .onCommit=${e=>{this.note(s),this.controls.setNumber(s,e)}}
       ></mk-slider>
-    `:p}segment(s){const t=this.reader;if(!t.entityId(s))return p;const e=t.attr(s,"options",[]);return c`
+    `:h}segment(s){const t=this.reader;if(!t.entityId(s))return h;const e=t.attr(s,"options",[]);return l`
       <mk-segment
         label=${t.label(s)}
         .value=${t.rawState(s)?.state??null}
@@ -1763,31 +1763,31 @@
         ?disabled=${!t.writable(s)}
         .onSelect=${a=>{this.note(s),this.controls.selectOption(s,a)}}
       ></mk-segment>
-    `}toggle(s,t){const e=this.reader;if(!e.entityId(s))return p;const a=e.rawState(s);return c`
+    `}toggle(s,t){const e=this.reader;if(!e.entityId(s))return h;const a=e.rawState(s);return l`
       <mk-toggle
         label=${e.label(s)}
         hint=${this.t(t)}
         .checked=${a&&a.state!=="unavailable"?a.state==="on":null}
-        .onToggle=${n=>{this.note(s),this.controls.setSwitch(s,n)}}
+        .onToggle=${i=>{this.note(s),this.controls.setSwitch(s,i)}}
       ></mk-toggle>
-    `}get scheduleRows(){const s=this.reader;return _s.filter(t=>s.entityId(`schedule_${t}_start`)).map(t=>{const e=`schedule_${t}_mode`,a=s.rawState(`schedule_${t}_enabled`);return{index:t,enabled:a&&a.state!=="unavailable"?a.state==="on":null,start:s.num(`schedule_${t}_start`),end:s.num(`schedule_${t}_end`),power:s.num(e),powerMin:s.attr(e,"min",-2500),powerMax:s.attr(e,"max",2500),powerStep:s.attr(e,"step",1),days:s.rawState(`schedule_${t}_days`)?.state??null,dayOptions:s.attr(`schedule_${t}_days`,"options",[])}})}render(){const s=this.t,t=[...Kt,...qt].filter(a=>this.overwritten(a)),e=this.scheduleRows;return c`
-      ${t.length?c`<div class="warn-note">
+    `}get scheduleRows(){const s=this.reader;return Os.filter(t=>s.entityId(`schedule_${t}_start`)).map(t=>{const e=`schedule_${t}_mode`,a=s.rawState(`schedule_${t}_enabled`);return{index:t,enabled:a&&a.state!=="unavailable"?a.state==="on":null,start:s.num(`schedule_${t}_start`),end:s.num(`schedule_${t}_end`),power:s.num(e),powerMin:s.attr(e,"min",-2500),powerMax:s.attr(e,"max",2500),powerStep:s.attr(e,"step",1),days:s.rawState(`schedule_${t}_days`)?.state??null,dayOptions:s.attr(`schedule_${t}_days`,"options",[])}})}render(){const s=this.t,t=[...Xt,...te].filter(a=>this.overwritten(a)),e=this.scheduleRows;return l`
+      ${t.length?l`<div class="warn-note">
             <b>!</b>
             <span>
               ${s("control.overwritten",{names:t.map(a=>this.reader.label(a)).join(", ")})}
             </span>
-          </div>`:p}
+          </div>`:h}
 
       <div class="grid top">
         <div class="panel stack">
           <div class="head"><div class="label">${s("control.power")}</div></div>
-          ${Kt.map(a=>this.slider(a))}
+          ${Xt.map(a=>this.slider(a))}
           <div class="note">${s("control.power_hint")}</div>
         </div>
 
         <div class="panel stack">
           <div class="head"><div class="label">${s("control.limits")}</div></div>
-          ${qt.map(a=>this.slider(a))} ${this.slider("charge_to_soc")}
+          ${te.map(a=>this.slider(a))} ${this.slider("charge_to_soc")}
         </div>
 
         <div class="panel stack">
@@ -1806,28 +1806,28 @@
             <div class="label">${s("control.schedules")}</div>
             <div class="label">${s("control.schedules_axis")}</div>
           </div>
-          ${e.length?c`
+          ${e.length?l`
                 <mk-schedule
                   .rows=${e}
                   .labels=${{window:s("control.window"),power:s("control.sched_power"),days:s("control.days"),active:s("control.active"),unset:s("control.unset")}}
                   .dayLabel=${a=>s(`control.day.${a}`)}
                   .formatNumber=${a=>this.fmt.num(a,0)}
-                  .onEnable=${(a,n)=>this.controls.setSwitch(`schedule_${a}_enabled`,n)}
-                  .onTime=${(a,n,i)=>this.controls.setNumber(`schedule_${a}_${n}`,i)}
-                  .onPower=${(a,n)=>this.controls.setNumber(`schedule_${a}_mode`,n)}
-                  .onDays=${(a,n)=>this.controls.selectOption(`schedule_${a}_days`,n)}
+                  .onEnable=${(a,i)=>this.controls.setSwitch(`schedule_${a}_enabled`,i)}
+                  .onTime=${(a,i,n)=>this.controls.setNumber(`schedule_${a}_${i}`,n)}
+                  .onPower=${(a,i)=>this.controls.setNumber(`schedule_${a}_mode`,i)}
+                  .onDays=${(a,i)=>this.controls.selectOption(`schedule_${a}_days`,i)}
                 ></mk-schedule>
-              `:c`<div class="note">${s("control.no_schedules")}</div>`}
+              `:l`<div class="note">${s("control.no_schedules")}</div>`}
           <div class="note">${s("control.schedules_hint")}</div>
         </div>
       </div>
 
-      ${this.reader.entityId("reset_device")?c`
+      ${this.reader.entityId("reset_device")?l`
             <div class="grid below">
               <div class="panel">
                 <div class="head"><div class="label">${s("control.device")}</div></div>
                 <div class="danger">
-                  ${this.confirmReset?c`
+                  ${this.confirmReset?l`
                         <button
                           class="action confirm"
                           @click=${()=>{this.controls.press("reset_device"),this.confirmReset=!1}}
@@ -1837,7 +1837,7 @@
                         <button class="action" @click=${()=>this.confirmReset=!1}>
                           ${s("control.cancel")}
                         </button>
-                      `:c`
+                      `:l`
                         <button class="action" @click=${()=>this.confirmReset=!0}>
                           ${s("control.reset")}
                         </button>
@@ -1846,8 +1846,8 @@
                 </div>
               </div>
             </div>
-          `:p}
-    `}};K.styles=[g,f`
+          `:h}
+    `}};Z.styles=[v,g`
       .top {
         grid-template-columns: 1fr 1fr 1fr;
       }
@@ -1909,92 +1909,434 @@
         outline: 2px solid var(--mk-accent);
         outline-offset: 2px;
       }
-    `];ht([h({attribute:!1})],K.prototype,"controls",2);ht([E()],K.prototype,"wrote",2);ht([E()],K.prototype,"confirmReset",2);K=ht([$("mk-view-control")],K);var ys=Object.defineProperty,xs=Object.getOwnPropertyDescriptor,q=(s,t,e,a)=>{for(var n=a>1?void 0:a?xs(t,e):t,i=s.length-1,r;i>=0;i--)(r=s[i])&&(n=(a?r(t,e,n):r(n))||n);return a&&n&&ys(t,e,n),n};const ws=["core","cells","packs","solar","energy","control","system"],Ss={cells:"battery_1_max_cell_voltage",packs:"battery_soc_1",solar:"mppt1_power",control:"set_charge_power"},ee="marstek-panel.device";let T=class extends _{constructor(){super(...arguments),this.narrow=!1,this.tab="core",this.strings=tt,this.deviceId=As(),this.catalogueFor="",this.formatter=new Wt("en"),this.t=(s,t)=>Re(this.strings,s,t)}willUpdate(s){if(!s.has("hass")||!this.hass)return;this.toggleAttribute("light",!this.hass.themes?.darkMode);const t=this.hass.language||"en";t!==this.catalogueFor&&(this.catalogueFor=t,this.formatter=new Wt(t),De(t).then(e=>{this.catalogueFor===t&&(this.strings=e)}))}selectDevice(s){this.deviceId=s;try{localStorage.setItem(ee,s)}catch{}}tabsFor(s){return ws.filter(t=>{const e=Ss[t];return!e||s.entityId(e)!==void 0})}get devices(){return this.hass?Pe(this.hass):[]}get device(){const s=this.devices;return s.length?s.find(t=>t.deviceId===this.deviceId)??s[0]:null}render(){if(!this.hass)return p;const s=this.device;if(!s)return c`
+    `];ft([p({attribute:!1})],Z.prototype,"controls",2);ft([S()],Z.prototype,"wrote",2);ft([S()],Z.prototype,"confirmReset",2);Z=ft([b("mk-view-control")],Z);const St=[{id:"reactor",name:"Reactor",dark:{bg:"#05090f",surface:"#0b131d","surface-2":"#101b28",inset:"#0d1723",line:"#1b2b3d","line-soft":"#152435",fg:"#dff2f6","fg-2":"#9fb8c6",dim:"#5d7d92",accent:"#2ae6dc","accent-deep":"#1b8fd6","accent-wash":"#0e2b30",magenta:"#ff3ea5","magenta-wash":"#2a0d1e",ok:"#35d67a",warn:"#ffb020",crit:"#ff4d5e",track:"#132434","on-accent":"#04141a"},light:{bg:"#eef2f6",surface:"#ffffff","surface-2":"#f6f9fb",inset:"#e8eef3",line:"#cbd8e2","line-soft":"#dfe7ee",fg:"#0c1a24","fg-2":"#3a5162",dim:"#5b7484",accent:"#0c847e","accent-deep":"#0f5f8c","accent-wash":"#d9f0ee",magenta:"#b4176e","magenta-wash":"#fbe4f0",ok:"#0f7a44",warn:"#8a5804",crit:"#b52436",track:"#dae3ea","on-accent":"#ffffff"}},{id:"cockpit",name:"Cockpit",dark:{bg:"#0a0704",surface:"#14100a","surface-2":"#1c1710",inset:"#17120b",line:"#35291a","line-soft":"#281f14",fg:"#f5e8d2","fg-2":"#c4ac8a",dim:"#8a7355",accent:"#ffb020","accent-deep":"#d2690c","accent-wash":"#33220a",magenta:"#ff5f3a","magenta-wash":"#331309",ok:"#9ecb3a",warn:"#ffd54a",crit:"#ff4a3d",track:"#241c11","on-accent":"#1a1000"},light:{bg:"#f5f0e6",surface:"#fffdf8","surface-2":"#faf5ea",inset:"#efe7d6",line:"#d9cdb4","line-soft":"#e8dfcc",fg:"#201705","fg-2":"#5b4a2d",dim:"#7d6a48",accent:"#a35c00","accent-deep":"#7c3d05","accent-wash":"#f6e6c8",magenta:"#b53a17","magenta-wash":"#fadfd6",ok:"#4d6b12",warn:"#8a5804",crit:"#b02a20",track:"#e3d8c2","on-accent":"#fffdf8"}},{id:"verdant",name:"Verdant",dark:{bg:"#040b07",surface:"#0a150f","surface-2":"#0f1d16",inset:"#0c1811",line:"#1c3226","line-soft":"#152920",fg:"#ddf5e5","fg-2":"#9cc0ab",dim:"#5d8570",accent:"#7ee787","accent-deep":"#26a269","accent-wash":"#0f2b1c",magenta:"#3ddbd9","magenta-wash":"#0a2a2c",ok:"#7ee787",warn:"#ffc94a",crit:"#ff5f6d",track:"#12281c","on-accent":"#04140a"},light:{bg:"#eef4ef",surface:"#ffffff","surface-2":"#f5faf6",inset:"#e6efe8",line:"#c7d9cc","line-soft":"#dbe8de",fg:"#0a1a10","fg-2":"#385643",dim:"#5a7864",accent:"#1a7f4b","accent-deep":"#115e37","accent-wash":"#d7f0e0",magenta:"#0d7d7b","magenta-wash":"#d4f0ef",ok:"#1a7f4b",warn:"#8a5804",crit:"#b52436",track:"#d9e5db","on-accent":"#ffffff"}},{id:"plasma",name:"Plasma",dark:{bg:"#07050f",surface:"#110d1e","surface-2":"#191330",inset:"#140f26",line:"#2c2350","line-soft":"#211a3e",fg:"#eae4ff","fg-2":"#b3a8d8",dim:"#7568a8",accent:"#a06bff","accent-deep":"#5b3ed6","accent-wash":"#22164a",magenta:"#ff5bc8","magenta-wash":"#2e0f2a",ok:"#4ddba0",warn:"#ffc046",crit:"#ff5470",track:"#1c1638","on-accent":"#0b0618"},light:{bg:"#f1eef8",surface:"#ffffff","surface-2":"#f8f5fd",inset:"#ebe6f6",line:"#d2c8e8","line-soft":"#e2dbf1",fg:"#150c28","fg-2":"#47395f",dim:"#6b5c88",accent:"#6b2fd0","accent-deep":"#4a1aa8","accent-wash":"#e7dbfb",magenta:"#b81f86","magenta-wash":"#fbdcf0",ok:"#0f7a52",warn:"#8a5804",crit:"#b52440",track:"#e0d8f0","on-accent":"#ffffff"}},{id:"ember",name:"Ember",dark:{bg:"#0a0605",surface:"#150e0b","surface-2":"#1e1511",inset:"#191110",line:"#38231b","line-soft":"#2a1a15",fg:"#f7e6dd","fg-2":"#c7a696",dim:"#8d6a5c",accent:"#ff6b3d","accent-deep":"#c22f1e","accent-wash":"#331408",magenta:"#ffc247","magenta-wash":"#2e2209",ok:"#58c98a",warn:"#ffc247",crit:"#ff3b30",track:"#251712","on-accent":"#190802"},light:{bg:"#f6f0ec",surface:"#ffffff","surface-2":"#fbf5f1",inset:"#efe4dd",line:"#ddc9bd","line-soft":"#ebdcd3",fg:"#22110a","fg-2":"#5e4235",dim:"#7f6153",accent:"#c1401b","accent-deep":"#922b12","accent-wash":"#fadfd3",magenta:"#8a6206","magenta-wash":"#f7e9c9",ok:"#0f7a44",warn:"#8a5804",crit:"#b52436",track:"#e6d6cb","on-accent":"#ffffff"}},{id:"glacier",name:"Glacier",dark:{bg:"#060a10",surface:"#0d141d","surface-2":"#131d29",inset:"#101825",line:"#223549","line-soft":"#1a2b3c",fg:"#e4eef8","fg-2":"#a6bccf",dim:"#67839c",accent:"#63b3ff","accent-deep":"#2f6fd0","accent-wash":"#112a45",magenta:"#9fd8e8","magenta-wash":"#10262e",ok:"#4fd1a5",warn:"#ffcb5c",crit:"#ff6b7d",track:"#16232f","on-accent":"#04101d"},light:{bg:"#eef2f7",surface:"#ffffff","surface-2":"#f6f9fc",inset:"#e7edf4",line:"#c8d5e3","line-soft":"#dde5ee",fg:"#0b1622","fg-2":"#3c5064",dim:"#5f7488",accent:"#1462b8","accent-deep":"#0c4383","accent-wash":"#d9e9fb",magenta:"#2a7f96","magenta-wash":"#d6eef4",ok:"#0f7a52",warn:"#8a5804",crit:"#b52440",track:"#dbe4ee","on-accent":"#ffffff"}},{id:"ha",name:"Home Assistant",dark:{bg:"var(--primary-background-color, #05090f)",surface:"var(--card-background-color, #0b131d)","surface-2":"var(--secondary-background-color, #101b28)",inset:"var(--secondary-background-color, #0d1723)",line:"var(--divider-color, #1b2b3d)","line-soft":"var(--divider-color, #152435)",fg:"var(--primary-text-color, #dff2f6)","fg-2":"var(--secondary-text-color, #9fb8c6)",dim:"var(--secondary-text-color, #5d7d92)",accent:"var(--primary-color, #2ae6dc)","accent-deep":"var(--dark-primary-color, #1b8fd6)","accent-wash":"var(--secondary-background-color, #0e2b30)",magenta:"var(--accent-color, #ff3ea5)","magenta-wash":"var(--secondary-background-color, #2a0d1e)",ok:"var(--success-color, #35d67a)",warn:"var(--warning-color, #ffb020)",crit:"var(--error-color, #ff4d5e)",track:"var(--divider-color, #132434)","on-accent":"var(--text-primary-color, #04141a)"}}],ce="reactor";function Nt(s){return St.find(t=>t.id===s)??St[0]}function ee(s){return!Nt(s).light}function Ms(s,t,e){const a=Nt(t),i=e&&a.light||a.dark,n=a.id===ce;for(const[r,o]of Object.entries(i)){const c=`--mk-${r}`;n?s.style.removeProperty(c):s.style.setProperty(c,o)}}var Ns=Object.defineProperty,Ds=Object.getOwnPropertyDescriptor,B=(s,t,e,a)=>{for(var i=a>1?void 0:a?Ds(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&Ns(t,e,i),i};let T=class extends k{constructor(){super(...arguments),this.tabs=[],this.light=!1}render(){const s=this.t,t=this.settings,e=ee(t.scheme);return l`
+      <div class="grid top">
+        <div class="panel">
+          <div class="head"><div class="label">${s("settings.scheme")}</div></div>
+          <div class="schemes">
+            ${St.map(a=>this.schemeCard(a.id,a.name,this.light&&a.light||a.dark))}
+          </div>
+          <div class="note">${s("settings.scheme_hint")}</div>
+        </div>
+
+        <div class="panel">
+          <div class="head"><div class="label">${s("settings.appearance")}</div></div>
+
+          <div class="field">
+            <span class="label">${s("settings.mode")}</span>
+            ${this.choices([["auto",s("settings.mode.auto")],["dark",s("settings.mode.dark")],["light",s("settings.mode.light")]],t.mode,a=>this.onChange({mode:a}),e)}
+            ${e?l`<div class="note">${s("settings.mode_ha")}</div>`:h}
+          </div>
+
+          <div class="field">
+            <span class="label">${s("settings.digits")}</span>
+            ${this.choices([[!1,s("settings.digits.normal")],[!0,s("settings.digits.more")]],t.extraDigits,a=>this.onChange({extraDigits:a}))}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid below">
+        <div class="panel">
+          <div class="head"><div class="label">${s("settings.start_tab")}</div></div>
+          ${this.choices([["last",s("settings.start_tab.last")],...this.tabs.filter(a=>a.available&&!t.hiddenTabs.includes(a.id)).map(a=>[a.id,a.label])],t.startTab,a=>this.onChange({startTab:a}),!1,!0)}
+          <div class="note">${s("settings.start_tab_hint")}</div>
+        </div>
+
+        <div class="panel">
+          <div class="head"><div class="label">${s("settings.tabs")}</div></div>
+          ${this.tabs.map(a=>this.tabRow(a))}
+          <div class="note">${s("settings.tabs_hint")}</div>
+        </div>
+      </div>
+
+      <div class="grid below" style="grid-template-columns: 1fr">
+        <div class="panel">
+          <div class="head"><div class="label">${s("settings.storage")}</div></div>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <button class="action" @click=${()=>this.onReset()}>
+              ${s("settings.reset")}
+            </button>
+            <span class="note" style="margin:0">${s("settings.storage_hint")}</span>
+          </div>
+        </div>
+      </div>
+    `}schemeCard(s,t,e){const a=this.settings.scheme===s;return l`
+      <button
+        class="scheme"
+        aria-pressed=${a}
+        @click=${()=>this.onChange({scheme:s})}
+      >
+        <div class="preview" style="background:${e.bg}">
+          <div class="bar">
+            <span class="pill" style="background:${e.accent}"></span>
+            <span class="pill" style="background:${e.magenta}"></span>
+            <span class="dot" style="background:${e.ok}"></span>
+            <span class="dot" style="background:${e.warn}"></span>
+            <span class="dot" style="background:${e.crit}"></span>
+          </div>
+          <div
+            class="card"
+            style="background:${e.surface};border-color:${e.line}"
+          >
+            <div class="rule" style="background:${e.fg}"></div>
+            <div class="rule short" style="background:${e.dim}"></div>
+          </div>
+        </div>
+        <span class="scheme-name">
+          ${t}
+          ${ee(s)?l`<small>${this.t("settings.scheme_theme")}</small>`:h}
+        </span>
+      </button>
+    `}choices(s,t,e,a=!1,i=!1){return l`
+      <div class="choices ${i?"packed":""}">
+        ${s.map(([n,r])=>l`
+            <button
+              aria-pressed=${n===t}
+              ?disabled=${a}
+              @click=${()=>e(n)}
+            >
+              ${r}
+            </button>
+          `)}
+      </div>
+    `}tabRow(s){const t=this.settings.hiddenTabs.includes(s.id),e=s.id==="core",a=`tab-${s.id}`;return l`
+      <div class="tab-row ${s.available?"":"gone"}">
+        <input
+          type="checkbox"
+          id=${a}
+          .checked=${s.available&&!t}
+          ?disabled=${!s.available||e}
+          @change=${i=>this.setHidden(s.id,!i.target.checked)}
+        />
+        <label for=${a}>${s.label}</label>
+        ${s.available?e?l`<span class="why">${this.t("settings.always")}</span>`:h:l`<span class="why">${this.t(`settings.unavail.${s.id}`)}</span>`}
+      </div>
+    `}setHidden(s,t){const e=this.settings.hiddenTabs.filter(a=>a!==s);this.onChange({hiddenTabs:t?[...e,s]:e})}};T.styles=[v,g`
+      .grid.top {
+        grid-template-columns: 2fr 1fr;
+      }
+      @media (max-width: 1100px) {
+        .grid.top {
+          grid-template-columns: 1fr;
+        }
+      }
+      .below {
+        margin-top: var(--mk-gap);
+        grid-template-columns: 1fr 1fr;
+      }
+      @media (max-width: 900px) {
+        .below {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ---- scheme picker ---- */
+      .schemes {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+        gap: 10px;
+      }
+      button.scheme {
+        display: block;
+        width: 100%;
+        padding: 0;
+        text-align: left;
+        border: 1px solid var(--mk-line);
+        background: none;
+        cursor: pointer;
+        font: inherit;
+      }
+      button.scheme:hover {
+        border-color: var(--mk-fg-2);
+      }
+      button.scheme[aria-pressed="true"] {
+        border-color: var(--mk-accent);
+        box-shadow: 0 0 0 1px var(--mk-accent);
+      }
+      button.scheme:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 2px;
+      }
+      /* The preview paints itself in the scheme it offers, so the swatch is
+         the scheme rather than a description of it. */
+      .preview {
+        padding: 11px 12px 12px;
+      }
+      .preview .bar {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 9px;
+      }
+      .preview .pill {
+        height: 5px;
+        flex: 1;
+      }
+      .preview .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex: none;
+      }
+      .preview .card {
+        border: 1px solid;
+        padding: 7px 8px;
+      }
+      .preview .rule {
+        height: 4px;
+        margin-bottom: 5px;
+      }
+      .preview .rule.short {
+        width: 55%;
+        margin-bottom: 0;
+      }
+      .scheme-name {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        font-family: var(--mk-mono);
+        font-size: 11px;
+        padding: 7px 10px;
+        border-top: 1px solid var(--mk-line);
+        color: var(--mk-fg-2);
+        background: var(--mk-surface);
+      }
+      button.scheme[aria-pressed="true"] .scheme-name {
+        color: var(--mk-accent);
+        background: var(--mk-accent-wash);
+      }
+      .scheme-name small {
+        font-size: 9.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mk-dim);
+      }
+
+      /* ---- option rows ---- */
+      .field + .field {
+        margin-top: 16px;
+      }
+      .field > .label {
+        display: block;
+        margin-bottom: 7px;
+      }
+      .choices {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1px;
+        background: var(--mk-line);
+        border: 1px solid var(--mk-line);
+      }
+      /* Two or three options share the row; a long list packs instead of
+         stretching one stray button across the full width. */
+      .choices button {
+        flex: 1 1 auto;
+        font-family: var(--mk-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        padding: 8px 11px;
+        color: var(--mk-fg-2);
+        background: var(--mk-inset);
+        border: 0;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .choices button:hover {
+        color: var(--mk-fg);
+      }
+      .choices button[aria-pressed="true"] {
+        color: var(--mk-on-accent);
+        background: var(--mk-accent);
+      }
+      .choices button:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: -2px;
+      }
+      /* A long list becomes separate chips. Kept as one strip, the row's own
+         background would show through the space the last button does not fill
+         and read as an extra, empty option. */
+      .choices.packed {
+        background: none;
+        border: 0;
+        gap: 6px;
+      }
+      .choices.packed button {
+        flex: 0 0 auto;
+        border: 1px solid var(--mk-line);
+      }
+      .choices button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      /* ---- tab list ---- */
+      .tab-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        border-bottom: 1px dashed var(--mk-line-soft);
+      }
+      .tab-row:last-of-type {
+        border-bottom: 0;
+      }
+      .tab-row.gone {
+        opacity: 0.45;
+      }
+      .tab-row label {
+        font-family: var(--mk-mono);
+        font-size: 11.5px;
+        cursor: pointer;
+      }
+      .tab-row.gone label {
+        cursor: default;
+      }
+      .tab-row .why {
+        margin-left: auto;
+        font-family: var(--mk-mono);
+        font-size: 10px;
+        color: var(--mk-dim);
+        text-align: right;
+      }
+      input[type="checkbox"] {
+        accent-color: var(--mk-accent);
+        width: 15px;
+        height: 15px;
+        flex: none;
+      }
+      input[type="checkbox"]:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 2px;
+      }
+
+      button.action {
+        font-family: var(--mk-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 9px 15px;
+        color: var(--mk-fg-2);
+        background: var(--mk-inset);
+        border: 1px solid var(--mk-line);
+        cursor: pointer;
+      }
+      button.action:hover {
+        border-color: var(--mk-warn);
+        color: var(--mk-warn);
+      }
+      button.action:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 2px;
+      }
+    `];B([p({attribute:!1})],T.prototype,"settings",2);B([p({attribute:!1})],T.prototype,"tabs",2);B([p({attribute:!1})],T.prototype,"t",2);B([p({attribute:!1})],T.prototype,"onChange",2);B([p({attribute:!1})],T.prototype,"onReset",2);B([p({type:Boolean})],T.prototype,"light",2);T=B([b("mk-view-settings")],T);const I={scheme:ce,mode:"auto",startTab:"last",hiddenTabs:[],extraDigits:!1},Dt="marstek-panel.settings";function Rs(){let s;try{const e=localStorage.getItem(Dt);if(!e)return{...I};s=JSON.parse(e)}catch{return{...I}}if(!s||typeof s!="object")return{...I};const t=s;return{scheme:typeof t.scheme=="string"&&Nt(t.scheme).id===t.scheme?t.scheme:I.scheme,mode:t.mode==="dark"||t.mode==="light"||t.mode==="auto"?t.mode:I.mode,startTab:typeof t.startTab=="string"?t.startTab:I.startTab,hiddenTabs:Array.isArray(t.hiddenTabs)?t.hiddenTabs.filter(e=>typeof e=="string"):[],extraDigits:t.extraDigits===!0}}function zs(s){try{localStorage.setItem(Dt,JSON.stringify(s))}catch{}}function js(){try{localStorage.removeItem(Dt)}catch{}}var Is=Object.defineProperty,Us=Object.getOwnPropertyDescriptor,z=(s,t,e,a)=>{for(var i=a>1?void 0:a?Us(t,e):t,n=s.length-1,r;n>=0;n--)(r=s[n])&&(i=(a?r(t,e,i):r(i))||i);return a&&i&&Is(t,e,i),i};const vt=["core","cells","packs","solar","energy","control","system"],Ls={cells:"battery_1_max_cell_voltage",packs:"battery_soc_1",solar:"mppt1_power",control:"set_charge_power"},de="marstek-panel.device",pe="marstek-panel.tab";let C=class extends k{constructor(){super(...arguments),this.narrow=!1,this.settings=Rs(),this.tab="core",this.showSettings=!1,this.strings=at,this.deviceId=Vs(),this.catalogueFor="",this.appearanceFor="",this.formatter=new Yt("en"),this.t=(s,t)=>Fe(this.strings,s,t)}connectedCallback(){super.connectedCallback(),this.tab=this.startingTab()}willUpdate(s){if(!this.hass||!s.has("hass")&&!s.has("settings"))return;this.applyAppearance();const t=this.hass.language||"en",e=this.settings.extraDigits?1:0;(t!==this.catalogueFor||this.formatter.extraDigits!==e)&&(this.formatter=new Yt(t,e)),t!==this.catalogueFor&&(this.catalogueFor=t,Be(t).then(a=>{this.catalogueFor===t&&(this.strings=a)}))}applyAppearance(){const s=this.settings.mode,t=s==="auto"?!this.hass.themes?.darkMode:s==="light",e=`${this.settings.scheme}/${t}`;e!==this.appearanceFor&&(this.appearanceFor=e,this.toggleAttribute("light",t),Ms(this,this.settings.scheme,t))}startingTab(){const s=this.settings.startTab==="last"?Hs():this.settings.startTab;return vt.includes(s)?s:"core"}update_(s){this.settings={...this.settings,...s},zs(this.settings)}resetSettings(){js(),this.settings={...I}}openTab(s){this.tab=s,this.showSettings=!1;try{localStorage.setItem(pe,s)}catch{}}selectDevice(s){this.deviceId=s;try{localStorage.setItem(de,s)}catch{}}tabsFor(s){return vt.filter(t=>this.supports(s,t)&&(t==="core"||!this.settings.hiddenTabs.includes(t)))}supports(s,t){const e=Ls[t];return!e||s.entityId(e)!==void 0}tabChoices(s){return vt.map(t=>({id:t,label:this.t(`tab.${t}`),available:this.supports(s,t)}))}get devices(){return this.hass?je(this.hass):[]}get device(){const s=this.devices;return s.length?s.find(t=>t.deviceId===this.deviceId)??s[0]:null}render(){if(!this.hass)return h;const s=this.device;if(!s)return l`
         <div class="shell">
           <div class="empty">
             <h2>${this.t("empty.no_device")}</h2>
             <p>${this.t("empty.no_device_hint")}</p>
           </div>
         </div>
-      `;const t=new Ce(this.hass,s),e=this.tabsFor(t),a=e.includes(this.tab)?this.tab:e[0];return c`
+      `;const t=new Ie(this.hass,s),e=this.tabsFor(t),a=e.includes(this.tab)?this.tab:e[0];return l`
       <div class="shell">
         <header>
           <div class="brand">
-            ${/^marstek/i.test(s.name)?c`<em>${s.name}</em>`:c`MARSTEK <em>${s.name}</em>`}
+            ${/^marstek/i.test(s.name)?l`<em>${s.name}</em>`:l`MARSTEK <em>${s.name}</em>`}
           </div>
           <nav role="tablist" aria-label="Marstek Venus">
-            ${e.map(n=>c`
+            ${e.map(i=>l`
                 <button
                   class="tab"
                   role="tab"
-                  aria-selected=${a===n}
-                  @click=${()=>this.tab=n}
-                  @keydown=${i=>this.onTabKey(i,n,e)}
+                  aria-selected=${!this.showSettings&&a===i}
+                  @click=${()=>this.openTab(i)}
+                  @keydown=${n=>this.onTabKey(n,i,e)}
                 >
-                  ${this.t(`tab.${n}`)}
+                  ${this.t(`tab.${i}`)}
                 </button>
               `)}
           </nav>
           ${this.statusBar(t)}
         </header>
 
-        <main>${this.renderTab(t,a)}</main>
+        <main>
+          ${this.showSettings?l`<mk-view-settings
+                .settings=${this.settings}
+                .tabs=${this.tabChoices(t)}
+                .t=${this.t}
+                .onChange=${i=>this.update_(i)}
+                .onReset=${()=>this.resetSettings()}
+                ?light=${this.hasAttribute("light")}
+              ></mk-view-settings>`:this.renderTab(t,a)}
+        </main>
       </div>
-    `}onTabKey(s,t,e){const a=s.key==="ArrowRight"?1:s.key==="ArrowLeft"?-1:0;if(!a)return;s.preventDefault();const n=e[(e.indexOf(t)+a+e.length)%e.length];this.tab=n,this.renderRoot.querySelectorAll("button.tab")[e.indexOf(n)]?.focus()}statusBar(s){const t=this.devices,e=this.device?.deviceId,a=s.num("wifi_signal_strength");return c`
+    `}onTabKey(s,t,e){const a=s.key==="ArrowRight"?1:s.key==="ArrowLeft"?-1:0;if(!a)return;s.preventDefault();const i=e[(e.indexOf(t)+a+e.length)%e.length];this.tab=i,this.renderRoot.querySelectorAll("button.tab")[e.indexOf(i)]?.focus()}statusBar(s){const t=this.devices,e=this.device?.deviceId,a=s.num("wifi_signal_strength");return l`
       <div class="status">
-        ${t.length>1?c`
+        ${t.length>1?l`
               <select
                 aria-label=${this.t("common.device")}
-                @change=${n=>this.selectDevice(n.target.value)}
+                @change=${i=>this.selectDevice(i.target.value)}
               >
-                ${t.map(n=>c`
-                    <option value=${n.deviceId} ?selected=${n.deviceId===e}>
-                      ${n.name}
+                ${t.map(i=>l`
+                    <option value=${i.deviceId} ?selected=${i.deviceId===e}>
+                      ${i.name}
                     </option>
                   `)}
               </select>
-            `:p}
+            `:h}
         <span>
           <i class="led ${s.has("battery_soc")?"on":"off"}"></i>
           ${this.t("status.modbus")}
         </span>
-        ${a===null?p:c`<span>
+        ${a===null?h:l`<span>
               <i class="led on"></i>${this.t("status.wifi")}
               ${this.formatter.num(a,0)} dBm
             </span>`}
-        ${s.str("inverter_state")?c`<span>${s.str("inverter_state")}</span>`:p}
+        ${s.str("inverter_state")?l`<span>${s.str("inverter_state")}</span>`:h}
+        <button
+          class="gear"
+          aria-pressed=${this.showSettings}
+          title=${this.t("settings.title")}
+          aria-label=${this.t("settings.title")}
+          @click=${()=>this.showSettings=!this.showSettings}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-.98l2.11-1.63a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98l-.38-2.65a.49.49 0 0 0-.49-.42h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.58-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.63c-.04.32-.07.65-.07.98s.03.65.07.97L2.46 14.6a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.31.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1c.22.09.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.63Z"
+            />
+          </svg>
+        </button>
       </div>
-    `}floorPercent(s){const t=s.num("stored_energy"),e=s.num("usable_energy"),a=s.num("battery_total_energy");if(t===null||e===null||!a)return null;const n=(t-e)/a*100;return n>=0&&n<=100?n:null}renderTab(s,t){const e={reader:s,fmt:this.formatter,t:this.t};switch(t){case"cells":return c`<mk-view-cells
+    `}floorPercent(s){const t=s.num("stored_energy"),e=s.num("usable_energy"),a=s.num("battery_total_energy");if(t===null||e===null||!a)return null;const i=(t-e)/a*100;return i>=0&&i<=100?i:null}renderTab(s,t){const e={reader:s,fmt:this.formatter,t:this.t};switch(t){case"cells":return l`<mk-view-cells
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
-        ></mk-view-cells>`;case"packs":return c`<mk-view-packs
+        ></mk-view-cells>`;case"packs":return l`<mk-view-packs
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
           .floor=${this.floorPercent(s)}
-        ></mk-view-packs>`;case"solar":return c`<mk-view-solar
+        ></mk-view-packs>`;case"solar":return l`<mk-view-solar
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
-        ></mk-view-solar>`;case"energy":return c`<mk-view-energy
+        ></mk-view-solar>`;case"energy":return l`<mk-view-energy
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
-        ></mk-view-energy>`;case"control":return c`<mk-view-control
+        ></mk-view-energy>`;case"control":return l`<mk-view-control
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
-          .controls=${new Ee(this.hass,s)}
-        ></mk-view-control>`;case"system":return c`<mk-view-system
+          .controls=${new Ue(this.hass,s)}
+        ></mk-view-control>`;case"system":return l`<mk-view-system
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
-        ></mk-view-system>`;default:return c`<mk-view-core
+        ></mk-view-system>`;default:return l`<mk-view-core
           .reader=${e.reader}
           .fmt=${e.fmt}
           .t=${e.t}
-        ></mk-view-core>`}}};T.styles=[Se,g,f`
+        ></mk-view-core>`}}};C.styles=[Re,v,g`
       :host {
         min-height: 100vh;
         background: var(--mk-bg);
@@ -2096,6 +2438,37 @@
         padding: 4px 6px;
       }
 
+      button.gear {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        color: var(--mk-dim);
+        background: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+      }
+      button.gear:hover {
+        color: var(--mk-fg-2);
+        border-color: var(--mk-line);
+      }
+      button.gear[aria-pressed="true"] {
+        color: var(--mk-accent);
+        border-color: var(--mk-accent);
+        background: var(--mk-accent-wash);
+      }
+      button.gear:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 2px;
+      }
+      button.gear svg {
+        width: 17px;
+        height: 17px;
+        fill: currentColor;
+      }
+
       main {
         padding-top: 20px;
       }
@@ -2125,4 +2498,4 @@
         color: var(--mk-dim);
         letter-spacing: 0.1em;
       }
-    `];q([h({attribute:!1})],T.prototype,"hass",2);q([h({type:Boolean})],T.prototype,"narrow",2);q([E()],T.prototype,"tab",2);q([E()],T.prototype,"strings",2);q([E()],T.prototype,"deviceId",2);T=q([$("marstek-modbus-panel")],T);function As(){try{return localStorage.getItem(ee)}catch{return null}}
+    `];z([p({attribute:!1})],C.prototype,"hass",2);z([p({type:Boolean})],C.prototype,"narrow",2);z([S()],C.prototype,"settings",2);z([S()],C.prototype,"tab",2);z([S()],C.prototype,"showSettings",2);z([S()],C.prototype,"strings",2);z([S()],C.prototype,"deviceId",2);C=z([b("marstek-modbus-panel")],C);function Hs(){try{return localStorage.getItem(pe)}catch{return null}}function Vs(){try{return localStorage.getItem(de)}catch{return null}}

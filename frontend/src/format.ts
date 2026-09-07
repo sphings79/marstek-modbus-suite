@@ -10,7 +10,20 @@ const DASH = "—";
 export class Formatter {
   private readonly cache = new Map<string, Intl.NumberFormat>();
 
-  constructor(private readonly language: string) {}
+  /**
+   * `extra` adds decimal places on top of what each view asks for. Views name
+   * the precision a reading deserves; this is the user saying they want to see
+   * further than that.
+   */
+  constructor(
+    private readonly language: string,
+    private readonly extra = 0,
+  ) {}
+
+  /** How many places this formatter adds, so a caller can spot a stale one. */
+  get extraDigits(): number {
+    return this.extra;
+  }
 
   private formatter(digits: number): Intl.NumberFormat {
     const key = String(digits);
@@ -28,7 +41,7 @@ export class Formatter {
   /** A plain number, or an em dash when there is nothing to show. */
   num(value: number | null | undefined, digits = 0): string {
     if (value === null || value === undefined || !Number.isFinite(value)) return DASH;
-    return this.formatter(digits).format(value);
+    return this.formatter(digits + this.extra).format(value);
   }
 
   /**
@@ -37,7 +50,7 @@ export class Formatter {
    */
   signed(value: number | null | undefined, digits = 0): string {
     if (value === null || value === undefined || !Number.isFinite(value)) return DASH;
-    const text = this.formatter(digits).format(Math.abs(value));
+    const text = this.formatter(digits + this.extra).format(Math.abs(value));
     if (value > 0) return `+${text}`;
     if (value < 0) return `−${text}`;
     return text;

@@ -176,6 +176,39 @@ export const de: Record<string, string> = {
   "system.ceiling_ignored":
     "Dieses Register meldet {value} % und liegt damit außerhalb seines eigenen Bereichs 10–100, wird vom Gerät also nicht genutzt. Das Panel rechnet stattdessen bis 100 %.",
 
+  // ---- Einstellungen ----
+  "settings.title": "Einstellungen",
+  "settings.scheme": "Farbschema",
+  "settings.scheme_hint":
+    "Jedes Schema bringt eine eigene helle und dunkle Fassung mit. Die Kachel ist in dem Schema gemalt, das sie anbietet.",
+  "settings.scheme_theme": "folgt deinem Theme",
+  "settings.appearance": "Darstellung",
+  "settings.mode": "Hell oder dunkel",
+  "settings.mode.auto": "Home Assistant",
+  "settings.mode.dark": "Dunkel",
+  "settings.mode.light": "Hell",
+  "settings.mode_ha":
+    "Dieses Schema übernimmt die Farben deines Home-Assistant-Themes, und das entscheidet hell oder dunkel bereits selbst.",
+  "settings.digits": "Nachkommastellen",
+  "settings.digits.normal": "Normal",
+  "settings.digits.more": "Eine mehr",
+  "settings.start_tab": "Reiter beim Öffnen",
+  "settings.start_tab.last": "Zuletzt benutzt",
+  "settings.start_tab_hint":
+    "Ein fester Reiter, den der Speicher nicht füllen kann, fällt auf die Übersicht zurück.",
+  "settings.tabs": "Reiter",
+  "settings.tabs_hint":
+    "Ausgegraut heißt: Dieser Speicher meldet nicht, was der Reiter zeigt. Ausblenden ist dann keine Entscheidung, die du treffen musst.",
+  "settings.always": "immer sichtbar",
+  "settings.unavail.cells": "keine Zellspannungen",
+  "settings.unavail.packs": "kein SoC je Pack",
+  "settings.unavail.solar": "keine PV-Eingänge",
+  "settings.unavail.control": "keine beschreibbaren Register",
+  "settings.storage": "Gespeicherte Einstellungen",
+  "settings.reset": "Auf Standard zurücksetzen",
+  "settings.storage_hint":
+    "Diese Einstellungen liegen nur in diesem Browser. Ein anderer Browser oder ein anderes Gerät hat seine eigenen.",
+
   // ---- Leerzustände ----
   "empty.no_device": "Kein Marstek-Speicher gefunden",
   "empty.no_device_hint":

@@ -13,6 +13,16 @@ import "./views/solar";
 import "./views/energy";
 import "./views/system";
 import "./views/control";
+import "./views/settings";
+import type { TabChoice } from "./views/settings";
+import { applyScheme } from "./palettes";
+import {
+  loadSettings,
+  saveSettings,
+  clearSettings,
+  DEFAULT_SETTINGS,
+  type PanelSettings,
+} from "./settings";
 
 type TabId =
   | "core"
@@ -44,16 +54,22 @@ const TAB_REQUIRES: Partial<Record<TabId, string>> = {
  *  opened repeatedly, and re-picking the same one every time is friction. */
 const STORAGE_DEVICE = "marstek-panel.device";
 
+/** The tab last looked at, for the "resume where I was" start option. */
+const STORAGE_TAB = "marstek-panel.tab";
+
 @customElement("marstek-modbus-panel")
 export class MarstekPanel extends LitElement {
   @property({ attribute: false }) hass!: import("./types").HomeAssistant;
   @property({ type: Boolean }) narrow = false;
 
+  @state() private settings: PanelSettings = loadSettings();
   @state() private tab: TabId = "core";
+  @state() private showSettings = false;
   @state() private strings: Strings = en;
   @state() private deviceId: string | null = readStoredDevice();
 
   private catalogueFor = "";
+  private appearanceFor = "";
   private formatter = new Formatter("en");
 
   static styles = [
@@ -161,6 +177,37 @@ export class MarstekPanel extends LitElement {
         padding: 4px 6px;
       }
 
+      button.gear {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        color: var(--mk-dim);
+        background: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+      }
+      button.gear:hover {
+        color: var(--mk-fg-2);
+        border-color: var(--mk-line);
+      }
+      button.gear[aria-pressed="true"] {
+        color: var(--mk-accent);
+        border-color: var(--mk-accent);
+        background: var(--mk-accent-wash);
+      }
+      button.gear:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 2px;
+      }
+      button.gear svg {
+        width: 17px;
+        height: 17px;
+        fill: currentColor;
+      }
+
       main {
         padding-top: 20px;
       }
@@ -193,20 +240,76 @@ export class MarstekPanel extends LitElement {
     `,
   ];
 
-  protected willUpdate(changed: Map<string, unknown>): void {
-    if (!changed.has("hass") || !this.hass) return;
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.tab = this.startingTab();
+  }
 
-    // Follow the theme Home Assistant is in, without adopting its colours.
-    this.toggleAttribute("light", !this.hass.themes?.darkMode);
+  protected willUpdate(changed: Map<string, unknown>): void {
+    if (!this.hass) return;
+    if (!changed.has("hass") && !changed.has("settings")) return;
+
+    this.applyAppearance();
 
     const language = this.hass.language || "en";
+    const digits = this.settings.extraDigits ? 1 : 0;
+    if (language !== this.catalogueFor || this.formatter.extraDigits !== digits) {
+      this.formatter = new Formatter(language, digits);
+    }
     if (language !== this.catalogueFor) {
       this.catalogueFor = language;
-      this.formatter = new Formatter(language);
       void loadCatalogue(language).then((strings) => {
         // Ignore a catalogue that arrives after another language was selected.
         if (this.catalogueFor === language) this.strings = strings;
       });
+    }
+  }
+
+  /**
+   * Put the chosen light/dark and colour scheme on the host.
+   *
+   * Both end up as inherited custom properties, so this is the only element in
+   * the panel that has to know about either. Repeating the work on every hass
+   * update would rewrite nineteen properties several times a second, hence the
+   * signature check.
+   */
+  private applyAppearance(): void {
+    const mode = this.settings.mode;
+    const light =
+      mode === "auto" ? !this.hass.themes?.darkMode : mode === "light";
+
+    const signature = `${this.settings.scheme}/${light}`;
+    if (signature === this.appearanceFor) return;
+    this.appearanceFor = signature;
+
+    this.toggleAttribute("light", light);
+    applyScheme(this, this.settings.scheme, light);
+  }
+
+  /** Where the panel opens: a fixed tab, or the one it was left on. */
+  private startingTab(): TabId {
+    const wanted =
+      this.settings.startTab === "last" ? readStoredTab() : this.settings.startTab;
+    return TABS.includes(wanted as TabId) ? (wanted as TabId) : "core";
+  }
+
+  private update_(patch: Partial<PanelSettings>): void {
+    this.settings = { ...this.settings, ...patch };
+    saveSettings(this.settings);
+  }
+
+  private resetSettings(): void {
+    clearSettings();
+    this.settings = { ...DEFAULT_SETTINGS };
+  }
+
+  private openTab(id: TabId): void {
+    this.tab = id;
+    this.showSettings = false;
+    try {
+      localStorage.setItem(STORAGE_TAB, id);
+    } catch {
+      // See selectDevice: remembering is a convenience, not a requirement.
     }
   }
 
@@ -223,11 +326,27 @@ export class MarstekPanel extends LitElement {
     }
   }
 
+  /** Tabs this battery can fill, minus the ones the user chose to hide. */
   private tabsFor(reader: DeviceReader): TabId[] {
-    return TABS.filter((id) => {
-      const key = TAB_REQUIRES[id];
-      return !key || reader.entityId(key) !== undefined;
-    });
+    return TABS.filter(
+      (id) =>
+        this.supports(reader, id) &&
+        (id === "core" || !this.settings.hiddenTabs.includes(id)),
+    );
+  }
+
+  private supports(reader: DeviceReader, id: TabId): boolean {
+    const key = TAB_REQUIRES[id];
+    return !key || reader.entityId(key) !== undefined;
+  }
+
+  /** Every tab, with whether the battery can fill it, for the settings list. */
+  private tabChoices(reader: DeviceReader): TabChoice[] {
+    return TABS.map((id) => ({
+      id,
+      label: this.t(`tab.${id}`),
+      available: this.supports(reader, id),
+    }));
   }
 
   private get devices(): MarstekDevice[] {
@@ -275,8 +394,8 @@ export class MarstekPanel extends LitElement {
                 <button
                   class="tab"
                   role="tab"
-                  aria-selected=${active === id}
-                  @click=${() => (this.tab = id)}
+                  aria-selected=${!this.showSettings && active === id}
+                  @click=${() => this.openTab(id)}
                   @keydown=${(e: KeyboardEvent) => this.onTabKey(e, id, tabs)}
                 >
                   ${this.t(`tab.${id}`)}
@@ -287,7 +406,18 @@ export class MarstekPanel extends LitElement {
           ${this.statusBar(reader)}
         </header>
 
-        <main>${this.renderTab(reader, active)}</main>
+        <main>
+          ${this.showSettings
+            ? html`<mk-view-settings
+                .settings=${this.settings}
+                .tabs=${this.tabChoices(reader)}
+                .t=${this.t}
+                .onChange=${(patch: Partial<PanelSettings>) => this.update_(patch)}
+                .onReset=${() => this.resetSettings()}
+                ?light=${this.hasAttribute("light")}
+              ></mk-view-settings>`
+            : this.renderTab(reader, active)}
+        </main>
       </div>
     `;
   }
@@ -339,6 +469,19 @@ export class MarstekPanel extends LitElement {
         ${reader.str("inverter_state")
           ? html`<span>${reader.str("inverter_state")}</span>`
           : nothing}
+        <button
+          class="gear"
+          aria-pressed=${this.showSettings}
+          title=${this.t("settings.title")}
+          aria-label=${this.t("settings.title")}
+          @click=${() => (this.showSettings = !this.showSettings)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-.98l2.11-1.63a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98l-.38-2.65a.49.49 0 0 0-.49-.42h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.58-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.63c-.04.32-.07.65-.07.98s.03.65.07.97L2.46 14.6a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.31.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1c.22.09.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.63Z"
+            />
+          </svg>
+        </button>
       </div>
     `;
   }
@@ -411,6 +554,14 @@ export class MarstekPanel extends LitElement {
           .t=${shared.t}
         ></mk-view-core>`;
     }
+  }
+}
+
+function readStoredTab(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_TAB);
+  } catch {
+    return null;
   }
 }
 
