@@ -17,6 +17,19 @@ jobs:
       - uses: actions/checkout@v7
       - uses: home-assistant/actions/hassfest@master
 
+  translations:
+    name: translations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml
+      # A register without a translation produces no error at runtime: Home
+      # Assistant finds no name and falls back to the device name alone.
+      - run: python3 scripts/check_translations.py
+
   hacs:
     name: HACS
     runs-on: ubuntu-latest
