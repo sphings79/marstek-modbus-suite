@@ -14,3 +14,5 @@ frontend/node_modules
 !assets/icon.svg
 !custom_components/marstek_modbus/brand/icon.png
 !custom_components/marstek_modbus/brand/icon@2x.png
+!custom_components/marstek_modbus/brand/logo.png
+!custom_components/marstek_modbus/brand/logo@2x.png
