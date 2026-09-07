@@ -95,9 +95,49 @@ export class DeviceReader {
     return this.state(key)?.attributes.unit_of_measurement ?? "";
   }
 
-  /** The entity's own name, already translated by Home Assistant. */
+  /**
+   * The state without the unavailable/unknown filter.
+   *
+   * Controls need this: a schedule whose day has never been set reads
+   * "unknown", and a picker still has to render for it.
+   */
+  rawState(key: string): HassEntity | null {
+    const id = this.device.byKey[key];
+    return (id && this.hass.states[id]) || null;
+  }
+
+  /**
+   * An attribute of the entity, whatever its state. This is how the controls
+   * learn their own bounds - a Venus A caps at 1500 W and a Venus D at 2500,
+   * and reading min/max/step means neither is hard-coded anywhere.
+   */
+  attr<T>(key: string, name: string, fallback: T): T {
+    const value = this.rawState(key)?.attributes[name];
+    return (value as T) ?? fallback;
+  }
+
+  /** True when the entity exists and is not currently unavailable. */
+  writable(key: string): boolean {
+    const entity = this.rawState(key);
+    return !!entity && entity.state !== "unavailable";
+  }
+
+  /**
+   * The entity's own name, already translated by Home Assistant, with the
+   * device name taken off the front.
+   *
+   * Home Assistant composes friendly_name as "<device> <entity>". The device
+   * is named once in the header, so carrying it on every row would push the
+   * part that differs off the edge.
+   */
   label(key: string): string {
-    return this.hass.states[this.device.byKey[key] ?? ""]?.attributes.friendly_name ?? key;
+    const full = this.hass.states[this.device.byKey[key] ?? ""]?.attributes.friendly_name;
+    if (!full) return key;
+    const prefix = this.device.name;
+    if (prefix && full.startsWith(prefix) && full.length > prefix.length + 1) {
+      return full.slice(prefix.length).trim();
+    }
+    return full;
   }
 
   /**

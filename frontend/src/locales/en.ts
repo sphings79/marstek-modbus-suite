@@ -14,6 +14,50 @@ export const en: Record<string, string> = {
   "tab.energy": "ENERGY",
   "tab.system": "SYSTEM",
 
+  // ---- control ----
+  "tab.control": "CONTROL",
+  "control.power": "Power now",
+  "control.power_hint":
+    "These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.",
+  "control.limits": "Limits",
+  "control.mode": "Mode",
+  "control.backup_hint": "Keeps a reserve for the off-grid output.",
+  "control.rs485_hint":
+    "Switching this off hands control back to the device, and this page stops having any effect.",
+  "control.overwritten":
+    "Something else changed {names} right after this panel did. An external controller is writing the same registers.",
+  "control.schedules": "Schedules",
+  "control.schedules_axis": "times are the device's own, in its local time",
+  "control.schedules_hint":
+    "A schedule needs a window, a power and a day before switching it on does anything. Power is signed: the sign decides the direction. The device takes one day per schedule, not a set of them.",
+  "control.no_schedules": "This battery exposes no schedules.",
+  "control.window": "Window",
+  "control.sched_power": "Power",
+  "control.days": "Day",
+  "control.active": "On",
+  "control.unset": "not set",
+  "control.device": "Device",
+  "control.reset": "Restart device",
+  "control.reset_confirm": "Really restart",
+  "control.cancel": "Cancel",
+  "control.reset_hint":
+    "Reconnects after a few seconds. A factory reset is deliberately not offered here — it is in the entity list.",
+
+  "control.opt.manual": "Manual",
+  "control.opt.anti_feed": "Anti-feed",
+  "control.opt.trade_mode": "Trade",
+  "control.opt.standby": "Standby",
+  "control.opt.charge": "Charge",
+  "control.opt.discharge": "Discharge",
+
+  "control.day.monday": "Mon",
+  "control.day.tuesday": "Tue",
+  "control.day.wednesday": "Wed",
+  "control.day.thursday": "Thu",
+  "control.day.friday": "Fri",
+  "control.day.saturday": "Sat",
+  "control.day.sunday": "Sun",
+
   "status.modbus": "MODBUS",
   "status.wifi": "WIFI",
 

@@ -2,6 +2,7 @@ import { LitElement, html, css, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { themeStyles, baseStyles } from "./styles";
 import { findDevices, DeviceReader, type MarstekDevice } from "./entities";
+import { DeviceControls } from "./controls";
 import { loadCatalogue, translate, type Strings } from "./localize";
 import { Formatter } from "./format";
 import { en } from "./locales/en";
@@ -11,10 +12,18 @@ import "./views/packs";
 import "./views/solar";
 import "./views/energy";
 import "./views/system";
+import "./views/control";
 
-type TabId = "core" | "cells" | "packs" | "solar" | "energy" | "system";
+type TabId =
+  | "core"
+  | "cells"
+  | "packs"
+  | "solar"
+  | "energy"
+  | "control"
+  | "system";
 
-const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "system"];
+const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "control", "system"];
 
 /**
  * A tab appears only when the battery has something to put in it. Venus E
@@ -28,6 +37,7 @@ const TAB_REQUIRES: Partial<Record<TabId, string>> = {
   cells: "battery_1_max_cell_voltage",
   packs: "battery_soc_1",
   solar: "mppt1_power",
+  control: "set_charge_power",
 };
 
 /** Remembering the selected battery is worth a line of storage: the panel is
@@ -254,7 +264,11 @@ export class MarstekPanel extends LitElement {
     return html`
       <div class="shell">
         <header>
-          <div class="brand">MARSTEK <em>${device.name}</em></div>
+          <div class="brand">
+            ${/^marstek/i.test(device.name)
+              ? html`<em>${device.name}</em>`
+              : html`MARSTEK <em>${device.name}</em>`}
+          </div>
           <nav role="tablist" aria-label="Marstek Venus">
             ${tabs.map(
               (id) => html`
@@ -377,6 +391,13 @@ export class MarstekPanel extends LitElement {
           .fmt=${shared.fmt}
           .t=${shared.t}
         ></mk-view-energy>`;
+      case "control":
+        return html`<mk-view-control
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+          .controls=${new DeviceControls(this.hass, reader)}
+        ></mk-view-control>`;
       case "system":
         return html`<mk-view-system
           .reader=${shared.reader}

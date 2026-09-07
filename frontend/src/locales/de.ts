@@ -6,6 +6,50 @@ export const de: Record<string, string> = {
   "tab.energy": "ENERGIE",
   "tab.system": "SYSTEM",
 
+  // ---- Steuerung ----
+  "tab.control": "STEUERUNG",
+  "control.power": "Leistung jetzt",
+  "control.power_hint":
+    "Diese beiden setzen den Betriebspunkt direkt. Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager — schreibt dieselben Register und gewinnt innerhalb von Sekunden.",
+  "control.limits": "Grenzwerte",
+  "control.mode": "Modus",
+  "control.backup_hint": "Hält eine Reserve für den Notstromausgang zurück.",
+  "control.rs485_hint":
+    "Ausgeschaltet gibt die Steuerung an das Gerät zurück — diese Seite bleibt dann wirkungslos.",
+  "control.overwritten":
+    "Etwas anderes hat {names} direkt nach diesem Panel geändert. Eine externe Regelung schreibt dieselben Register.",
+  "control.schedules": "Zeitpläne",
+  "control.schedules_axis": "Zeiten sind die des Geräts, in dessen lokaler Zeit",
+  "control.schedules_hint":
+    "Ein Zeitplan braucht Zeitfenster, Leistung und Tag, bevor das Einschalten etwas bewirkt. Die Leistung ist vorzeichenbehaftet — das Vorzeichen bestimmt die Richtung. Das Gerät nimmt einen Tag je Zeitplan, keine Auswahl mehrerer.",
+  "control.no_schedules": "Dieser Speicher bietet keine Zeitpläne.",
+  "control.window": "Fenster",
+  "control.sched_power": "Leistung",
+  "control.days": "Tag",
+  "control.active": "An",
+  "control.unset": "nicht gesetzt",
+  "control.device": "Gerät",
+  "control.reset": "Gerät neu starten",
+  "control.reset_confirm": "Wirklich neu starten",
+  "control.cancel": "Abbrechen",
+  "control.reset_hint":
+    "Verbindet sich nach einigen Sekunden wieder. Ein Werksreset wird hier bewusst nicht angeboten — er steht in der Entitätsliste.",
+
+  "control.opt.manual": "Manuell",
+  "control.opt.anti_feed": "Nulleinspeisung",
+  "control.opt.trade_mode": "Handel",
+  "control.opt.standby": "Bereit",
+  "control.opt.charge": "Laden",
+  "control.opt.discharge": "Entladen",
+
+  "control.day.monday": "Mo",
+  "control.day.tuesday": "Di",
+  "control.day.wednesday": "Mi",
+  "control.day.thursday": "Do",
+  "control.day.friday": "Fr",
+  "control.day.saturday": "Sa",
+  "control.day.sunday": "So",
+
   "status.modbus": "MODBUS",
   "status.wifi": "WLAN",
 

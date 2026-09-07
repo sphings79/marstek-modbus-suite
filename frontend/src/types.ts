@@ -52,4 +52,9 @@ export interface HomeAssistant {
   language: string;
   themes: { darkMode: boolean };
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
+  callService(
+    domain: string,
+    service: string,
+    data?: Record<string, unknown>,
+  ): Promise<unknown>;
 }
