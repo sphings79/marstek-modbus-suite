@@ -60,6 +60,7 @@ export class MkViewPacks extends MkView {
         index: i,
         soc,
         energy: soc === null || per === null ? null : (soc / 100) * per,
+        socLabel: soc === null ? undefined : `${f.num(soc, 1)} %`,
         note:
           min === null || max === null
             ? undefined
@@ -144,6 +145,7 @@ export class MkViewPacks extends MkView {
                 .packs=${fills}
                 .floor=${this.floor}
                 packLabel=${t("common.pack")}
+                energyUnit=${r.unit("battery_total_energy") || "kWh"}
                 .formatNumber=${(v: number | null, d = 0) => f.num(v, d)}
               ></mk-pack-bars>
             `

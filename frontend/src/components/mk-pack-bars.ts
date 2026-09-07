@@ -8,6 +8,8 @@ export interface PackFill {
   soc: number | null;
   /** Energy in the pack, already worked out by the caller. */
   energy: number | null;
+  /** Preformatted state of charge, shown under the energy figure. */
+  socLabel?: string;
   /** Second line under the column, e.g. the cell voltage range. */
   note?: string;
 }
@@ -18,12 +20,18 @@ export interface PackFill {
  * Columns rather than numbers because the question this answers is whether the
  * packs agree with each other, and a row of equal heights answers it at a
  * glance. The floor line marks where discharging stops.
+ *
+ * The fill runs from red when empty to green when full. That is redundant with
+ * the column height on purpose - nobody has to rely on the colour - and it
+ * leaves the outline free to carry something else: a pack that has drifted
+ * away from the group.
  */
 @customElement("mk-pack-bars")
 export class MkPackBars extends LitElement {
   @property({ attribute: false }) packs: PackFill[] = [];
   @property({ type: Number }) floor: number | null = null;
   @property({ type: String }) packLabel = "PACK";
+  @property({ type: String }) energyUnit = "kWh";
   @property({ attribute: false }) formatNumber: (v: number | null, d?: number) => string =
     (v) => (v === null ? "—" : String(v));
 
@@ -67,20 +75,48 @@ export class MkPackBars extends LitElement {
         right: 0;
         bottom: 0;
         display: flex;
-        align-items: flex-start;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
         padding-top: 7px;
-        background: linear-gradient(180deg, var(--mk-accent), var(--mk-accent-deep));
+        gap: 1px;
       }
-      .fill.flagged {
-        background: linear-gradient(180deg, var(--mk-warn), #a86a06);
+      /* Readings sit inside the fill when it is tall enough to hold them, and
+         above it when it is not - a nearly empty pack must not push its own
+         figures out of the column. */
+      .readings {
+        position: absolute;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        pointer-events: none;
       }
-      .fill span {
+      .readings .kwh {
         font-family: var(--mk-mono);
         font-variant-numeric: tabular-nums;
         font-weight: 600;
         font-size: 12px;
-        color: var(--mk-on-accent);
+      }
+      .readings .kwh .unit {
+        font-size: 9px;
+        font-weight: 400;
+        margin-left: 2px;
+        opacity: 0.75;
+      }
+      .readings .pct-line {
+        font-family: var(--mk-mono);
+        font-variant-numeric: tabular-nums;
+        font-size: 10px;
+        opacity: 0.82;
+      }
+      .readings.inside {
+        color: #0a1410;
+      }
+      .readings.outside {
+        color: var(--mk-fg-2);
       }
       .floor {
         position: absolute;
@@ -113,6 +149,18 @@ export class MkPackBars extends LitElement {
     `,
   ];
 
+  /**
+   * Fill colour for a state of charge: red when empty, amber halfway, green
+   * when full. Interpolated in hue so the steps between packs read as a scale
+   * rather than as categories.
+   */
+  private fill(soc: number | null): string {
+    if (soc === null) return "var(--mk-track)";
+    const t = Math.min(Math.max(soc, 0), 100) / 100;
+    const hue = t < 0.5 ? 4 + 41 * (t / 0.5) : 45 + 95 * ((t - 0.5) / 0.5);
+    return `linear-gradient(180deg, hsl(${hue.toFixed(0)} 74% 56%), hsl(${hue.toFixed(0)} 68% 43%))`;
+  }
+
   render() {
     if (!this.packs.length) return nothing;
 
@@ -144,14 +192,27 @@ export class MkPackBars extends LitElement {
                 ${this.formatNumber(pack.soc, 1)}<span class="pct">%</span>
               </div>
               <div class="column ${flagged ? "flagged" : ""}">
-                <div class="fill ${flagged ? "flagged" : ""}" style="height:${height}%">
-                  ${pack.energy === null
-                    ? nothing
-                    : html`<span>${this.formatNumber(pack.energy, 2)}</span>`}
-                </div>
+                <div class="fill" style="height:${height}%;background:${this.fill(pack.soc)}"></div>
                 ${this.floor === null
                   ? nothing
                   : html`<div class="floor" style="bottom:${this.floor}%"></div>`}
+                ${pack.energy === null
+                  ? nothing
+                  : html`
+                      <div
+                        class="readings ${height >= 26 ? "inside" : "outside"}"
+                        style=${height >= 26
+                          ? `bottom:${height}%;transform:translateY(100%);padding-top:7px`
+                          : `bottom:${height}%;transform:translateY(-4px)`}
+                      >
+                        <span class="kwh">
+                          ${this.formatNumber(pack.energy, 2)}<span class="unit">${this.energyUnit}</span>
+                        </span>
+                        ${pack.socLabel
+                          ? html`<span class="pct-line">${pack.socLabel}</span>`
+                          : nothing}
+                      </div>
+                    `}
               </div>
               <div class="name ${flagged ? "warn" : ""}">
                 ${this.packLabel} ${pack.index}
