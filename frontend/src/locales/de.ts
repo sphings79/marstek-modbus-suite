@@ -120,6 +120,7 @@ export const de: Record<string, string> = {
   "packs.fill_axis": "Säulenhöhe = SoC · Zahl darin = kWh",
   "packs.fill_legend":
     "Die gestrichelte Linie markiert die Entladegrenze bei {floor} %. Die kWh je Pack sind aus SoC und nominaler Packgröße gerechnet — das Gerät meldet keinen eigenen Energiewert pro Pack.",
+  "packs.fill_legend_backup": "Die gepunktete Linie bei {backup} % ist die Grenze, bis zu der die Notstromsteckdose bei einem Ausfall entlädt.",
   "packs.fill_legend_nofloor":
     "Die kWh je Pack sind aus SoC und nominaler Packgröße gerechnet — das Gerät meldet keinen eigenen Energiewert pro Pack.",
   "packs.none": "Dieser Speicher meldet keinen Ladezustand je Pack.",
@@ -213,6 +214,11 @@ export const de: Record<string, string> = {
   "settings.unavail.control": "keine beschreibbaren Register",
   "settings.storage": "Gespeicherte Einstellungen",
   "settings.reset": "Auf Standard zurücksetzen",
+  "settings.transfer": "Import / Export",
+  "settings.transfer_hint": "Hier herauskopieren, in einem anderen Browser einfügen.",
+  "settings.transfer_bad": "Das ist kein Einstellungsobjekt.",
+  "settings.import": "Eingefügtes übernehmen",
+  "settings.export_again": "Aktuelle anzeigen",
   "settings.storage_hint":
     "Diese Einstellungen liegen nur in diesem Browser. Ein anderer Browser oder ein anderes Gerät hat seine eigenen.",
 

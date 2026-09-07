@@ -104,6 +104,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.RUNTIME_SENSOR_DEFINITIONS = []
         self.BATTERY_LIFE_SENSOR_DEFINITIONS = []
         self.ENERGY_WINDOW_SENSOR_DEFINITIONS = []
+        self.BACKUP_RESERVE_SENSOR_DEFINITIONS = []
         self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = []
         self.BITFIELD_TEXT_SENSOR_DEFINITIONS = []
         self.GRID_POWER_SENSOR_DEFINITIONS = []
@@ -726,6 +727,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             )
             self.ENERGY_WINDOW_SENSOR_DEFINITIONS = data.get(
                 "ENERGY_WINDOW_SENSOR_DEFINITIONS", []
+            )
+            self.BACKUP_RESERVE_SENSOR_DEFINITIONS = data.get(
+                "BACKUP_RESERVE_SENSOR_DEFINITIONS", []
             )
             self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = data.get(
                 "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS", []
@@ -1525,6 +1529,7 @@ def get_registers(version: str):
     - RUNTIME_SENSOR_DEFINITIONS
     - BATTERY_LIFE_SENSOR_DEFINITIONS
     - ENERGY_WINDOW_SENSOR_DEFINITIONS
+    - BACKUP_RESERVE_SENSOR_DEFINITIONS
     - CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
     - BITFIELD_TEXT_SENSOR_DEFINITIONS
     - GRID_POWER_SENSOR_DEFINITIONS
@@ -1628,6 +1633,9 @@ def get_registers(version: str):
                     ),
                     "ENERGY_WINDOW_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("ENERGY_WINDOW_SENSOR_DEFINITIONS")
+                    ),
+                    "BACKUP_RESERVE_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("BACKUP_RESERVE_SENSOR_DEFINITIONS")
                     ),
                     "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS")

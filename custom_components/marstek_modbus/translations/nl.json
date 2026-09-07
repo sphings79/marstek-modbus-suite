@@ -525,6 +525,9 @@
       "energy_to_full": {
         "name": "Energie tot vol"
       },
+      "backup_reserve_energy": {
+        "name": "Noodstroomreserve"
+      },
       "total_daily_charging_energy": {
         "name": "Dagelijkse Oplaadenergie"
       },

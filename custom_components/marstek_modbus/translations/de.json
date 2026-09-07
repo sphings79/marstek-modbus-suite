@@ -518,6 +518,9 @@
       "energy_to_full": {
         "name": "Energie bis voll"
       },
+      "backup_reserve_energy": {
+        "name": "Notstromreserve"
+      },
       "total_daily_charging_energy": {
         "name": "Tägliche Ladeenergie"
       },

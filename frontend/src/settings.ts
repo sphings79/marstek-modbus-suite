@@ -41,15 +41,23 @@ const STORAGE_KEY = "marstek-panel.settings";
  * colour choice, not every other setting they made.
  */
 export function loadSettings(): PanelSettings {
-  let stored: unknown;
   try {
     const text = localStorage.getItem(STORAGE_KEY);
     if (!text) return { ...DEFAULT_SETTINGS };
-    stored = JSON.parse(text);
+    return parseSettings(JSON.parse(text));
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
+}
 
+/**
+ * Turn anything into a valid settings object, field by field.
+ *
+ * Shared by the stored value and by whatever someone pastes into the import
+ * box, so a hand-edited file cannot put the panel into a state the settings
+ * view has no control for.
+ */
+export function parseSettings(stored: unknown): PanelSettings {
   if (!stored || typeof stored !== "object") return { ...DEFAULT_SETTINGS };
   const raw = stored as Record<string, unknown>;
 
@@ -68,6 +76,27 @@ export function loadSettings(): PanelSettings {
       : [],
     extraDigits: raw.extraDigits === true,
   };
+}
+
+/** The settings as text, for the export box. */
+export function exportSettings(settings: PanelSettings): string {
+  return JSON.stringify(settings, null, 2);
+}
+
+/**
+ * Read a pasted settings object. Returns null when the text is not JSON at
+ * all - a typo should say so rather than silently resetting everything to
+ * defaults, which is what parseSettings alone would do.
+ */
+export function importSettings(text: string): PanelSettings | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  return parseSettings(parsed);
 }
 
 export function saveSettings(settings: PanelSettings): void {

@@ -40,6 +40,7 @@ async def async_setup_entry(
         (MarstekRuntimeSensor, coordinator.RUNTIME_SENSOR_DEFINITIONS),
         (MarstekBatteryLifeSensor, coordinator.BATTERY_LIFE_SENSOR_DEFINITIONS),
         (MarstekEnergyWindowSensor, coordinator.ENERGY_WINDOW_SENSOR_DEFINITIONS),
+        (MarstekBackupReserveSensor, coordinator.BACKUP_RESERVE_SENSOR_DEFINITIONS),
         (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
@@ -834,6 +835,47 @@ class MarstekEnergyWindowSensor(MarstekWindowSensor):
             return None
 
         return round(capacity * span / 100, 2)
+
+
+class MarstekBackupReserveSensor(MarstekWindowSensor):
+    """
+    Energy below the discharge floor that only the backup socket can reach.
+
+    The device stops at the configured floor in normal operation, but keeps
+    discharging to a lower limit while it is running the off-grid output. That
+    band is invisible everywhere else: usable_energy counts down to the floor
+    and stops.
+
+    Reported whether or not the socket is armed. The question this answers is
+    "how much is down there if the power goes out", and a figure that drops to
+    zero exactly when someone is planning for an outage answers nothing.
+
+    Once the state of charge is inside the band - during an outage - the span
+    is measured from there, so the number counts down rather than claiming the
+    band is still full.
+    """
+
+    def _backup_floor(self) -> float:
+        return float(self.definition.get("backup_floor", 0.0))
+
+    def calculate_value(self, dep_values: dict):
+        soc = dep_values.get("soc")
+        capacity = dep_values.get("capacity")
+        if soc is None or capacity is None:
+            return None
+
+        top = min(soc, self._floor())
+        span = max(top - self._backup_floor(), 0.0)
+        return round(capacity * span / 100, 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """The two percentages, so a dashboard can draw them without
+        rediscovering where they came from."""
+        return {
+            "backup_floor_percent": self._backup_floor(),
+            "discharge_floor_percent": self._floor(),
+        }
 
 
 class MarstekBatteryLifeSensor(MarstekCalculatedSensor):

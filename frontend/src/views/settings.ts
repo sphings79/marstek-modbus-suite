@@ -1,8 +1,9 @@
 import { LitElement, html, css, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { baseStyles } from "../styles";
 import type { Translate } from "./view-base";
 import type { PanelSettings, ThemeMode } from "../settings";
+import { exportSettings, importSettings } from "../settings";
 import { SCHEMES, followsHaTheme, type Palette } from "../palettes";
 
 /** One tab as the settings list sees it: name, and why it may not be offered. */
@@ -28,6 +29,11 @@ export class MkViewSettings extends LitElement {
   @property({ attribute: false }) onReset!: () => void;
   /** Which ground the panel is on, so a swatch shows the version that applies. */
   @property({ type: Boolean }) light = false;
+
+  /** Import box: open, its text, and whether the last paste was readable. */
+  @state() private transferOpen = false;
+  @state() private transferText = "";
+  @state() private transferBad = false;
 
   static styles = [
     baseStyles,
@@ -230,6 +236,40 @@ export class MkViewSettings extends LitElement {
         outline-offset: 2px;
       }
 
+      .transfer {
+        margin-top: 14px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        resize: vertical;
+        font-family: var(--mk-mono);
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--mk-fg);
+        background: var(--mk-inset);
+        border: 1px solid var(--mk-line);
+        padding: 9px 10px;
+      }
+      textarea:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 1px;
+      }
+      textarea.bad {
+        border-color: var(--mk-crit);
+      }
+      .transfer .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 9px;
+      }
+      .bad-note {
+        font-family: var(--mk-mono);
+        font-size: 10.5px;
+        color: var(--mk-crit);
+      }
       button.action {
         font-family: var(--mk-mono);
         font-size: 10.5px;
@@ -339,11 +379,75 @@ export class MkViewSettings extends LitElement {
             <button class="action" @click=${() => this.onReset()}>
               ${t("settings.reset")}
             </button>
+            <button
+              class="action"
+              aria-expanded=${this.transferOpen}
+              @click=${() => this.toggleTransfer()}
+            >
+              ${t("settings.transfer")}
+            </button>
             <span class="note" style="margin:0">${t("settings.storage_hint")}</span>
           </div>
+          ${this.transferOpen ? this.transfer() : nothing}
         </div>
       </div>
     `;
+  }
+
+  /**
+   * The box that carries settings between browsers.
+   *
+   * One editable field rather than a download and an upload: copying text out
+   * and pasting text in works the same in every browser, needs no file
+   * permission, and lets someone see what they are moving.
+   */
+  private transfer() {
+    const t = this.t;
+    return html`
+      <div class="transfer">
+        <textarea
+          class=${this.transferBad ? "bad" : ""}
+          aria-label=${t("settings.transfer")}
+          .value=${this.transferText}
+          @input=${(e: Event) => {
+            this.transferText = (e.target as HTMLTextAreaElement).value;
+            this.transferBad = false;
+          }}
+        ></textarea>
+        <div class="row">
+          <button class="action" @click=${() => this.applyTransfer()}>
+            ${t("settings.import")}
+          </button>
+          <button class="action" @click=${() => this.resetTransfer()}>
+            ${t("settings.export_again")}
+          </button>
+          ${this.transferBad
+            ? html`<span class="bad-note">${t("settings.transfer_bad")}</span>`
+            : html`<span class="note" style="margin:0">${t("settings.transfer_hint")}</span>`}
+        </div>
+      </div>
+    `;
+  }
+
+  private toggleTransfer() {
+    this.transferOpen = !this.transferOpen;
+    if (this.transferOpen) this.resetTransfer();
+  }
+
+  /** Fill the box with what is set right now - the export half. */
+  private resetTransfer() {
+    this.transferText = exportSettings(this.settings);
+    this.transferBad = false;
+  }
+
+  private applyTransfer() {
+    const parsed = importSettings(this.transferText);
+    if (!parsed) {
+      this.transferBad = true;
+      return;
+    }
+    this.transferBad = false;
+    this.onChange(parsed);
   }
 
   /** A swatch that paints itself in the scheme it is offering. */

@@ -27,6 +27,21 @@ export class MkViewPacks extends MkView {
   static properties = { floor: { type: Number } };
   declare floor: number | null;
 
+  /**
+   * Lower limit the backup socket reaches, read off the reserve sensor rather
+   * than hard-coded: only some models have one, and the sensor is where the
+   * figure is already defined.
+   */
+  private get backupFloor(): number | null {
+    if (!this.reader.entityId("backup_reserve_energy")) return null;
+    const value = this.reader.attr<number | null>(
+      "backup_reserve_energy",
+      "backup_floor_percent",
+      null,
+    );
+    return typeof value === "number" && value >= 0 && value < 100 ? value : null;
+  }
+
   constructor() {
     super();
     this.floor = null;
@@ -165,6 +180,7 @@ export class MkViewPacks extends MkView {
               <mk-pack-bars
                 .packs=${fills}
                 .floor=${this.floor}
+          .backupFloor=${this.backupFloor}
                 packLabel=${t("common.pack")}
                 energyUnit=${r.unit("battery_total_energy") || "kWh"}
                 .formatNumber=${(v: number | null, d = 0) => f.num(v, d)}
@@ -175,6 +191,11 @@ export class MkViewPacks extends MkView {
           ${this.floor === null
             ? t("packs.fill_legend_nofloor")
             : t("packs.fill_legend", { floor: f.num(this.floor, 0) })}
+          ${this.backupFloor === null
+            ? ""
+            : ` ${t("packs.fill_legend_backup", {
+                backup: f.num(this.backupFloor, 0),
+              })}`}
         </div>
       </div>
 

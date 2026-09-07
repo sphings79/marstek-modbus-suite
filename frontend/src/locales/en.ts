@@ -128,6 +128,7 @@ export const en: Record<string, string> = {
   "packs.fill_axis": "column height = SOC · figure inside = kWh",
   "packs.fill_legend":
     "The dashed line marks the discharge floor at {floor} %. Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.",
+  "packs.fill_legend_backup": "The dotted line at {backup} % is as far as the backup socket discharges during an outage.",
   "packs.fill_legend_nofloor":
     "Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.",
   "packs.none": "This battery reports no per-pack state of charge.",
@@ -221,6 +222,11 @@ export const en: Record<string, string> = {
   "settings.unavail.control": "no writable registers",
   "settings.storage": "Stored settings",
   "settings.reset": "Reset to defaults",
+  "settings.transfer": "Import / export",
+  "settings.transfer_hint": "Copy this out, paste it into another browser.",
+  "settings.transfer_bad": "That is not a settings object.",
+  "settings.import": "Apply pasted",
+  "settings.export_again": "Show current",
   "settings.storage_hint":
     "These settings live in this browser only. Another browser, or another device, keeps its own.",
 

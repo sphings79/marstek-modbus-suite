@@ -30,6 +30,8 @@ export interface PackFill {
 export class MkPackBars extends LitElement {
   @property({ attribute: false }) packs: PackFill[] = [];
   @property({ type: Number }) floor: number | null = null;
+  /** Lower limit the backup socket reaches, below the discharge floor. */
+  @property({ type: Number }) backupFloor: number | null = null;
   @property({ type: String }) packLabel = "PACK";
   @property({ type: String }) energyUnit = "kWh";
   @property({ attribute: false }) formatNumber: (v: number | null, d?: number) => string =
@@ -135,6 +137,15 @@ export class MkPackBars extends LitElement {
         border: 3px solid transparent;
         border-right-color: var(--mk-magenta);
       }
+      /* Drawn quieter than the floor: it is the exception, reachable only
+         while the off-grid output is running, not where discharging stops. */
+      .backup-floor {
+        position: absolute;
+        left: -1px;
+        right: -1px;
+        z-index: 1;
+        border-top: 1px dotted var(--mk-dim);
+      }
       .name {
         font-family: var(--mk-mono);
         font-size: 12px;
@@ -196,6 +207,12 @@ export class MkPackBars extends LitElement {
                 ${this.floor === null
                   ? nothing
                   : html`<div class="floor" style="bottom:${this.floor}%"></div>`}
+                ${this.backupFloor === null
+                  ? nothing
+                  : html`<div
+                      class="backup-floor"
+                      style="bottom:${this.backupFloor}%"
+                    ></div>`}
                 ${pack.energy === null
                   ? nothing
                   : html`

@@ -521,6 +521,9 @@
       "energy_to_full": {
         "name": "Energy to Full"
       },
+      "backup_reserve_energy": {
+        "name": "Backup Reserve Energy"
+      },
       "total_daily_charging_energy": {
         "name": "Daily Charging Energy"
       },

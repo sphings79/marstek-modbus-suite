@@ -2899,6 +2899,31 @@ ENERGY_WINDOW_SENSOR_DEFINITIONS:
             soc: battery_soc
             capacity: battery_total_energy
 
+BACKUP_RESERVE_SENSOR_DEFINITIONS:
+
+    # The backup socket reaches below the configured discharge floor: the
+    # device keeps going down to 8 % while running the off-grid output, where
+    # it otherwise stops at the floor. Confirmed on Venus A and D. A model
+    # with no figure gets no section, and therefore no sensor.
+    #
+    # Reported whether or not the socket is armed, so the figure answers "how
+    # much is down there for an outage" rather than going to zero exactly when
+    # someone is planning for one. It still counts down during an outage,
+    # because the span is measured from the state of charge once that drops
+    # below the floor.
+    backup_reserve_energy:
+        key: backup_reserve_energy
+        unit: kWh
+        device_class: energy
+        state_class: total
+        precision: 2
+        icon: "mdi:power-plug-battery-outline"
+        enabled_by_default: true
+        backup_floor: 8
+        dependency_keys:
+            soc: battery_soc
+            capacity: battery_total_energy
+
 SOLAR_POWER_SENSOR_DEFINITIONS:
     solar_power_total:
         key: solar_power_total
