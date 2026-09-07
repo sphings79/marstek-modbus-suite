@@ -8,3 +8,9 @@ TODO.md
 .venv
 logs/
 frontend/node_modules
+
+# The blanket icon*/logo* rules above also caught the project's own brand
+# assets, which do belong in the repository.
+!assets/icon.svg
+!custom_components/marstek_modbus/brand/icon.png
+!custom_components/marstek_modbus/brand/icon@2x.png
