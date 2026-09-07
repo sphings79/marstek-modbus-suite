@@ -5,6 +5,7 @@ import { baseStyles } from "../styles";
 import type { PackFill } from "../components/mk-pack-bars";
 import "../components/mk-pack-bars";
 import "../components/mk-stat";
+import { cellDeltaFlag } from "../thresholds";
 
 /**
  * How far apart the packs' states of charge may sit before it means anything.
@@ -237,7 +238,7 @@ export class MkViewPacks extends MkView {
                     </td>
                     <td class="n">${f.num(min, 3)}</td>
                     <td class="n">${f.num(max, 3)}</td>
-                    <td class="n ${delta !== null && delta >= 0.01 ? "crit" : ""}">
+                    <td class="n ${cellDeltaFlag(delta)}">
                       ${f.millivolts(delta)} mV
                     </td>
                     <td class="n">${f.num(r.num(`battery_${i}_voltage`), 2)}</td>

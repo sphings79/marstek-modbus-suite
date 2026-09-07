@@ -1,6 +1,7 @@
 import { LitElement, html, css, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { baseStyles } from "../styles";
+import { cellDeltaFlag } from "../thresholds";
 
 export interface PackRange {
   index: number;
@@ -11,8 +12,6 @@ export interface PackRange {
 }
 
 /** Delta in volts above which a pack is called out. */
-const WARN_V = 0.005;
-const CRIT_V = 0.01;
 
 /**
  * Every pack's cell range on one shared voltage axis.
@@ -147,7 +146,7 @@ export class MkPackMatrix extends LitElement {
 
       ${this.ranges.map((range) => {
         const delta = range.max - range.min;
-        const tone = delta >= CRIT_V ? "crit" : delta >= WARN_V ? "warn" : "";
+        const tone = cellDeltaFlag(delta);
         const left = this.pct(range.min);
         const width = Math.max(this.pct(range.max) - left, 0.6);
         const mid = this.pct((range.min + range.max) / 2);

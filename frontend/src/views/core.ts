@@ -4,6 +4,7 @@ import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
 import "../components/mk-gauge";
 import "../components/mk-stat";
+import { cellDeltaTone, CELL_DELTA_CRIT_V } from "../thresholds";
 
 /** Below this many watts the battery is treated as resting, matching the
  *  integration's own idle threshold for the runtime sensors. */
@@ -287,9 +288,7 @@ export class MkViewCore extends MkView {
       if (!worst || delta > worst.delta) worst = { pack: i, delta };
     }
 
-    // 100 mV is where a pack is usually considered out of balance; the bar is
-    // drawn against that, not against the largest value seen so far.
-    const tone = !worst ? "" : worst.delta > 0.1 ? "crit" : worst.delta > 0.05 ? "warn" : "ok";
+    const tone = cellDeltaTone(worst?.delta ?? null);
 
     return html`
       <mk-stat
@@ -298,7 +297,7 @@ export class MkViewCore extends MkView {
         unit="mV"
         tone=${tone}
         .bar=${worst?.delta ?? null}
-        .max=${0.1}
+        .max=${CELL_DELTA_CRIT_V}
         foot=${worst
           ? this.t("core.in_pack", { pack: worst.pack })
           : this.t("core.no_delta")}
