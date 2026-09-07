@@ -122,6 +122,83 @@ export const baseStyles = css`
     overflow-x: auto;
   }
 
+  /* A label/value row. Used by every view, so it lives here rather than being
+     redefined in each of them. */
+  .kv {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 5.5px 0;
+    border-bottom: 1px dashed var(--mk-line-soft);
+  }
+  .kv:last-of-type {
+    border-bottom: 0;
+  }
+  .kv > span {
+    font-family: var(--mk-mono);
+    font-size: 11px;
+    color: var(--mk-dim);
+    letter-spacing: 0.03em;
+  }
+  .kv > b {
+    font-family: var(--mk-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 13px;
+  }
+  .head .label:first-child {
+    flex: 1;
+  }
+
+  .note {
+    font-family: var(--mk-mono);
+    font-size: 10.5px;
+    color: var(--mk-dim);
+    margin-top: 12px;
+    line-height: 1.7;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 7px 10px;
+    font-family: var(--mk-mono);
+    font-size: 11.5px;
+    border-bottom: 1px solid var(--mk-line-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  th {
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mk-dim);
+    font-weight: 500;
+  }
+  td {
+    color: var(--mk-fg);
+  }
+  th.n,
+  td.n {
+    text-align: right;
+  }
+  tr.flagged {
+    background: var(--mk-magenta-wash);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * {
       transition: none !important;

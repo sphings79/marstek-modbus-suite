@@ -6,13 +6,19 @@ import { loadCatalogue, translate, type Strings } from "./localize";
 import { Formatter } from "./format";
 import { en } from "./locales/en";
 import "./views/core";
+import "./views/cells";
+import "./views/packs";
+import "./views/solar";
+import "./views/energy";
+import "./views/system";
 
 type TabId = "core" | "cells" | "packs" | "solar" | "energy" | "system";
 
 const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "system"];
 
-/** Views that exist so far; the rest render a placeholder. */
-const IMPLEMENTED: ReadonlySet<TabId> = new Set<TabId>(["core"]);
+/** Remembering the selected battery is worth a line of storage: the panel is
+ *  opened repeatedly, and re-picking the same one every time is friction. */
+const STORAGE_DEVICE = "marstek-panel.device";
 
 @customElement("marstek-panel")
 export class MarstekPanel extends LitElement {
@@ -21,7 +27,7 @@ export class MarstekPanel extends LitElement {
 
   @state() private tab: TabId = "core";
   @state() private strings: Strings = en;
-  @state() private deviceId: string | null = null;
+  @state() private deviceId: string | null = readStoredDevice();
 
   private catalogueFor = "";
   private formatter = new Formatter("en");
@@ -183,6 +189,16 @@ export class MarstekPanel extends LitElement {
   private t = (key: string, values?: Record<string, string | number>): string =>
     translate(this.strings, key, values);
 
+  private selectDevice(deviceId: string) {
+    this.deviceId = deviceId;
+    try {
+      localStorage.setItem(STORAGE_DEVICE, deviceId);
+    } catch {
+      // Private windows and blocked site data throw here; remembering the
+      // choice is a convenience, not a requirement.
+    }
+  }
+
   private get devices(): MarstekDevice[] {
     return this.hass ? findDevices(this.hass) : [];
   }
@@ -259,7 +275,7 @@ export class MarstekPanel extends LitElement {
               <select
                 aria-label=${this.t("common.device")}
                 @change=${(e: Event) =>
-                  (this.deviceId = (e.target as HTMLSelectElement).value)}
+                  this.selectDevice((e.target as HTMLSelectElement).value)}
               >
                 ${devices.map(
                   (d) => html`
@@ -288,18 +304,75 @@ export class MarstekPanel extends LitElement {
     `;
   }
 
-  private renderTab(reader: DeviceReader) {
-    if (!IMPLEMENTED.has(this.tab)) {
-      return html`<div class="todo">${this.t(`tab.${this.tab}`)} · …</div>`;
-    }
+  /**
+   * The configured discharge floor, recovered from the two energy sensors
+   * rather than read from the options: usable energy is what sits above the
+   * floor, so the difference against stored energy is the floor itself. Saves
+   * a websocket round trip for a number the device already implies.
+   */
+  private floorPercent(reader: DeviceReader): number | null {
+    const stored = reader.num("stored_energy");
+    const usable = reader.num("usable_energy");
+    const capacity = reader.num("battery_total_energy");
+    if (stored === null || usable === null || !capacity) return null;
+    const floor = ((stored - usable) / capacity) * 100;
+    return floor >= 0 && floor <= 100 ? floor : null;
+  }
 
-    return html`
-      <mk-view-core
-        .reader=${reader}
-        .fmt=${this.formatter}
-        .t=${this.t}
-      ></mk-view-core>
-    `;
+  private renderTab(reader: DeviceReader) {
+    const shared = {
+      reader,
+      fmt: this.formatter,
+      t: this.t,
+    };
+
+    switch (this.tab) {
+      case "cells":
+        return html`<mk-view-cells
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+        ></mk-view-cells>`;
+      case "packs":
+        return html`<mk-view-packs
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+          .floor=${this.floorPercent(reader)}
+        ></mk-view-packs>`;
+      case "solar":
+        return html`<mk-view-solar
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+        ></mk-view-solar>`;
+      case "energy":
+        return html`<mk-view-energy
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+        ></mk-view-energy>`;
+      case "system":
+        return html`<mk-view-system
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+        ></mk-view-system>`;
+      default:
+        return html`<mk-view-core
+          .reader=${shared.reader}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+        ></mk-view-core>`;
+    }
+  }
+}
+
+function readStoredDevice(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_DEVICE);
+  } catch {
+    return null;
   }
 }
 

@@ -1,23 +1,16 @@
-import { LitElement, html, css, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, css } from "lit";
+import { customElement } from "lit/decorators.js";
+import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
-import type { DeviceReader } from "../entities";
-import type { Formatter } from "../format";
 import "../components/mk-gauge";
 import "../components/mk-stat";
-
-type Translate = (key: string, values?: Record<string, string | number>) => string;
 
 /** Below this many watts the battery is treated as resting, matching the
  *  integration's own idle threshold for the runtime sensors. */
 const IDLE_W = 30;
 
 @customElement("mk-view-core")
-export class MkViewCore extends LitElement {
-  @property({ attribute: false }) reader!: DeviceReader;
-  @property({ attribute: false }) fmt!: Formatter;
-  @property({ attribute: false }) t!: Translate;
-
+export class MkViewCore extends MkView {
   static styles = [
     baseStyles,
     css`
@@ -33,30 +26,6 @@ export class MkViewCore extends LitElement {
         }
       }
 
-      .kv {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 12px;
-        padding: 5.5px 0;
-        border-bottom: 1px dashed var(--mk-line-soft);
-      }
-      .kv:last-of-type {
-        border-bottom: 0;
-      }
-      .kv > span {
-        font-family: var(--mk-mono);
-        font-size: 11px;
-        color: var(--mk-dim);
-        letter-spacing: 0.03em;
-      }
-      .kv > b {
-        font-family: var(--mk-mono);
-        font-size: 12.5px;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-      }
 
       .centre {
         text-align: center;
@@ -241,19 +210,6 @@ export class MkViewCore extends LitElement {
     `;
   }
 
-  /** One label/value row, named and scaled by the entity itself. */
-  private kv(key: string, digits: number) {
-    const r = this.reader;
-    if (!r.entityId(key)) return nothing;
-    const value = r.num(key);
-    const unit = r.unit(key);
-    return html`
-      <div class="kv">
-        <span>${r.label(key)}</span>
-        <b>${this.fmt.num(value, digits)}${unit ? ` ${unit}` : ""}</b>
-      </div>
-    `;
-  }
 
   /**
    * Spread between the highest and lowest cell across all packs. The device
