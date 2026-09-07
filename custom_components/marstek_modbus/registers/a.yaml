@@ -2031,6 +2031,34 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         scan_interval: low
     # --- Per-pack terminal voltage / current (packs 2-6; pack 1 = battery_voltage/current) ---
+    battery_1_voltage:
+        register: 34000
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_current:
+        register: 34001
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cycle_count:
+        register: 34003
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
     battery_2_voltage:
         register: 34100
         scale: 0.01

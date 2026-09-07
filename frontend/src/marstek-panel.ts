@@ -16,6 +16,20 @@ type TabId = "core" | "cells" | "packs" | "solar" | "energy" | "system";
 
 const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "system"];
 
+/**
+ * A tab appears only when the battery has something to put in it. Venus E
+ * reports no MPPT inputs, no per-cell voltages and no state of charge per
+ * pack, so three of these would otherwise be empty rooms. The key named here
+ * is looked up in the entity registry, so a tab also survives its sensors
+ * being disabled - it then shows its own empty state rather than vanishing
+ * as a side effect of a checkbox.
+ */
+const TAB_REQUIRES: Partial<Record<TabId, string>> = {
+  cells: "battery_1_max_cell_voltage",
+  packs: "battery_soc_1",
+  solar: "mppt1_power",
+};
+
 /** Remembering the selected battery is worth a line of storage: the panel is
  *  opened repeatedly, and re-picking the same one every time is friction. */
 const STORAGE_DEVICE = "marstek-panel.device";
@@ -199,6 +213,13 @@ export class MarstekPanel extends LitElement {
     }
   }
 
+  private tabsFor(reader: DeviceReader): TabId[] {
+    return TABS.filter((id) => {
+      const key = TAB_REQUIRES[id];
+      return !key || reader.entityId(key) !== undefined;
+    });
+  }
+
   private get devices(): MarstekDevice[] {
     return this.hass ? findDevices(this.hass) : [];
   }
@@ -225,20 +246,24 @@ export class MarstekPanel extends LitElement {
     }
 
     const reader = new DeviceReader(this.hass, device);
+    const tabs = this.tabsFor(reader);
+    // Switching to a battery without, say, MPPT inputs must not leave the
+    // panel pointing at a tab that is no longer there.
+    const active = tabs.includes(this.tab) ? this.tab : tabs[0];
 
     return html`
       <div class="shell">
         <header>
           <div class="brand">MARSTEK <em>${device.name}</em></div>
           <nav role="tablist" aria-label="Marstek Venus">
-            ${TABS.map(
+            ${tabs.map(
               (id) => html`
                 <button
                   class="tab"
                   role="tab"
-                  aria-selected=${this.tab === id}
+                  aria-selected=${active === id}
                   @click=${() => (this.tab = id)}
-                  @keydown=${(e: KeyboardEvent) => this.onTabKey(e, id)}
+                  @keydown=${(e: KeyboardEvent) => this.onTabKey(e, id, tabs)}
                 >
                   ${this.t(`tab.${id}`)}
                 </button>
@@ -248,19 +273,19 @@ export class MarstekPanel extends LitElement {
           ${this.statusBar(reader)}
         </header>
 
-        <main>${this.renderTab(reader)}</main>
+        <main>${this.renderTab(reader, active)}</main>
       </div>
     `;
   }
 
-  private onTabKey(event: KeyboardEvent, id: TabId) {
+  private onTabKey(event: KeyboardEvent, id: TabId, tabs: TabId[]) {
     const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
     if (!step) return;
     event.preventDefault();
-    const next = TABS[(TABS.indexOf(id) + step + TABS.length) % TABS.length];
+    const next = tabs[(tabs.indexOf(id) + step + tabs.length) % tabs.length];
     this.tab = next;
     const buttons = this.renderRoot.querySelectorAll<HTMLButtonElement>("button.tab");
-    buttons[TABS.indexOf(next)]?.focus();
+    buttons[tabs.indexOf(next)]?.focus();
   }
 
   private statusBar(reader: DeviceReader) {
@@ -319,14 +344,14 @@ export class MarstekPanel extends LitElement {
     return floor >= 0 && floor <= 100 ? floor : null;
   }
 
-  private renderTab(reader: DeviceReader) {
+  private renderTab(reader: DeviceReader, active: TabId) {
     const shared = {
       reader,
       fmt: this.formatter,
       t: this.t,
     };
 
-    switch (this.tab) {
+    switch (active) {
       case "cells":
         return html`<mk-view-cells
           .reader=${shared.reader}

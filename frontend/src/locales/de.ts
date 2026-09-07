@@ -109,7 +109,9 @@ export const de: Record<string, string> = {
   "energy.discharged": "entladen kWh",
   "energy.loss": "Verlust",
   "energy.returned": "Zurückgegeben",
-  "energy.rte": "RTE",
+  "energy.rte": "Roundtrip",
+  "energy.rte_hint":
+    "Der Roundtrip-Wirkungsgrad sagt, wie viel der geladenen Energie wieder herauskommt. Die Umwandlungseffizienz ist der Verlust im Moment, im aktuellen Betriebspunkt.",
   "energy.efficiency": "Wirkungsgrad im Vergleich",
   "energy.throughput": "Durchsatz und Verschleiß",
   "energy.gap_hint":

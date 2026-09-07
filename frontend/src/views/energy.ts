@@ -203,6 +203,9 @@ export class MkViewEnergy extends MkView {
     return html`
       <div class="panel">
         <div class="head"><div class="label">${t("energy.efficiency")}</div></div>
+        <div class="note" style="margin-top:0;margin-bottom:16px">
+          ${t("energy.rte_hint")}
+        </div>
         ${meters.map(([label, value, tone]) =>
           value === null
             ? nothing

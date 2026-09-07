@@ -117,7 +117,9 @@ export const en: Record<string, string> = {
   "energy.discharged": "discharged kWh",
   "energy.loss": "Loss",
   "energy.returned": "Returned",
-  "energy.rte": "RTE",
+  "energy.rte": "Round trip",
+  "energy.rte_hint":
+    "Round-trip efficiency is how much of the energy put into the battery comes back out of it. Conversion efficiency is the loss in the moment, at the current operating point.",
   "energy.efficiency": "Efficiency compared",
   "energy.throughput": "Throughput and wear",
   "energy.gap_hint":
