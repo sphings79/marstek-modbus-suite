@@ -126,4 +126,4 @@ Geschichte, samt vier Irrwegen, steht in
 ## Firmware-Analyse
 
 Adressen, Bedingungen und die vollständige Aufrufkette:
-<https://github.com/sphings79/marstek_venus_modbus_dev/issues/2>
+<https://github.com/sphings79/marstek-modbus-suite/issues/2>

@@ -1,7 +1,7 @@
 {
   "domain": "marstek_modbus",
   "name": "Marstek Modbus Suite",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.7",
   "config_flow": true,
   "dependencies": [
     "frontend",
@@ -9,7 +9,8 @@
     "lovelace",
     "panel_custom"
   ],
-  "documentation": "https://github.com/sphings79/marstek_venus_modbus_dev",
+  "documentation": "https://github.com/sphings79/marstek-modbus-suite",
+  "issue_tracker": "https://github.com/sphings79/marstek-modbus-suite/issues",
   "requirements": ["pymodbus>=3.9.2"],
   "codeowners": ["@sphings79"],
   "iot_class": "local_polling"
