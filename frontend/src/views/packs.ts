@@ -50,6 +50,21 @@ export class MkViewPacks extends MkView {
   static styles = [
     baseStyles,
     css`
+      /* The working pack, marked rather than coloured: it is information, and
+         the two alarm tones in this table are already spoken for. */
+      tr.conducting > td:first-child {
+        box-shadow: inset 2px 0 0 var(--mk-accent);
+      }
+      .live {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-left: 6px;
+        vertical-align: 1px;
+        background: var(--mk-accent);
+      }
+
       .tiles {
         grid-template-columns: repeat(6, 1fr);
         margin-bottom: var(--mk-gap);
@@ -247,12 +262,20 @@ export class MkViewPacks extends MkView {
                   .filter((v): v is number => v !== null)
                   .map((v) => f.num(v, 1))
                   .join(" · ");
+                // The device closes one pack's MOSFETs at a time; that pack
+                // is the one doing the work right now.
+                const conducting = r.num(`battery_${i}_mos_status`) === 3;
                 const odd =
                   median !== null && soc !== null && Math.abs(soc - median) > 5;
 
                 return html`
-                  <tr class=${odd ? "flagged" : ""}>
-                    <td class=${odd ? "warn" : ""}>${t("common.pack")} ${i}</td>
+                  <tr class="${odd ? "flagged" : ""} ${conducting ? "conducting" : ""}">
+                    <td class=${odd ? "warn" : ""}>
+                      ${t("common.pack")} ${i}
+                      ${conducting
+                        ? html`<span class="live" title=${t("packs.conducting")}></span>`
+                        : nothing}
+                    </td>
                     <td class="n ${odd ? "warn" : ""}">${f.num(soc, 1)} %</td>
                     <td class="n">
                       ${f.num(soc === null || per === null ? null : (soc / 100) * per, 2)}

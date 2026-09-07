@@ -108,6 +108,11 @@ export const en: Record<string, string> = {
   "cells.protection": "Protection and faults",
   "cells.protection_all": "Protection · all {count} packs",
   "cells.clear": "clear",
+  "cells.conducting": "Pack conducting",
+  "cells.conducting_none": "none — every pack disconnected",
+  "cells.conducting_hint":
+    "The device works one pack at a time and closes that pack's MOSFETs while it does. A pack listed here is doing the work, not reporting a fault.",
+  "cells.mos_unexpected": "unexpected MOSFET status",
   "cells.raised": "raised",
   "cells.bms": "BMS",
   "cells.bms_version": "BMS version",
@@ -135,6 +140,7 @@ export const en: Record<string, string> = {
   "packs.table_title": "Every pack in detail",
   "packs.table_legend":
     "Highlighted rows sit {points} points or further from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
+  "packs.conducting": "conducting now",
   "packs.col_soc": "SOC",
   "packs.col_energy": "kWh",
   "packs.col_min": "Cell min",

@@ -18,6 +18,13 @@ import "../components/mk-stat";
  * the tile beside it and the table below report.
  */
 
+/**
+ * mos_status values seen in the field. 3 means the pack's MOSFETs are closed
+ * and it is the one working; 2 is the brief handover state; 0 is disconnected.
+ */
+const MOS_CONDUCTING = 3;
+const MOS_KNOWN = [0, 2, 3];
+
 @customElement("mk-view-cells")
 export class MkViewCells extends MkView {
   static styles = [
@@ -183,23 +190,39 @@ export class MkViewCells extends MkView {
   }
 
   /**
-   * One row per pack, but only the packs that actually report something. A
-   * clean stack collapses to a single line rather than seven identical zeros.
+   * Protection registers, and which pack is currently carrying the current.
+   *
+   * Only protection_1 and protection_2 are fault registers. mos_status is a
+   * state, not an alarm: the device works one pack at a time and closes that
+   * pack's MOSFETs while it does, so treating any non-zero value as a fault
+   * reported normal operation in red.
+   *
+   * Observed over ten days on a Venus D: 0 while a pack is disconnected, 3
+   * while it conducts, and 2 for a few seconds either side of the handover -
+   * one contactor closed and the other not yet. A 1 never appeared, so which
+   * bit is charge and which is discharge is not established, and this does not
+   * claim to know. Anything outside those three is worth showing.
    */
   private protectionRows() {
     const r = this.reader;
     const t = this.t;
     const flagged: string[] = [];
+    const conducting: number[] = [];
+    const odd: string[] = [];
 
     for (const i of this.packs) {
       const p1 = r.num(`battery_${i}_protection_1`);
       const p2 = r.num(`battery_${i}_protection_2`);
-      const mos = r.num(`battery_${i}_mos_status`);
       const parts: string[] = [];
       if (p1) parts.push(`P1 ${p1}`);
       if (p2) parts.push(`P2 ${p2}`);
-      if (mos) parts.push(`MOS ${mos}`);
       if (parts.length) flagged.push(`${t("common.pack")} ${i}: ${parts.join(", ")}`);
+
+      const mos = r.num(`battery_${i}_mos_status`);
+      if (mos === MOS_CONDUCTING) conducting.push(i);
+      else if (mos !== null && !MOS_KNOWN.includes(mos)) {
+        odd.push(`${t("common.pack")} ${i}: ${mos}`);
+      }
     }
 
     if (!this.packs.length) {
@@ -214,8 +237,17 @@ export class MkViewCells extends MkView {
             t("cells.clear"),
             "ok",
           )}
+      ${this.row(
+        t("cells.conducting"),
+        conducting.length
+          ? conducting.map((i) => `${t("common.pack")} ${i}`).join(", ")
+          : t("cells.conducting_none"),
+        conducting.length ? "ok" : "",
+      )}
+      ${odd.map((line) => this.row(line, t("cells.mos_unexpected"), "warn"))}
       ${this.kv("fault_status", 0)} ${this.kv("fault_status_2", 0)}
       ${this.bmsVersions()}
+      <div class="note">${t("cells.conducting_hint")}</div>
     `;
   }
 

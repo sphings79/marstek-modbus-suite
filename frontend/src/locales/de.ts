@@ -100,6 +100,11 @@ export const de: Record<string, string> = {
   "cells.protection": "Schutz und Störungen",
   "cells.protection_all": "Schutz · alle {count} Packs",
   "cells.clear": "frei",
+  "cells.conducting": "Pack am Netz",
+  "cells.conducting_none": "keins — alle Packs getrennt",
+  "cells.conducting_hint":
+    "Das Gerät arbeitet ein Pack nach dem anderen und schließt dabei dessen MOSFETs. Ein Pack, das hier steht, arbeitet gerade — es meldet keine Störung.",
+  "cells.mos_unexpected": "MOSFET-Status unerwartet",
   "cells.raised": "ausgelöst",
   "cells.bms": "BMS",
   "cells.bms_version": "BMS-Version",
@@ -127,6 +132,7 @@ export const de: Record<string, string> = {
   "packs.table_title": "Alle Packs im Detail",
   "packs.table_legend":
     "Hervorgehobene Zeilen liegen {points} Punkte oder weiter vom mittleren Pack entfernt. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
+  "packs.conducting": "arbeitet gerade",
   "packs.col_soc": "SoC",
   "packs.col_energy": "kWh",
   "packs.col_min": "Zelle min",
