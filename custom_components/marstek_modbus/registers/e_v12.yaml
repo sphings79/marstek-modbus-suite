@@ -473,16 +473,16 @@ SELECT_DEFINITIONS:
         enabled_by_default: true
         scan_interval: high
         options:
-            Auto: 0
-            EN50549: 1
-            Netherlands: 2
-            Germany: 3
-            Austria: 4
-            United Kingdom: 5
-            Spain: 6
-            Poland: 7
-            Italy: 8
-            China: 9
+            auto: 0
+            en50549: 1
+            netherlands: 2
+            germany: 3
+            austria: 4
+            united_kingdom: 5
+            spain: 6
+            poland: 7
+            italy: 8
+            china: 9
     schedule_1_days:
         register: 43100
         enabled_by_default: false

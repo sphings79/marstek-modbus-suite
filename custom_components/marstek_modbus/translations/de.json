@@ -66,7 +66,7 @@
       },
       "dev": {
         "title": "DEV-Register",
-        "description": "Zwei getrennt schaltbare Gruppen zusätzlicher Diagnose-Sensoren. Beide heißen \"DEV <Register> (<Verdacht>?)\" und stehen dadurch beieinander; das Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\n**Unbekannt (117)** – Register ohne geklärte Bedeutung. Teils mit Konfidenz niedrig oder mittel aus der Firmware-Analyse, teils Register aus dem 40000er-Bereich, die nachweislich auf einen Lesezugriff antworten. Viele stehen dauerhaft auf 0.\n\n**Doppelungen (14)** – Register, die denselben Wert liefern wie ein bereits vorhandener Sensor: Aliase auf dieselbe Speicherstelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks. Nützlich, um zu prüfen, ob zwei Register wirklich synchron laufen.\n\nNur für Analysezwecke. Nach dem Umschalten wird die Integration neu geladen.",
+        "description": "Zwei getrennt schaltbare Gruppen zusätzlicher Diagnose-Sensoren. Beide heißen \"DEV [Register] ([Verdacht]?)\" und stehen dadurch beieinander; das Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\n**Unbekannt (117)** – Register ohne geklärte Bedeutung. Teils mit Konfidenz niedrig oder mittel aus der Firmware-Analyse, teils Register aus dem 40000er-Bereich, die nachweislich auf einen Lesezugriff antworten. Viele stehen dauerhaft auf 0.\n\n**Doppelungen (14)** – Register, die denselben Wert liefern wie ein bereits vorhandener Sensor: Aliase auf dieselbe Speicherstelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks. Nützlich, um zu prüfen, ob zwei Register wirklich synchron laufen.\n\nNur für Analysezwecke. Nach dem Umschalten wird die Integration neu geladen.",
         "data": {
           "dev_registers_unknown": "Unbekannte Register anzeigen (117)",
           "dev_registers_duplicate": "Doppelungen anzeigen (14)"
@@ -1101,16 +1101,16 @@
       "grid_standard": {
         "name": "Netzstandard",
         "state": {
-          "Auto": "Automatisch",
-          "EN50549": "EN50549",
-          "Netherlands": "Niederlande",
-          "Germany": "Deutschland",
-          "Austria": "Österreich",
-          "United Kingdom": "Vereinigtes Königreich",
-          "Spain": "Spanien",
-          "Poland": "Polen",
-          "Italy": "Italien",
-          "China": "China"
+          "auto": "Automatisch",
+          "en50549": "EN50549",
+          "netherlands": "Niederlande",
+          "germany": "Deutschland",
+          "austria": "Österreich",
+          "united_kingdom": "Vereinigtes Königreich",
+          "spain": "Spanien",
+          "poland": "Polen",
+          "italy": "Italien",
+          "china": "China"
         }
       },
       "schedule_1_days": {
