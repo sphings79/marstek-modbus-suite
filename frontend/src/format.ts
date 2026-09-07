@@ -43,6 +43,16 @@ export class Formatter {
     return text;
   }
 
+  /**
+   * A firmware version. The device encodes four-digit versions with the last
+   * digit as the minor part, so 1177 is version 117.7. Shorter values are
+   * already in their final form and are left alone.
+   */
+  version(value: string | null | undefined): string {
+    if (value === null || value === undefined || value === "") return DASH;
+    return /^\d{4}$/.test(value) ? `${value.slice(0, 3)}.${value.slice(3)}` : value;
+  }
+
   /** Millivolts from a volt reading, which is how cell deltas are read. */
   millivolts(value: number | null | undefined): string {
     if (value === null || value === undefined || !Number.isFinite(value)) return DASH;

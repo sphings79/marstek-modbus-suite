@@ -230,11 +230,14 @@ export class MkViewCells extends MkView {
 
     if (versions.size === 1) {
       const [version] = [...versions.keys()];
-      return this.row(this.t("cells.bms_version"), `${version} · ${this.t("cells.uniform")}`);
+      return this.row(
+        this.t("cells.bms_version"),
+        `${this.fmt.version(version)} · ${this.t("cells.uniform")}`,
+      );
     }
     return [...versions.entries()].map(([version, packs]) =>
       this.row(
-        `${this.t("cells.bms_version")} ${version}`,
+        `${this.t("cells.bms_version")} ${this.fmt.version(version)}`,
         packs.map((p) => `#${p}`).join(" "),
         "warn",
       ),

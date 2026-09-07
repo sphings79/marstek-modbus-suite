@@ -32,13 +32,22 @@ export abstract class MkView extends LitElement {
   protected kv(
     key: string,
     digits = 1,
-    opts: { tone?: string; label?: string; raw?: boolean } = {},
+    opts: { tone?: string; label?: string; raw?: boolean; version?: boolean } = {},
   ): TemplateResult | typeof nothing {
     const r = this.reader;
     if (!r.entityId(key)) return nothing;
 
     const raw = r.state(key);
     if (!raw) return nothing;
+
+    if (opts.version) {
+      return html`
+        <div class="kv">
+          <span>${opts.label ?? r.label(key)}</span>
+          <b class=${opts.tone ?? ""}>${this.fmt.version(raw.state)}</b>
+        </div>
+      `;
+    }
 
     const numeric = opts.raw ? null : r.num(key);
     const unit = r.unit(key);

@@ -101,9 +101,9 @@ export class MkViewSystem extends MkView {
 
         <div class="panel">
           <div class="head"><div class="label">${t("system.firmware")}</div></div>
-          ${this.kv("ems_version", 0, { raw: true })} ${this.kv("bms_version", 0, { raw: true })}
-          ${this.kv("vms_version", 0, { raw: true })} ${this.kv("mppt_version", 0, { raw: true })}
-          ${this.kv("ems_boot_version", 0, { raw: true })} ${this.kv("vns_boot_version", 0, { raw: true })}
+          ${this.kv("ems_version", 0, { version: true })} ${this.kv("bms_version", 0, { version: true })}
+          ${this.kv("vms_version", 0, { version: true })} ${this.kv("mppt_version", 0, { version: true })}
+          ${this.kv("ems_boot_version", 0, { version: true })} ${this.kv("vns_boot_version", 0, { version: true })}
           ${this.kv("comm_module_firmware", 0, { raw: true })}
         </div>
 
