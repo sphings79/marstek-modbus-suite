@@ -125,6 +125,24 @@ export class MarstekPanel extends LitElement {
       nav::-webkit-scrollbar {
         display: none;
       }
+      /* A soft edge where the strip continues, so it is visible that there are
+         more tabs than fit. Driven by the scroll position rather than left on
+         permanently: a faded last tab you have already scrolled to reads as a
+         rendering fault, not as an invitation. */
+      nav[data-edge="right"] {
+        mask-image: linear-gradient(to right, #000 calc(100% - 34px), transparent);
+      }
+      nav[data-edge="left"] {
+        mask-image: linear-gradient(to left, #000 calc(100% - 34px), transparent);
+      }
+      nav[data-edge="both"] {
+        mask-image: linear-gradient(
+          to right,
+          transparent,
+          #000 34px calc(100% - 34px),
+          transparent
+        );
+      }
       button.tab {
         flex: none;
         white-space: nowrap;
@@ -343,6 +361,31 @@ export class MarstekPanel extends LitElement {
       // See selectDevice: remembering is a convenience, not a requirement.
     }
   }
+
+  protected updated(): void {
+    this.markTabEdges();
+  }
+
+  /**
+   * Which side of the tab strip still has tabs behind it.
+   *
+   * Read after every render because the number of tabs changes with the
+   * battery, and on scroll and resize because neither is a render.
+   */
+  private markTabEdges = () => {
+    const nav = this.renderRoot.querySelector<HTMLElement>("nav");
+    if (!nav) return;
+    if (!nav.dataset.bound) {
+      nav.dataset.bound = "1";
+      nav.addEventListener("scroll", this.markTabEdges, { passive: true });
+      new ResizeObserver(this.markTabEdges).observe(nav);
+    }
+    // A fractional scrollWidth on a zoomed display would otherwise leave the
+    // fade on for good.
+    const left = nav.scrollLeft > 1;
+    const right = nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1;
+    nav.dataset.edge = left && right ? "both" : left ? "left" : right ? "right" : "none";
+  };
 
   private t = (key: string, values?: Record<string, string | number>): string =>
     translate(this.strings, key, values);

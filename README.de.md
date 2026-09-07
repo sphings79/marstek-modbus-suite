@@ -2,11 +2,31 @@
 
 <img src="assets/banner.svg" alt="Marstek Modbus Suite — Home-Assistant-Integration für Marstek-Venus-Speicher über lokales Modbus TCP" width="100%">
 
-# Marstek Modbus Suite für Home Assistant
+# Marstek Modbus Suite
 
-**Marstek-Venus-Speicher über lokales Modbus TCP auslesen und steuern — mit eigenem Dashboard.**
+### Dein Marstek Venus, ausgelesen und gesteuert über lokales Modbus TCP — mit eigenem Dashboard.
 
-Kein Marstek-Konto. Keine Cloud. Kein MQTT-Broker. Kein YAML.
+[![Release](https://img.shields.io/github/v/release/sphings79/marstek-modbus-suite?include_prereleases&style=for-the-badge&color=2ae6dc&labelColor=0b131d)](https://github.com/sphings79/marstek-modbus-suite/releases)
+[![HACS](https://img.shields.io/badge/HACS-eigenes%20Repository-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://hacs.xyz/)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.9%2B-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://www.home-assistant.io/)
+[![Lizenz](https://img.shields.io/github/license/sphings79/marstek-modbus-suite?style=for-the-badge&color=2ae6dc&labelColor=0b131d)](LICENSE)
+
+**Kein Marstek-Konto · Keine Cloud · Kein MQTT-Broker · Kein YAML**
+
+🇩🇪 Deutsch · 🇬🇧 English · 🇳🇱 Nederlands — [English version of this page](README.md)
+
+</div>
+
+<div align="center">
+
+|  |  |  |
+|:--|:--|:--|
+| 🔌 **Nur lokal** | ein TCP-Socket, nichts verlässt das Haus | |
+| 📊 **Eigenes Panel** | sieben Reiter, keine Custom Cards nötig | |
+| 🎛️ **Schreibt, nicht nur liest** | Leistung, Grenzwerte, Modi, sechs Zeitpläne | |
+| 🔬 **Je Pack, je Zelle** | 112 Zellspannungen auf einer gemeinsamen Achse | |
+| 🎨 **Sieben Farbschemata** | hell und dunkel, deine Wahl | |
+| 🌍 **Drei Sprachen** | und es folgt Home Assistant | |
 
 </div>
 
@@ -15,38 +35,97 @@ Kein Marstek-Konto. Keine Cloud. Kein MQTT-Broker. Kein YAML.
 ## Das Panel
 
 Die Integration bringt ihre eigene Seite mit. Sie erscheint in der Seitenleiste, sobald ein
-Speicher eingerichtet ist, und braucht keine nachinstallierten Karten — jedes Element darin gehört
-zur Integration.
+Speicher eingerichtet ist, und braucht keine installierten Custom Cards — jedes Element darin
+gehört zur Integration.
+
+### Übersicht
 
 <div align="center">
 <img src="assets/ui-overview.svg" alt="Übersicht: Ladezustand als Doppelring, elektrische Messwerte, Reserve und Lebensdauer sowie sechs Kacheln für Tagesenergie, Zelldelta, Temperatur, MPPT und Wirkungsgrad" width="100%">
 </div>
 
 Der äußere Ring ist die Meldung des BMS, der innere das, was oberhalb der Entladegrenze nutzbar
-ist — die Lücke zwischen beiden **ist** die Reserve, gezeigt statt beschrieben.
+ist — der Abstand zwischen beiden **ist** die Reserve, gezeigt statt beschrieben.
+
+Zwei der vier Felder darunter folgen der Flussrichtung: beim Laden steht dort, was noch hineinpasst
+und wie lange es bis voll dauert, beim Entladen, was noch herauskommt und wie lange bis leer. Immer
+nur eine der beiden Laufzeiten zählt, und ein fester Platz zeigte die Hälfte der Zeit einen
+stehenden Countdown.
+
+### Zellen
 
 <div align="center">
-<img src="assets/ui-cells.svg" alt="Zellen: Zellspannungsbereich jedes Packs auf einer gemeinsamen Achse, wobei Pack 3 sichtbar abseits der anderen liegt" width="100%">
+<img src="assets/ui-cells.svg" alt="Zellen: Zellspannungsbereich jedes Packs auf einer gemeinsamen Achse, wobei Pack 3 sichtbar breiter ist als die anderen" width="100%">
 </div>
 
-Der Zellbereich jedes Packs auf **einer gemeinsamen Achse**. Das Gerät meldet ein Delta je Pack,
-aber nie eines über den ganzen Stapel — ein Pack auf anderem Niveau als seine Nachbarn ist in den
-Zahlen unsichtbar und hier offensichtlich. Es ist der Balken, der zur Seite gewandert ist.
+Der Zellbereich jedes Packs auf **einer gemeinsamen Achse**. Der Speicher meldet ein Delta je Pack,
+aber nie eines über den ganzen Stapel — ein Pack, das in sich auseinanderläuft, ist in den Zahlen
+eine unter vielen und hier sofort erkennbar. Es ist der Balken, der breit geworden ist.
+
+Die Spreizung **über** den Stapel steht bewusst ohne Bewertung da: Das Gerät arbeitet ein Pack nach
+dem anderen, also stehen die Packs auf verschiedenen Niveaus und ihre Zellen folgen. Das sagt nichts
+über die Zellgesundheit. Das Delta **innerhalb** eines Packs schon.
+
+### Packs
 
 <div align="center">
-<img src="assets/ui-packs.svg" alt="Packs: Ladezustand je Pack als Säulen mit kWh-Angabe, eingezeichneter Entladegrenze und zwei als abweichend markierten Packs" width="100%">
+<img src="assets/ui-packs.svg" alt="Packs: Ladezustand je Pack als Säulen mit kWh-Angabe, Entladegrenze und Notstromgrenze eingezeichnet, das arbeitende Pack markiert" width="100%">
 </div>
 
-Ladezustand je Pack auf gemeinsamer Skala, mit eingezeichneter Entladegrenze. Packs, die mehr als
-fünf Punkte vom **Median** abweichen, werden markiert — Median statt Mittelwert, damit ein einzelner
-Ausreißer den Bezugswert nicht zu sich zieht und sich damit selbst versteckt.
+Ladezustand je Pack auf gemeinsamer Skala, mit zwei eingezeichneten Linien: der Entladegrenze und
+darunter der Grenze, die die **Notstromsteckdose** bei einem Ausfall erreicht. Das in Akzentfarbe
+markierte Pack ist das, das gerade Strom führt — das Gerät arbeitet eines nach dem anderen.
 
-Drei weitere Reiter decken **Solar** (die MPPT-Eingänge), **Energie** (Tag, Monat und Gesamtzeit
-nebeneinander) und **System** (Gerät, Firmware, Verbindung, Störungen, Grenzwerte) ab.
+### Steuerung
 
-Das Panel folgt der Hell-/Dunkel-Einstellung von Home Assistant, spricht die dort eingestellte
-Sprache und findet seine Entitäten über das dahinterliegende Register — es funktioniert also
-unabhängig davon, wie du dein Gerät genannt hast oder in welchem Bereich es liegt.
+<div align="center">
+<img src="assets/ui-control.svg" alt="Steuerung: Lade- und Entladeleistung, Grenzwerte, Benutzer- und erzwungener Modus, Notstrom- und RS485-Schalter sowie die sechs Zeitpläne mit Zeiten, Leistung und Tag" width="100%">
+</div>
+
+Lade- und Entladeleistung, die Grenzwerte, Benutzer- und erzwungener Modus, die Schalter für
+Notstrom und RS485 — und alle sechs Zeitpläne mit Zeiten, Leistung, Tag und An/Aus.
+
+Jeder Regler liest seine Grenzen aus der Entität, statt sie fest zu verdrahten. Derselbe Editor ist
+damit auf einem **1500-W**-Venus-A genauso richtig wie auf einem **2500-W**-Venus-D. Zeiten werden
+zwischen dem HHMM der Register und einem Uhrzeitfeld umgerechnet.
+
+> [!NOTE]
+> Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager —
+> schreibt dieselben Register und gewinnt innerhalb von Sekunden. Passiert das direkt nach einer
+> Eingabe, sagt der Reiter das, statt kaputt auszusehen.
+
+### Einstellungen
+
+<div align="center">
+<img src="assets/ui-settings.svg" alt="Einstellungen: sieben Farbschemata als Kacheln in ihren eigenen Farben, Hell/Dunkel-Wahl, Nachkommastellen, Startreiter und Auswahl der sichtbaren Reiter" width="100%">
+</div>
+
+Sieben Farbschemata, jedes mit eigener heller und dunkler Fassung — darunter eines, das die Farben
+deines Home-Assistant-Themes übernimmt. Dazu Hell/Dunkel-Vorgabe, Startreiter, Ausblenden einzelner
+Reiter, eine zusätzliche Nachkommastelle und Import/Export, um alles in einen anderen Browser zu
+tragen.
+
+Reiter, die dein Speicher nicht füllen kann, stehen ausgegraut mit Begründung in der Liste — so
+bleibt ein selbst ausgeblendeter Reiter von einem unterscheidbar, den es nie gab.
+
+---
+
+## Sprachen
+
+| | Einrichtung und Optionen | Entitätsnamen | Das Panel |
+|---|:---:|:---:|:---:|
+| 🇩🇪 **Deutsch** | ✅ | ✅ | ✅ |
+| 🇬🇧 **English** | ✅ | ✅ | ✅ |
+| 🇳🇱 **Nederlands** | ✅ | ✅ | fällt auf Englisch zurück |
+
+Alle drei folgen der Sprache, auf die Home Assistant eingestellt ist — nichts zu konfigurieren. Die
+Entitätsnamen kommen aus dem Übersetzungssystem von Home Assistant, und genau deshalb findet das
+Panel seine Werte über das **Register** hinter einer Entität statt über ihren Namen: Gerät
+umbenennen, in einen anderen Bereich verschieben, Sprache wechseln — das Panel arbeitet weiter.
+
+Eine weitere Sprache ist ein Pull Request mit einer Datei.
+`custom_components/marstek_modbus/translations/` enthält die Entitätsnamen,
+`frontend/src/locales/` den eigenen Text des Panels.
 
 ---
 
@@ -67,6 +146,7 @@ Entitätsliste folgt denselben Grenzen.
 | Energiezähler: Tag, Monat, gesamt | ✅ | ✅ | ✅ | ✅ |
 | Roundtrip- und Umwandlungswirkungsgrad | ✅ | ✅ | ✅ | ✅ |
 | Nutzbare Energie, Energie bis voll, Laufzeit | ✅ | ✅ | ✅ | ✅ |
+| **Notstromreserve** — Energie, an die nur die Notstromsteckdose kommt | ✅ | ✅ | ❌ | ❌ |
 | Verbleibende Zyklen und Batteriezustand | ✅ | ✅ | ✅ | ✅ |
 | Innen- und Zelltemperaturen | ✅ | ✅ | ✅ | ✅ |
 | Firmware-Versionen, Netzwerkdiagnose | ✅ | ✅ | ✅ | ✅ |
@@ -76,6 +156,7 @@ Entitätsliste folgt denselben Grenzen.
 | **Ladezustand je Pack** | ✅ | ✅ | ❌ | ❌ |
 | **Temperaturen und Zyklen je Pack** | ✅ | ✅ | ❌ | ❌ |
 | **Schutzflags je Pack** | ✅ | ✅ | ❌ | ❌ |
+| **Welches Pack gerade Strom führt** | ✅ | ✅ | ❌ | ❌ |
 | Batteriepacks | bis zu 6 | bis zu 7 | 1, fest verbaut | 1, fest verbaut |
 
 ### Steuerung
@@ -83,12 +164,17 @@ Entitätsliste folgt denselben Grenzen.
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Lade- und Entladeleistung | ✅ | ✅ | ✅ | ✅ |
-| Leistungsgrenzen | ✅ | ✅ | ✅ | ✅ |
+| Leistungsgrenzen | 1500 W | 2500 W | 2500 W | 2500 W |
 | Ladeziel (SoC-Obergrenze) | ✅ | ✅ | ✅ | ✅ |
 | Betriebsmodus, erzwungener Modus | ✅ | ✅ | ✅ | ✅ |
 | Sechs Zeitpläne mit Tagesauswahl | ✅ | ✅ | ✅ | ✅ |
 | Notstrommodus | ✅ | ✅ | ✅ | ✅ |
+| RS485-Steuermodus | ✅ | ✅ | ✅ | ✅ |
+| Gerät neu starten | ✅ | ✅ | ✅ | ✅ |
 | Netzstandard | ❌ | ❌ | ✅ | ❌ |
+
+Alles in dieser Tabelle lässt sich sowohl im Reiter **Steuerung** als auch in der Entitätsliste
+ändern.
 
 ### Panel-Reiter
 
@@ -99,7 +185,13 @@ Entitätsliste folgt denselben Grenzen.
 | Packs | ✅ | ✅ | ❌ | ❌ |
 | Solar | ✅ | ✅ | ❌ | ❌ |
 | Energie | ✅ | ✅ | ✅ | ✅ |
+| **Steuerung** | ✅ | ✅ | ✅ | ✅ |
 | System | ✅ | ✅ | ✅ | ✅ |
+| **Einstellungen** (das Zahnrad) | ✅ | ✅ | ✅ | ✅ |
+
+Ein Reiter erscheint nur, wenn der Speicher etwas hineinzustellen hat, und lässt sich in den
+Einstellungen von Hand ausblenden — dort stehen die, die dein Modell nicht füllen kann, ausgegraut
+mit Begründung.
 
 > [!IMPORTANT]
 > Venus **A**, **D** und **E v3** teilen eine Firmware-Basis. Venus **E v1/v2** baut auf einer
@@ -181,6 +273,7 @@ meldet:
 | `energy_to_full` | was bis zur Ladeobergrenze fehlt |
 | `runtime_to_empty` / `runtime_to_full` | Stunden bei aktueller Leistung, jeweils nur in ihrer Richtung |
 | `remaining_cycles`, `battery_health` | Verschleiß gegen die Zyklenangabe der Zellen |
+| `backup_reserve_energy` | was unter der Grenze liegt und nur über die Notstromsteckdose erreichbar ist (A und D) |
 | `stored_energy`, `round_trip_efficiency_*` | Energie im Speicher, Wirkungsgrad über drei Zeitebenen |
 
 ---
