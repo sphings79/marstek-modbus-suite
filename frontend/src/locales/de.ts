@@ -1,0 +1,41 @@
+export const de: Record<string, string> = {
+  "tab.core": "KERN",
+  "tab.cells": "ZELLEN",
+  "tab.packs": "PACKS",
+  "tab.solar": "SOLAR",
+  "tab.energy": "ENERGIE",
+  "tab.system": "SYSTEM",
+
+  "status.modbus": "MODBUS",
+  "status.wifi": "WLAN",
+  "status.cloud": "CLOUD",
+  "status.cloud_off": "CLOUD AUS",
+  "status.discharging": "ENTLÄDT",
+  "status.charging": "LÄDT",
+  "status.idle": "BEREIT",
+
+  "core.electrical": "Elektrisch · jetzt",
+  "core.reserve": "Reserve · Lebensdauer",
+  "core.stored": "Gespeichert",
+  "core.capacity": "Kapazität",
+  "core.soc_bms": "SOC · BMS",
+  "core.soc_usable": "nutzbar {value} %",
+  "core.discharging_to_house": "entlädt",
+  "core.charging_from_grid": "lädt",
+  "core.at_rest": "in Ruhe",
+  "core.today_charged": "Heute geladen",
+  "core.today_discharged": "Heute entladen",
+  "core.cell_delta": "Zelldelta",
+  "core.internal_temp": "Innentemperatur",
+  "core.mppt_total": "MPPT gesamt",
+  "core.pack_spread": "über {count} Packs",
+  "core.no_delta": "keine Werte je Pack",
+
+  "empty.no_device": "Kein Marstek-Speicher gefunden",
+  "empty.no_device_hint":
+    "Dieses Panel liest die Integration Marstek Venus Modbus. Lege dort zuerst einen Speicher an.",
+  "empty.not_ready": "Warte auf die ersten Messwerte…",
+
+  "common.unavailable": "—",
+  "common.device": "Gerät",
+};

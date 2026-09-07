@@ -3,6 +3,12 @@
   "name": "Marstek Venus Modbus",
   "version": "1.4.1",
   "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "lovelace",
+    "panel_custom"
+  ],
   "documentation": "https://github.com/sphings79/marstek_venus_modbus_dev",
   "requirements": ["pymodbus>=3.9.2"],
   "codeowners": ["@sphings79"],

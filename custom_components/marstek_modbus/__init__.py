@@ -13,6 +13,7 @@ from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
 from .const import DOMAIN
 from .coordinator import MarstekCoordinator
+from .panel import async_register_panel, async_remove_panel_if_unused
 from .const import SUPPORTED_VERSIONS
 
 _LOGGER = logging.getLogger(__name__)
@@ -112,6 +113,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Perform first refresh to ensure coordinator has up-to-date data.
         # Raises ConfigEntryNotReady by itself if the first poll fails.
         await coordinator.async_config_entry_first_refresh()
+
+        # The sidebar panel belongs to the integration, not to one device: this
+        # is a no-op once a second entry arrives.
+        await async_register_panel(hass)
     except Exception:
         # Do not leave a half-set-up entry (platforms, an open socket) behind
         # when Home Assistant retries the setup later.
@@ -148,6 +153,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             coordinator._async_clear_rs485_control_mode_issue()
             # Remove coordinator reference from hass data
             hass.data[DOMAIN].pop(entry.entry_id, None)
+            async_remove_panel_if_unused(hass)
 
         return unload_ok
     except Exception as err:

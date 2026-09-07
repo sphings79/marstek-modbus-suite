@@ -1,0 +1,19 @@
+{
+  "name": "marstek-venus-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prebuild": "rm -f ../custom_components/marstek_modbus/frontend/*.js",
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  },
+  "dependencies": {
+    "lit": "^3.2.1"
+  }
+}

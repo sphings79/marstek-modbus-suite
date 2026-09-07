@@ -7,3 +7,4 @@ logo*
 TODO.md
 .venv
 logs/
+frontend/node_modules
