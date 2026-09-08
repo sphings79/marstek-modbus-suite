@@ -7,6 +7,7 @@ the data coordinator, and forwarding setup to sensor and select platforms.
 
 import logging
 
+import homeassistant.helpers.config_validation as cv
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
@@ -17,6 +18,11 @@ from .panel import async_register_panel, async_remove_panel_if_unused
 from .const import SUPPORTED_VERSIONS
 
 _LOGGER = logging.getLogger(__name__)
+
+# The integration is set up from config entries only. Declaring that here is
+# what tells Home Assistant - and hassfest - that a `marstek_modbus:` block in
+# configuration.yaml is a mistake rather than something we forgot to read.
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 PLATFORMS = [
     "sensor",
