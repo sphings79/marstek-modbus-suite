@@ -5,8 +5,9 @@ import socket
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.helpers.translation import async_get_translations
+from homeassistant.util import slugify
 
 from .const import (
     CONF_DEV_REGISTERS_DUPLICATE,
@@ -16,10 +17,12 @@ from .const import (
     DEFAULT_DISCHARGE_FLOOR,
     CONF_MESSAGE_WAIT_MS,
     DEFAULT_DEV_REGISTERS,
+    DEFAULT_DEVICE_NAME,
     DEFAULT_MESSAGE_WAIT_MS,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVALS,
     DEFAULT_UNIT_ID,
+    DEVICE_NAME_DEFAULTS,
     DOMAIN,
     SUPPORTED_VERSIONS,
 )
@@ -72,22 +75,22 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self):
+        """Initialise the flow with no connection details gathered yet."""
+        self._connection: dict | None = None
+
     async def async_step_user(self, user_input=None):
         """Handle the initial step where the user inputs connection details.
 
-        Validates user input and attempts connection to the Modbus device.
+        Validates user input and attempts connection to the Modbus device. The
+        naming of the device happens in a second step, once the connection is
+        known to work.
         """
         errors = {}
 
-        # Determine user language, fallback to English
-        language = self.context.get("language", "en")
-
-        # Load translations for localized messages
-        translations = await async_get_translations(
-            self.hass,
-            language,
-            category="config",
-            integrations=[DOMAIN]
+        # Extend base schema with device_version for initial config
+        user_schema = SCHEMA_HOST_BASE.extend(
+            {vol.Required(CONF_DEVICE_VERSION): vol.In(SUPPORTED_VERSIONS)}
         )
 
         if user_input is not None:
@@ -106,9 +109,6 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             if errors:
                 # Re-show form with preserved user input
-                user_schema = SCHEMA_HOST_BASE.extend(
-                    {vol.Required(CONF_DEVICE_VERSION): vol.In(SUPPORTED_VERSIONS)}
-                )
                 return self.async_show_form(
                     step_id="user",
                     data_schema=self.add_suggested_values_to_schema(
@@ -137,31 +137,15 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     host, port, unit_id
                 )
 
-                # Create configuration entry if no errors
+                # Connection is good - move on to naming the device
                 if not errors["base"]:
-                    title = translations.get(
-                        "config.step.user.title", "Marstek Modbus Suite"
-                    )
-                    data = {
+                    self._connection = {
                         CONF_HOST: host,
                         CONF_PORT: port,
                         CONF_DEVICE_VERSION: device_version,
                         CONF_UNIT_ID: unit_id,
                     }
-                    return self.async_create_entry(title=title, data=data)
-
-        # Show form for user input with description placeholders
-        description_placeholders = {
-            "device_version_choices": ", ".join(
-                f"{v}: {translations.get(f'config.step.user.data.device_version|{v}', v)}"
-                for v in SUPPORTED_VERSIONS
-            )
-        }
-
-        # Extend base schema with device_version for initial config
-        user_schema = SCHEMA_HOST_BASE.extend(
-            {vol.Required(CONF_DEVICE_VERSION): vol.In(SUPPORTED_VERSIONS)}
-        )
+                    return await self.async_step_name()
 
         return self.async_show_form(
             step_id="user",
@@ -169,9 +153,51 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 user_schema, user_input or {}
             ),
             errors=errors,
-            description_placeholders=description_placeholders,
         )
-    
+
+    async def async_step_name(self, user_input=None):
+        """Name the device.
+
+        The name becomes the config entry title, and the title is what the
+        device and every entity id is named after. Letting the user set it here
+        is the only chance to get the entity ids right: Home Assistant derives
+        them once, when an entity is first registered, and a later rename only
+        changes the display name.
+
+        This is also the migration path away from the upstream integration.
+        Both ship the same domain and the same entity names, so entering the
+        name the old entry carried reproduces the previous entity ids exactly.
+        """
+        errors = {}
+        connection = self._connection or {}
+        default_name = DEVICE_NAME_DEFAULTS.get(
+            connection.get(CONF_DEVICE_VERSION), DEFAULT_DEVICE_NAME
+        )
+
+        if user_input is not None:
+            name = str(user_input.get(CONF_NAME) or "").strip() or default_name
+
+            # Names that slugify to the same thing collide in the entity ids,
+            # so compare on the slug rather than on the display string.
+            slug = slugify(name)
+            if any(
+                slugify(entry.title or "") == slug
+                for entry in self._async_current_entries()
+            ):
+                errors["base"] = "name_exists"
+            else:
+                return self.async_create_entry(title=name, data=connection)
+
+        return self.async_show_form(
+            step_id="name",
+            data_schema=self.add_suggested_values_to_schema(
+                vol.Schema({vol.Optional(CONF_NAME, default=default_name): str}),
+                user_input or {CONF_NAME: default_name},
+            ),
+            errors=errors,
+            last_step=True,
+        )
+
     async def async_step_reauth(self, data=None):
         """Re-authentication step for missing device_version."""
         errors = {}

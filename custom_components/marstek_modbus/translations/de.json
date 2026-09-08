@@ -10,6 +10,13 @@
           "unit_id": "Unit-ID",
           "device_version": "Geräteversion"
         }
+      },
+      "name": {
+        "title": "Gerät benennen",
+        "description": "Der Name wird für das Gerät und für alle Entity-IDs verwendet, zum Beispiel `sensor.marstek_venus_e_soc_batterie`. Er greift nur einmal: Ein späteres Umbenennen ändert den Anzeigenamen, nicht die Entity-IDs.\n\nUmstieg von **Marstek Venus Modbus**? Trage genau den Namen ein, den der alte Eintrag hatte (standardmäßig `Marstek Venus Modbus`). Beide Integrationen verwenden dieselben Entitätsnamen, deshalb bleibt jede Entity-ID erhalten und Dashboards und Automationen laufen unverändert weiter.",
+        "data": {
+          "name": "Gerätename"
+        }
       }
     },
     "error": {
@@ -19,7 +26,8 @@
       "invalid_host": "Ungültiger Host oder IP-Adresse",
       "invalid_unit_id": "Ungültige Modbus Unit-ID (muss 1-255 sein)",
       "unit_id_no_response": "Keine Antwort von Unit-ID. Prüfen Sie, ob das Gerät diese Unit-ID verwendet",
-      "cannot_connect": "Verbindung zum Gerät nicht möglich"
+      "cannot_connect": "Verbindung zum Gerät nicht möglich",
+      "name_exists": "Ein Gerät mit diesem Namen existiert bereits. Bitte einen anderen wählen."
     },
     "abort": {
       "already_configured": "Dieses Gerät ist bereits konfiguriert"

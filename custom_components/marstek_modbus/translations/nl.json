@@ -10,6 +10,13 @@
           "unit_id": "Unit-ID",
           "device_version": "Apparaatversie"
         }
+      },
+      "name": {
+        "title": "Apparaat een naam geven",
+        "description": "De naam wordt gebruikt voor het apparaat en voor elke entiteit-id, bijvoorbeeld `sensor.marstek_venus_e_batterij_soc`. Hij wordt maar één keer toegepast: later hernoemen verandert de weergavenaam, niet de entiteit-id's.\n\nOverstap van **Marstek Venus Modbus**? Voer exact de naam in die dat item had (standaard `Marstek Venus Modbus`). Beide integraties gebruiken dezelfde entiteitsnamen, dus elke entiteit-id blijft behouden en dashboards en automatiseringen blijven ongewijzigd werken.",
+        "data": {
+          "name": "Apparaatnaam"
+        }
       }
     },
     "error": {
@@ -19,7 +26,8 @@
       "invalid_host": "Ongeldig IP-adres of hostnaam",
       "invalid_unit_id": "Ongeldige Modbus Unit-ID (moet 1-255 zijn)",
       "unit_id_no_response": "Geen reactie van Unit-ID. Controleer of het apparaat deze Unit-ID gebruikt",
-      "cannot_connect": "Kan geen verbinding maken"
+      "cannot_connect": "Kan geen verbinding maken",
+      "name_exists": "Er bestaat al een apparaat met deze naam. Kies een andere."
     },
     "abort": {
       "already_configured": "Dit apparaat is al geconfigureerd"

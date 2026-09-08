@@ -242,6 +242,27 @@ Enter the address of your Modbus TCP gateway, the port (default 502), the Unit I
 range 1–255) and the device version — `A`, `D`, `E v1/v2` or `E v3`. The device version picks the
 register map, so it has to match the actual hardware.
 
+The second step asks for the **device name**, prefilled to match the device version you picked. The
+name does more than label the device: it is the first half of every entity id
+(`sensor.marstek_venus_e_battery_soc`). It is only applied once — renaming later changes the
+displayed name, not the entity ids. Two batteries need two different names; the integration rejects
+one that is already taken.
+
+### Migrating from Marstek Venus Modbus
+
+This integration is a fork of
+[ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus) and ships in the
+same `custom_components/marstek_modbus` folder. The two cannot be installed side by side, so the old
+repository has to be removed from HACS first. For the entities there are two paths:
+
+- **Keep the config entry** (recommended): swap the HACS repository only and leave the entry under
+  *Devices & Services* alone. Nothing changes — device name, entity ids and history all survive,
+  because the entities hang off the unchanged entry id. This integration knows every register key
+  the old one had; it only adds more.
+- **Entry already deleted**: when setting it up again, enter the name the old entry carried — by
+  default `Marstek Venus Modbus`. Both integrations use the same entity names, so the entity ids
+  come out exactly as before and dashboards and automations keep working.
+
 > [!NOTE]
 > The images in this README are drawings, not photographs of a running instance. To see the real
 > panel with the same readings, serve the repository and open

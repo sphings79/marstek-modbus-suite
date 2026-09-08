@@ -25,6 +25,18 @@ SUPPORTED_VERSIONS = [
     "D",
     "A"]
 
+# Device names offered as the default during setup, keyed by SUPPORTED_VERSIONS.
+# The name becomes the config entry title, and the title is what the device and
+# every entity id is named after, so it is worth getting right at setup time -
+# renaming later leaves the entity ids on their original names.
+DEVICE_NAME_DEFAULTS = {
+    "E v1/v2": "Marstek Venus E",
+    "E v3": "Marstek Venus E 3.0",
+    "D": "Marstek Venus D",
+    "A": "Marstek Venus A",
+}
+DEFAULT_DEVICE_NAME = "Marstek Venus"
+
 # Note: register loading logic (get_registers) was moved to
 # `coordinator.py` to keep `const.py` focused on constants only.
 

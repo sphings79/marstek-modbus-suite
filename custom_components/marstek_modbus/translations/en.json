@@ -10,6 +10,13 @@
           "unit_id": "Unit ID",
           "device_version": "Device Version"
         }
+      },
+      "name": {
+        "title": "Name the device",
+        "description": "The name is used for the device and for every entity id, for example `sensor.marstek_venus_e_battery_soc`. It is only applied once: renaming later changes the displayed name, not the entity ids.\n\nMigrating from **Marstek Venus Modbus**? Enter exactly the name that entry carried (by default `Marstek Venus Modbus`). Both integrations use the same entity names, so every entity id stays what it was and dashboards and automations keep working.",
+        "data": {
+          "name": "Device name"
+        }
       }
     },
     "error": {
@@ -19,7 +26,8 @@
       "invalid_host": "Invalid host or IP address",
       "invalid_unit_id": "Invalid Modbus Unit ID (must be 1–255)",
       "unit_id_no_response": "No response from Unit ID. Check if the device uses this Unit ID",
-      "cannot_connect": "Cannot connect to the device"
+      "cannot_connect": "Cannot connect to the device",
+      "name_exists": "A device with this name already exists. Please pick a different one."
     },
     "abort": {
       "already_configured": "This device is already configured"
