@@ -100,7 +100,13 @@ the registers hold and a clock field.
 
 Seven colour schemes, each with its own light and dark version — including one that takes its
 colours from your Home Assistant theme. Plus a light/dark override, which tab the panel opens on,
-which tabs to hide, an extra decimal place, and import/export to carry the lot to another browser.
+which tabs to hide, an extra decimal place, and two sliders for how large the panel draws and how
+wide it runs.
+
+All of it except those two sliders is stored in Home Assistant under your own user, so the panel
+looks the same on your phone as on your desk, and the person next to you keeps their own choices.
+Scale and width stay in the browser you set them in — a phone and a 4K monitor want different
+answers — which is also why the import/export box leaves them out.
 
 Tabs your battery cannot fill are listed greyed out with the reason, so a tab you hid stays
 distinguishable from one that was never there.

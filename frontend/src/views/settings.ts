@@ -2,8 +2,16 @@ import { LitElement, html, css, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { baseStyles } from "../styles";
 import type { Translate } from "./view-base";
-import type { PanelSettings, ThemeMode } from "../settings";
-import { exportSettings, importSettings } from "../settings";
+import type { LocalSettings, PanelSettings, ThemeMode } from "../settings";
+import {
+  exportSettings,
+  importSettings,
+  FONT_SCALE_MIN,
+  FONT_SCALE_MAX,
+  FONT_SCALE_STEP,
+  WIDTH_MIN,
+  WIDTH_STEP,
+} from "../settings";
 import { SCHEMES, followsHaTheme, type Palette } from "../palettes";
 
 /** One tab as the settings list sees it: name, and why it may not be offered. */
@@ -23,10 +31,14 @@ export interface TabChoice {
 @customElement("mk-view-settings")
 export class MkViewSettings extends LitElement {
   @property({ attribute: false }) settings!: PanelSettings;
+  @property({ attribute: false }) local!: LocalSettings;
   @property({ attribute: false }) tabs: TabChoice[] = [];
   @property({ attribute: false }) t!: Translate;
   @property({ attribute: false }) onChange!: (patch: Partial<PanelSettings>) => void;
+  @property({ attribute: false }) onChangeLocal!: (patch: Partial<LocalSettings>) => void;
   @property({ attribute: false }) onReset!: () => void;
+  /** True when the shared store never answered, so nothing here will persist. */
+  @property({ type: Boolean }) offline = false;
   /** Which ground the panel is on, so a swatch shows the version that applies. */
   @property({ type: Boolean }) light = false;
 
@@ -191,6 +203,54 @@ export class MkViewSettings extends LitElement {
         flex: 0 0 auto;
         border: 1px solid var(--mk-line);
       }
+
+      /* ---- sliders ---- */
+      .slider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .slider input {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 4px;
+        margin: 0;
+        appearance: none;
+        background: var(--mk-track);
+        border: 0;
+        cursor: pointer;
+      }
+      .slider input::-webkit-slider-thumb {
+        appearance: none;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: var(--mk-accent);
+        border: 0;
+        cursor: pointer;
+      }
+      .slider input::-moz-range-thumb {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: var(--mk-accent);
+        border: 0;
+        cursor: pointer;
+      }
+      .slider input:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 4px;
+      }
+      /* The readout sits in a fixed box so the slider does not shift under
+         the pointer as the number gains or loses a digit. */
+      .slider .readout {
+        flex: 0 0 auto;
+        min-width: 9ch;
+        text-align: right;
+        font-family: var(--mk-mono);
+        font-size: 11px;
+        color: var(--mk-fg);
+      }
       .choices button:disabled {
         opacity: 0.4;
         cursor: default;
@@ -344,6 +404,46 @@ export class MkViewSettings extends LitElement {
               (extraDigits) => this.onChange({ extraDigits }),
             )}
           </div>
+
+          <div class="field">
+            <span class="label">${t("settings.scale")}</span>
+            <div class="slider">
+              <input
+                type="range"
+                min=${FONT_SCALE_MIN}
+                max=${FONT_SCALE_MAX}
+                step=${FONT_SCALE_STEP}
+                .value=${String(this.local.fontScale)}
+                aria-label=${t("settings.scale")}
+                @input=${(e: Event) =>
+                  this.onChangeLocal({
+                    fontScale: Number((e.target as HTMLInputElement).value),
+                  })}
+              />
+              <span class="readout">${this.local.fontScale} %</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="label">${t("settings.width")}</span>
+            <div class="slider">
+              <input
+                type="range"
+                min=${WIDTH_MIN}
+                max=${this.widthMax()}
+                step=${WIDTH_STEP}
+                .value=${String(this.widthValue())}
+                aria-label=${t("settings.width")}
+                @input=${(e: Event) => this.pickWidth(e)}
+              />
+              <span class="readout">
+                ${this.local.maxWidth === "full"
+                  ? t("settings.width.full")
+                  : `${this.local.maxWidth} px`}
+              </span>
+            </div>
+            <div class="note">${t("settings.screen_hint")}</div>
+          </div>
         </div>
       </div>
 
@@ -388,6 +488,9 @@ export class MkViewSettings extends LitElement {
             </button>
             <span class="note" style="margin:0">${t("settings.storage_hint")}</span>
           </div>
+          ${this.offline
+            ? html`<div class="note crit">${t("settings.offline")}</div>`
+            : nothing}
           ${this.transferOpen ? this.transfer() : nothing}
         </div>
       </div>
@@ -483,6 +586,30 @@ export class MkViewSettings extends LitElement {
         </span>
       </button>
     `;
+  }
+
+  /**
+   * The right-hand end of the width slider: this window, rounded up a step.
+   *
+   * Anchoring it to the window rather than to a fixed number means the last
+   * position really is edge to edge on whatever screen this is, and that no
+   * position on the slider is indistinguishable from the one before it.
+   */
+  private widthMax(): number {
+    const window_ = Math.max(WIDTH_MIN + WIDTH_STEP, window.innerWidth);
+    return Math.ceil(window_ / WIDTH_STEP) * WIDTH_STEP;
+  }
+
+  /** Full width sits at the far right; anything else is its own pixel value. */
+  private widthValue(): number {
+    const max = this.widthMax();
+    if (this.local.maxWidth === "full") return max;
+    return Math.min(max, Math.max(WIDTH_MIN, this.local.maxWidth));
+  }
+
+  private pickWidth(event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    this.onChangeLocal({ maxWidth: value >= this.widthMax() ? "full" : value });
   }
 
   private choices<T extends string | boolean>(

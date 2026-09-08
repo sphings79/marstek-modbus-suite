@@ -226,15 +226,23 @@ export const en: Record<string, string> = {
   "settings.unavail.packs": "no state of charge per pack",
   "settings.unavail.solar": "no PV inputs",
   "settings.unavail.control": "no writable registers",
+  "settings.scale": "Scale",
+  "settings.width": "Content width",
+  "settings.width.full": "Full width",
+  "settings.screen_hint":
+    "Scale and width belong to this browser: a phone and a 4K monitor want different answers, so they are not carried across devices or included in the export.",
   "settings.storage": "Stored settings",
   "settings.reset": "Reset to defaults",
   "settings.transfer": "Import / export",
-  "settings.transfer_hint": "Copy this out, paste it into another browser.",
+  "settings.transfer_hint":
+    "Copy this out, paste it in somewhere else. Scale and width are not part of it.",
   "settings.transfer_bad": "That is not a settings object.",
   "settings.import": "Apply pasted",
   "settings.export_again": "Show current",
   "settings.storage_hint":
-    "These settings live in this browser only. Another browser, or another device, keeps its own.",
+    "Everything except scale and width is stored in Home Assistant under your user, so the same panel follows you to every device. Other people keep their own.",
+  "settings.offline":
+    "Home Assistant did not answer, so nothing changed here will be kept. Reload the panel to try again.",
 
   // ---- empty states ----
   "empty.no_device": "No Marstek battery found",

@@ -17,11 +17,15 @@ import "./views/settings";
 import type { TabChoice } from "./views/settings";
 import { applyScheme } from "./palettes";
 import {
-  loadSettings,
-  saveSettings,
-  clearSettings,
+  loadShared,
+  saveShared,
+  loadLocal,
+  saveLocal,
+  clearLocal,
   DEFAULT_SETTINGS,
+  DEFAULT_LOCAL,
   type PanelSettings,
+  type LocalSettings,
 } from "./settings";
 
 type TabId =
@@ -62,7 +66,10 @@ export class MarstekPanel extends LitElement {
   @property({ attribute: false }) hass!: import("./types").HomeAssistant;
   @property({ type: Boolean }) narrow = false;
 
-  @state() private settings: PanelSettings = loadSettings();
+  @state() private settings: PanelSettings = { ...DEFAULT_SETTINGS };
+  @state() private local: LocalSettings = loadLocal();
+  /** False once the shared store has answered; true when it never did. */
+  @state() private settingsOffline = false;
   @state() private tab: TabId = "core";
   @state() private showSettings = false;
   @state() private strings: Strings = en;
@@ -70,6 +77,9 @@ export class MarstekPanel extends LitElement {
 
   private catalogueFor = "";
   private appearanceFor = "";
+  private layoutFor = "";
+  /** Guards against a second fetch while the first is still in flight. */
+  private sharedRequested = false;
   private formatter = new Formatter("en");
 
   static styles = [
@@ -81,8 +91,21 @@ export class MarstekPanel extends LitElement {
         background: var(--mk-bg);
       }
 
+      /*
+       * Scale and width.
+       *
+       * The scale is a zoom rather than a font size, so the gaps, tiles and
+       * bars grow with the type instead of the text outgrowing its box - the
+       * panel has 64 sizes in px across its views and components, and none of
+       * them has to know about this.
+       *
+       * Zoom scales lengths too, which would make a 1440px limit measure 1584
+       * real pixels at 110%. Dividing by the zoom cancels that, so the width
+       * the user set stays the width they get.
+       */
       .shell {
-        max-width: 1440px;
+        zoom: var(--mk-zoom, 1);
+        max-width: calc(var(--mk-max-width, 1440px) / var(--mk-zoom, 1));
         margin: 0 auto;
         padding: 0 24px 40px;
       }
@@ -242,8 +265,11 @@ export class MarstekPanel extends LitElement {
         padding-top: 20px;
       }
 
+      /* A phone has neither the room to give away nor the pixels to zoom. */
       @media (max-width: 700px) {
         .shell {
+          zoom: 1;
+          max-width: none;
           padding: 0 12px 32px;
         }
         header {
@@ -295,7 +321,9 @@ export class MarstekPanel extends LitElement {
   }
 
   protected willUpdate(changed: Map<string, unknown>): void {
+    this.applyLayout();
     if (!this.hass) return;
+    this.loadShared();
     if (!changed.has("hass") && !changed.has("settings")) return;
 
     this.applyAppearance();
@@ -335,6 +363,46 @@ export class MarstekPanel extends LitElement {
     applyScheme(this, this.settings.scheme, light);
   }
 
+  /**
+   * Put the scale and width on the host as custom properties.
+   *
+   * Signature-guarded like the appearance: `willUpdate` runs on every hass
+   * update, several times a second, and neither value changes that often.
+   */
+  private applyLayout(): void {
+    const { fontScale, maxWidth } = this.local;
+    const signature = `${fontScale}/${maxWidth}`;
+    if (signature === this.layoutFor) return;
+    this.layoutFor = signature;
+
+    this.style.setProperty("--mk-zoom", String(fontScale / 100));
+    this.style.setProperty(
+      "--mk-max-width",
+      maxWidth === "full" ? "100%" : `${maxWidth}px`,
+    );
+  }
+
+  /**
+   * Fetch the shared settings once, on the first render that has a connection.
+   *
+   * The panel draws with the defaults until they arrive. That is a frame or
+   * two of the wrong colour scheme, which is better than blocking the whole
+   * panel on a websocket round trip.
+   */
+  private loadShared(): void {
+    if (this.sharedRequested) return;
+    this.sharedRequested = true;
+
+    void loadShared(this.hass).then((settings) => {
+      if (settings === null) {
+        this.settingsOffline = true;
+        return;
+      }
+      this.settings = settings;
+      this.tab = this.startingTab();
+    });
+  }
+
   /** Where the panel opens: a fixed tab, or the one it was left on. */
   private startingTab(): TabId {
     const wanted =
@@ -344,12 +412,19 @@ export class MarstekPanel extends LitElement {
 
   private update_(patch: Partial<PanelSettings>): void {
     this.settings = { ...this.settings, ...patch };
-    saveSettings(this.settings);
+    void saveShared(this.hass, this.settings);
+  }
+
+  private updateLocal(patch: Partial<LocalSettings>): void {
+    this.local = { ...this.local, ...patch };
+    saveLocal(this.local);
   }
 
   private resetSettings(): void {
-    clearSettings();
     this.settings = { ...DEFAULT_SETTINGS };
+    void saveShared(this.hass, this.settings);
+    clearLocal();
+    this.local = { ...DEFAULT_LOCAL };
   }
 
   private openTab(id: TabId): void {
@@ -484,6 +559,10 @@ export class MarstekPanel extends LitElement {
           ${this.showSettings
             ? html`<mk-view-settings
                 .settings=${this.settings}
+                .local=${this.local}
+                .offline=${this.settingsOffline}
+                .onChangeLocal=${(patch: Partial<LocalSettings>) =>
+                  this.updateLocal(patch)}
                 .tabs=${this.tabChoices(reader)}
                 .t=${this.t}
                 .onChange=${(patch: Partial<PanelSettings>) => this.update_(patch)}

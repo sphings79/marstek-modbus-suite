@@ -1,12 +1,20 @@
 /**
  * What the user has chosen about the panel itself, as opposed to the battery.
  *
- * This lives in `localStorage`, which means it is per browser: the same person
- * on a laptop and a phone gets two independent sets. That is the trade for not
- * adding a backend store, and the settings view says so.
+ * Two stores, because the settings answer two different questions.
+ *
+ * The ones about taste - colours, which tab opens, what is hidden - live in
+ * Home Assistant under the viewer's own user id, so a phone and a laptop show
+ * the same panel to the same person and nobody else's choices move.
+ *
+ * The ones about the screen in front of you - scale and width - stay in
+ * `localStorage`. A 4K monitor, a laptop and a phone want different answers,
+ * and syncing them would mean the last device used wins on all of them. They
+ * are left out of the export box for the same reason.
  */
 
 import { DEFAULT_SCHEME, schemeById } from "./palettes";
+import type { HomeAssistant } from "./types";
 
 export type ThemeMode = "auto" | "dark" | "light";
 
@@ -23,6 +31,28 @@ export interface PanelSettings {
   extraDigits: boolean;
 }
 
+/**
+ * What the panel looks like on this screen. Per browser, never exported.
+ */
+export interface LocalSettings {
+  /** Percent. Applied as a zoom, so spacing grows with the type. */
+  fontScale: number;
+  /** Content width in real screen pixels, or "full" for no limit. */
+  maxWidth: number | "full";
+}
+
+export const FONT_SCALE_MIN = 90;
+export const FONT_SCALE_MAX = 150;
+export const FONT_SCALE_STEP = 5;
+
+export const WIDTH_MIN = 1200;
+export const WIDTH_STEP = 20;
+
+export const DEFAULT_LOCAL: LocalSettings = {
+  fontScale: 100,
+  maxWidth: "full",
+};
+
 export const DEFAULT_SETTINGS: PanelSettings = {
   scheme: DEFAULT_SCHEME,
   mode: "auto",
@@ -32,6 +62,11 @@ export const DEFAULT_SETTINGS: PanelSettings = {
 };
 
 const STORAGE_KEY = "marstek-panel.settings";
+const LOCAL_KEY = "marstek-panel.local";
+
+/** Websocket commands the integration serves for the shared settings. */
+const WS_GET = "marstek_modbus/settings/get";
+const WS_SET = "marstek_modbus/settings/set";
 
 /**
  * Read the stored settings, field by field.
@@ -113,5 +148,119 @@ export function clearSettings(): void {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
     // See above.
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * The screen in front of you: scale and width, per browser.
+ * ------------------------------------------------------------------ */
+
+/** Round to the nearest step and hold inside the range. */
+function snap(value: number, min: number, max: number, step: number): number {
+  const stepped = Math.round(value / step) * step;
+  return Math.min(max, Math.max(min, stepped));
+}
+
+export function parseLocal(stored: unknown): LocalSettings {
+  if (!stored || typeof stored !== "object") return { ...DEFAULT_LOCAL };
+  const raw = stored as Record<string, unknown>;
+
+  const width = raw.maxWidth;
+  return {
+    fontScale:
+      typeof raw.fontScale === "number" && Number.isFinite(raw.fontScale)
+        ? snap(raw.fontScale, FONT_SCALE_MIN, FONT_SCALE_MAX, FONT_SCALE_STEP)
+        : DEFAULT_LOCAL.fontScale,
+    maxWidth:
+      typeof width === "number" && Number.isFinite(width) && width >= WIDTH_MIN
+        ? Math.round(width / WIDTH_STEP) * WIDTH_STEP
+        : "full",
+  };
+}
+
+export function loadLocal(): LocalSettings {
+  try {
+    const text = localStorage.getItem(LOCAL_KEY);
+    if (!text) return { ...DEFAULT_LOCAL };
+    return parseLocal(JSON.parse(text));
+  } catch {
+    return { ...DEFAULT_LOCAL };
+  }
+}
+
+export function saveLocal(local: LocalSettings): void {
+  try {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(local));
+  } catch {
+    // Private windows and blocked site data throw here.
+  }
+}
+
+export function clearLocal(): void {
+  try {
+    localStorage.removeItem(LOCAL_KEY);
+  } catch {
+    // See above.
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Taste: stored in Home Assistant, under the viewer's own user id.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Read the shared settings.
+ *
+ * Returns null when the integration does not answer - an older version, or a
+ * connection that dropped. The caller shows the defaults and says so, rather
+ * than quietly falling back to this browser's old copy: two stores that
+ * disagree are worse than one that is plainly empty.
+ */
+export async function loadShared(hass: HomeAssistant): Promise<PanelSettings | null> {
+  try {
+    const stored = await hass.callWS<Record<string, unknown>>({ type: WS_GET });
+    // An empty answer is a user who has never saved anything. Everything this
+    // browser already had is theirs, so it goes up as their starting point
+    // rather than being thrown away.
+    if (!stored || Object.keys(stored).length === 0) {
+      const legacy = readLegacy();
+      if (legacy) {
+        await saveShared(hass, legacy);
+        return legacy;
+      }
+      return { ...DEFAULT_SETTINGS };
+    }
+    return parseSettings(stored);
+  } catch {
+    return null;
+  }
+}
+
+export async function saveShared(
+  hass: HomeAssistant,
+  settings: PanelSettings,
+): Promise<void> {
+  try {
+    await hass.callWS({ type: WS_SET, settings });
+  } catch {
+    // The choice still applies for this session; it just will not survive a
+    // reload. The settings view reports the store being unreachable.
+  }
+}
+
+/**
+ * The settings this browser stored before they moved into Home Assistant.
+ *
+ * Read once, on the first load that finds nothing on the server. The old key
+ * is deliberately left in place: if the migration goes wrong, the values the
+ * user picked are still there to look at.
+ */
+function readLegacy(): PanelSettings | null {
+  try {
+    const text = localStorage.getItem(STORAGE_KEY);
+    if (!text) return null;
+    return parseSettings(JSON.parse(text));
+  } catch {
+    return null;
   }
 }

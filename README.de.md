@@ -102,8 +102,14 @@ zwischen dem HHMM der Register und einem Uhrzeitfeld umgerechnet.
 
 Sieben Farbschemata, jedes mit eigener heller und dunkler Fassung — darunter eines, das die Farben
 deines Home-Assistant-Themes übernimmt. Dazu Hell/Dunkel-Vorgabe, Startreiter, Ausblenden einzelner
-Reiter, eine zusätzliche Nachkommastelle und Import/Export, um alles in einen anderen Browser zu
-tragen.
+Reiter, eine zusätzliche Nachkommastelle und zwei Regler dafür, wie groß das Panel zeichnet und wie
+breit es läuft.
+
+Alles davon außer den beiden Reglern liegt in Home Assistant unter deinem eigenen Benutzer — das
+Panel sieht auf dem Handy also aus wie am Schreibtisch, und wer neben dir sitzt, behält seine
+eigenen Einstellungen. Skalierung und Breite bleiben in dem Browser, in dem du sie gesetzt hast; ein
+Handy und ein 4K-Monitor wollen verschiedene Werte. Aus demselben Grund lässt der Import/Export sie
+weg.
 
 Reiter, die dein Speicher nicht füllen kann, stehen ausgegraut mit Begründung in der Liste — so
 bleibt ein selbst ausgeblendeter Reiter von einem unterscheidbar, den es nie gab.

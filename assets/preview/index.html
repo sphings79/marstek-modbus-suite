@@ -10,7 +10,8 @@
   then http://127.0.0.1:8899/assets/preview/?tab=control
 
   Query parameters: tab=core|cells|packs|solar|energy|control|system,
-  view=settings to open the gear instead, theme=light for the light ground.
+  view=settings to open the gear instead, theme=light for the light ground,
+  scale=<percent> and width=<pixels|full> for the two per-browser settings.
   assets/make_ui_shots.sh drives all of this.
 -->
 <style>
@@ -24,6 +25,22 @@
   const params = new URLSearchParams(location.search);
   const light = params.get("theme") === "light";
   const DEVICE = "Marstek Venus D";
+
+  // Scale and width live in localStorage rather than in the settings the panel
+  // fetches, so a shot of them has to be staged here.
+  const scale = params.get("scale");
+  const width = params.get("width");
+  if (scale || width) {
+    localStorage.setItem(
+      "marstek-panel.local",
+      JSON.stringify({
+        fontScale: scale ? Number(scale) : 100,
+        maxWidth: !width || width === "full" ? "full" : Number(width),
+      }),
+    );
+  } else {
+    localStorage.removeItem("marstek-panel.local");
+  }
 
   // Names come from the integration's own catalogue, so a screenshot cannot
   // show a label the integration does not actually ship.

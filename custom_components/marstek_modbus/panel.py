@@ -11,6 +11,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN
+from .panel_settings import (
+    DATA_COMMANDS_REGISTERED,
+    DATA_STORE,
+    async_register_settings_api,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +47,13 @@ DATA_ICONS_REGISTERED = "icons_registered"
 # Keys this module owns inside hass.data[DOMAIN]; everything else there is a
 # coordinator stored under its config entry id.
 _OWN_DATA_KEYS = frozenset(
-    {DATA_PANEL_REGISTERED, DATA_STATIC_REGISTERED, DATA_ICONS_REGISTERED}
+    {
+        DATA_PANEL_REGISTERED,
+        DATA_STATIC_REGISTERED,
+        DATA_ICONS_REGISTERED,
+        DATA_STORE,
+        DATA_COMMANDS_REGISTERED,
+    }
 )
 
 
@@ -64,6 +75,12 @@ async def async_register_panel(hass: HomeAssistant) -> None:
     reload.
     """
     data = hass.data.setdefault(DOMAIN, {})
+
+    # The panel's settings API, before the bundle check: the commands are what
+    # the panel reads its colours and tabs from, and registering them costs
+    # nothing when there is no bundle to serve.
+    async_register_settings_api(hass)
+
     frontend_dir = Path(__file__).parent / "frontend"
 
     if not frontend_dir.is_dir():

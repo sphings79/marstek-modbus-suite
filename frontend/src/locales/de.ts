@@ -218,15 +218,23 @@ export const de: Record<string, string> = {
   "settings.unavail.packs": "kein SoC je Pack",
   "settings.unavail.solar": "keine PV-Eingänge",
   "settings.unavail.control": "keine beschreibbaren Register",
+  "settings.scale": "Skalierung",
+  "settings.width": "Inhaltsbreite",
+  "settings.width.full": "Volle Breite",
+  "settings.screen_hint":
+    "Skalierung und Breite gehören zu diesem Browser: Ein Handy und ein 4K-Monitor wollen verschiedene Werte. Sie wandern deshalb nicht auf andere Geräte und stehen nicht im Export.",
   "settings.storage": "Gespeicherte Einstellungen",
   "settings.reset": "Auf Standard zurücksetzen",
   "settings.transfer": "Import / Export",
-  "settings.transfer_hint": "Hier herauskopieren, in einem anderen Browser einfügen.",
+  "settings.transfer_hint":
+    "Hier herauskopieren, anderswo einfügen. Skalierung und Breite sind nicht dabei.",
   "settings.transfer_bad": "Das ist kein Einstellungsobjekt.",
   "settings.import": "Eingefügtes übernehmen",
   "settings.export_again": "Aktuelle anzeigen",
   "settings.storage_hint":
-    "Diese Einstellungen liegen nur in diesem Browser. Ein anderer Browser oder ein anderes Gerät hat seine eigenen.",
+    "Alles außer Skalierung und Breite liegt in Home Assistant unter deinem Benutzer. Dasselbe Panel folgt dir damit auf jedes Gerät, und andere behalten ihre eigenen Einstellungen.",
+  "settings.offline":
+    "Home Assistant hat nicht geantwortet. Änderungen hier werden nicht behalten. Lade das Panel neu, um es erneut zu versuchen.",
 
   // ---- Leerzustände ----
   "empty.no_device": "Kein Marstek-Speicher gefunden",
