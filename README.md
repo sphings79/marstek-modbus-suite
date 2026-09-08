@@ -277,9 +277,11 @@ repository has to be removed from HACS first. For the entities there are two pat
 <img src="assets/entities.svg" alt="Device page in Home Assistant showing sensors created by the Marstek Modbus Suite integration" width="70%">
 </div>
 
-Everything lands on one device. Advanced and diagnostic entities ship **disabled by default** —
-the register map is large, and shipping all of it enabled would bury the ten values most people
-actually want. Enable what you need in the entity list.
+Everything lands on one device. **Every entity the panel reads is enabled by default**, so the
+panel is complete the moment the integration is set up — nothing to switch on by hand. What stays
+disabled is what no view asks for: registers whose meaning is unclear, values a sensor already
+reports under another name, and diagnostics for cases that are not yours. Enable those in the
+entity list if you want them.
 
 Beyond the raw registers, the integration derives a few values the battery does not report itself:
 

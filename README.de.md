@@ -283,9 +283,11 @@ zwei Wege:
 <img src="assets/entities.svg" alt="Geräteseite in Home Assistant mit den Sensoren, die die Integration Marstek Modbus Suite anlegt" width="70%">
 </div>
 
-Alles landet auf einem Gerät. Erweiterte und diagnostische Entitäten sind **standardmäßig
-deaktiviert** — die Registerkarte ist groß, und alles aktiviert auszuliefern würde die zehn Werte
-begraben, die die meisten tatsächlich brauchen. Aktiviere in der Entitätsliste, was du benötigst.
+Alles landet auf einem Gerät. **Jede Entität, die das Panel liest, ist standardmäßig aktiv** — das
+Panel ist damit vollständig, sobald die Integration eingerichtet ist, ohne dass du etwas von Hand
+einschalten musst. Deaktiviert bleibt, wonach keine Ansicht fragt: Register ohne geklärte Bedeutung,
+Werte, die ein anderer Sensor bereits liefert, und Diagnosen für Fälle, die dich nichts angehen. Wer
+die trotzdem will, aktiviert sie in der Entitätsliste.
 
 Über die reinen Register hinaus leitet die Integration einige Werte ab, die das Gerät selbst nicht
 meldet:
