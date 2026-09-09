@@ -374,6 +374,24 @@ def segment(x, y, w, name, options, chosen):
     return "".join(out)
 
 
+def setting_slider(x, y, w, name, value, position):
+    """A settings-tab slider: a track with its knob, and the value it reads.
+
+    `position` is 0 to 1 along the track. The readout keeps its own column on
+    the right, wide enough for the longest of them, so the track ends at the
+    same place in both sliders and the knob at the far right clears the text.
+    """
+    readout = 88
+    track = w - readout
+    knob = x + track * position
+    return "".join([
+        txt(x, y, name, fill=DIM, size=9.5, spacing="1.2"),
+        rect(x, y + 15, track, 3, fill=TRACK),
+        f'<circle cx="{knob:.1f}" cy="{y + 16.5}" r="7" fill="{ACCENT}"/>',
+        txt(x + w, y + 20, value, fill=FG, size=9.5, anchor="end"),
+    ])
+
+
 def toggle(x, y, w, name, hint, on):
     out = [txt(x, y, name, fill=FG, size=10.5),
            txt(x, y + 14, hint, fill=DIM, size=8.5)]
@@ -471,7 +489,7 @@ SCHEMES = [
 
 
 def settings() -> str:
-    h = 592
+    h = 672
     out = []
 
     # Four across, so all seven schemes fit and the caption below them is clear.
@@ -497,15 +515,16 @@ def settings() -> str:
                             "painted in the scheme it offers.", fill=DIM, size=9))
 
     out.append(panel(658, 70, 318, 306, "APPEARANCE"))
-    out.append(segment(674, 112, 286, "LIGHT OR DARK",
+    out.append(segment(674, 108, 286, "LIGHT OR DARK",
                        ["HOME ASSISTANT", "DARK", "LIGHT"], "HOME ASSISTANT"))
-    out.append(segment(674, 174, 286, "DECIMAL PLACES", ["NORMAL", "ONE MORE"], "NORMAL"))
-    out.append(txt(674, 248, "Settings live in this browser only. Another", fill=DIM, size=9))
-    out.append(txt(674, 262, "browser, or another device, keeps its own.", fill=DIM, size=9))
-    out.append(rect(674, 284, 138, 26, fill=INSET, stroke=LINE))
-    out.append(txt(743, 301, "RESET TO DEFAULTS", fill=FG2, size=8, spacing="1", anchor="middle"))
-    out.append(rect(822, 284, 122, 26, fill=INSET, stroke=LINE))
-    out.append(txt(883, 301, "IMPORT / EXPORT", fill=FG2, size=8, spacing="1", anchor="middle"))
+    out.append(segment(674, 164, 286, "DECIMAL PLACES", ["NORMAL", "ONE MORE"], "NORMAL"))
+    # 100 % sits a sixth of the way along a 90-to-150 track; full width is the
+    # right-hand stop, which is where the panel now starts.
+    out.append(setting_slider(674, 220, 286, "SCALE", "100 %", (100 - 90) / (150 - 90)))
+    out.append(setting_slider(674, 264, 286, "CONTENT WIDTH", "Full width", 1.0))
+    out.append(txt(674, 316, "Scale and width belong to this browser: a", fill=DIM, size=9))
+    out.append(txt(674, 329, "phone and a 4K monitor want different", fill=DIM, size=9))
+    out.append(txt(674, 342, "answers, so they stay out of the sync.", fill=DIM, size=9))
 
     out.append(panel(24, 392, 480, 176, "TAB WHEN OPENING"))
     chips = ["LAST USED", "OVERVIEW", "CELLS", "PACKS", "SOLAR", "ENERGY", "CONTROL", "SYSTEM"]
@@ -539,6 +558,15 @@ def settings() -> str:
         out.append(f'<path d="M536 {y + 8}H960" stroke="{LINE_SOFT}" stroke-dasharray="2 3"/>')
         out.append("</g>")
     out.append(txt(536, 556, "Greyed out means this battery does not report what the tab shows.",
+                   fill=DIM, size=9))
+
+    out.append(panel(24, 584, W - 48, 64, "STORED SETTINGS"))
+    out.append(rect(44, 610, 138, 26, fill=INSET, stroke=LINE))
+    out.append(txt(113, 627, "RESET TO DEFAULTS", fill=FG2, size=8, spacing="1", anchor="middle"))
+    out.append(rect(192, 610, 122, 26, fill=INSET, stroke=LINE))
+    out.append(txt(253, 627, "IMPORT / EXPORT", fill=FG2, size=8, spacing="1", anchor="middle"))
+    out.append(txt(330, 627, "Everything but scale and width is stored in Home Assistant under "
+                             "your user, so the same panel follows you to every device.",
                    fill=DIM, size=9))
 
     return frame(h, "SETTINGS", "".join(out))

@@ -95,7 +95,7 @@ the registers hold and a clock field.
 ### Settings
 
 <div align="center">
-<img src="assets/ui-settings.svg" alt="Settings: seven colour schemes as swatches painted in their own colours, light and dark choice, decimal places, start tab and which tabs to show" width="100%">
+<img src="assets/ui-settings.svg" alt="Settings: seven colour schemes as swatches painted in their own colours, light and dark choice, decimal places, sliders for scale and content width, start tab and which tabs to show" width="100%">
 </div>
 
 Seven colour schemes, each with its own light and dark version — including one that takes its

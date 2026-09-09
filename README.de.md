@@ -97,7 +97,7 @@ zwischen dem HHMM der Register und einem Uhrzeitfeld umgerechnet.
 ### Einstellungen
 
 <div align="center">
-<img src="assets/ui-settings.svg" alt="Einstellungen: sieben Farbschemata als Kacheln in ihren eigenen Farben, Hell/Dunkel-Wahl, Nachkommastellen, Startreiter und Auswahl der sichtbaren Reiter" width="100%">
+<img src="assets/ui-settings.svg" alt="Einstellungen: sieben Farbschemata als Kacheln in ihren eigenen Farben, Hell/Dunkel-Wahl, Nachkommastellen, Regler für Skalierung und Inhaltsbreite, Startreiter und Auswahl der sichtbaren Reiter" width="100%">
 </div>
 
 Sieben Farbschemata, jedes mit eigener heller und dunkler Fassung — darunter eines, das die Farben
