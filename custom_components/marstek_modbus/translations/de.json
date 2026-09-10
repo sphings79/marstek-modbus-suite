@@ -998,6 +998,9 @@
       "bms_active_pack_index": {
         "name": "BMS Aktiver Pack-Index"
       },
+      "selftest_status": {
+        "name": "Selbsttest-Status"
+      },
       "bms_charge_voltage_limit": {
         "name": "BMS Ladespannungs-Limit"
       },

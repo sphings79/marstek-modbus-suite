@@ -2706,6 +2706,17 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    # --- Start self-test result (30212, firmware-confirmed: FUN_08019364 @0x08019364) ---
+    # 1 = all checks passed, 2 = FUN_08004b08, 3 = flash self-test,
+    # 5 = CH395 id mismatch OR RAM pattern test (both branches write 5).
+    # Not a pack count - see bms_pack_count (32109). Former name: pack_config.
+    selftest_status:
+        register: 30212
+        data_type: uint16
+        icon: "mdi:clipboard-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
     bms_charge_voltage_limit:
         register: 35110
         scale: 0.1
@@ -3647,13 +3658,6 @@ DEV_UNKNOWN_SENSOR_DEFINITIONS:
   dev_30211:
     register: 30211
     name: "DEV 30211 (config_byte_can54?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30212:
-    register: 30212
-    name: "DEV 30212 (pack_config?)"
     data_type: uint16
     category: diagnostic
     scan_interval: low

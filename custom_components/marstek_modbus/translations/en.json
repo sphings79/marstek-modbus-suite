@@ -1001,6 +1001,9 @@
       "bms_active_pack_index": {
         "name": "BMS Active Pack Index"
       },
+      "selftest_status": {
+        "name": "Self-Test Status"
+      },
       "bms_charge_voltage_limit": {
         "name": "BMS Charge Voltage Limit"
       },
