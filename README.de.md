@@ -357,6 +357,16 @@ konfiguriert hast.
 
 ## Bekannte Probleme
 
+- **RS485-Steuermodus und Benutzer-Arbeitsmodus heben sich gegenseitig auf**
+  Wird `RS485-Steuermodus` eingeschaltet, verlässt das Gerät seinen Arbeitsmodus; wird im
+  `Benutzer-Arbeitsmodus` etwas ausgewählt, schaltet sich der RS485-Steuermodus wieder ab. Beide
+  sind dasselbe Firmware-Byte aus zwei Blickwinkeln: Register 42000 schreibt `0x55AA` hinein,
+  Register 43000 schreibt `0x00`/`0x01`/`0x05`. Das Gerät meldet die Änderung nach wenigen Sekunden
+  zurück — eine Automatisierung, die den Benutzer-Arbeitsmodus ausliest, sieht ihn also von allein
+  umspringen. Bestätigt auf Venus D mit Firmware V147 und in der v150-Firmwareanalyse; auf den
+  übrigen Modellen nicht nachgeprüft. Von dieser Seite aus lässt sich das nicht verhindern — steuere
+  den Speicher über eines von beiden, nicht über beide.
+
 - **Benutzer-Arbeitsmodus (AI Optimized) wird nicht korrekt zurückgemeldet**
   Wird `User Work Mode` auf `2 (Trade Mode)` gesetzt, erscheint der neue Zustand unter Umständen
   nicht. Die Marstek-App zeigt den richtigen Modus, Home Assistant weiterhin den vorherigen — wegen
