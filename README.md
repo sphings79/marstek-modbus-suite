@@ -347,11 +347,13 @@ outbound connection beyond the one TCP socket to the address you configured.
 ## Known issues
 
 - **RS485 control mode and User Work Mode cancel each other out**
-  Switching `RS485 control mode` on takes the device out of its work mode, and picking anything in
-  `User Work Mode` switches RS485 control back off. The two are one firmware byte seen from two
-  sides: register 42000 writes `0x55AA` into it, register 43000 writes `0x00`/`0x01`/`0x05`. The
-  device reports the change back within a few seconds, so an automation watching `User Work Mode`
-  sees it move on its own. Confirmed on Venus D firmware V147 and in the v150 firmware analysis;
+  Switching `RS485 control mode` on makes `User Work Mode` report `anti_feed` a few seconds later,
+  and picking anything in `User Work Mode` switches RS485 control back off. The two are one
+  firmware byte seen from two sides: register 42000 writes `0x55AA` into it, register 43000 writes
+  `0x00`/`0x01`/`0x05`. The `anti_feed` that appears is a wrong readback, not a real mode change —
+  forced charge and discharge keep working while it is displayed, measured at 800 W on a Venus D.
+  What it does break is any automation that reads `User Work Mode` as a state source: that value
+  moves on its own. Confirmed on two Venus D on firmware V147 and in the v150 firmware analysis;
   not re-verified on the other models. Nothing on this side can prevent it — drive the battery
   through one of the two, not both.
 
