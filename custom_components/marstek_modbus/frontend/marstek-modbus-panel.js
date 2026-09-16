@@ -237,7 +237,7 @@
         <span>${a.label??i.label(t)}</span>
         <b class=${a.tone??""}>${c}</b>
       </div>
-    `}row(t,s,a=""){return o`
+    `}kvFirst(t,s=1,a={}){const i=t.find(n=>this.reader.entityId(n));return i?this.kv(i,s,a):p}row(t,s,a=""){return o`
       <div class="kv">
         <span>${t}</span>
         <b class=${a}>${s}</b>
@@ -393,7 +393,8 @@
         <div class="panel">
           <div class="label" style="margin-bottom:12px">${s("core.electrical")}</div>
           ${this.kv("ac_power",0)} ${this.kv("battery_power",0)}
-          ${this.kv("battery_voltage",1)} ${this.kv("battery_current",1)}
+          ${this.kvFirst(["battery_1_voltage","battery_voltage"],1)}
+          ${this.kvFirst(["battery_1_current","battery_current"],1)}
           ${this.kv("ac_voltage",1)} ${this.kv("ac_frequency",1)}
           ${this.kv("conversion_efficiency",1)}
         </div>
@@ -1367,7 +1368,7 @@
 
         <div class="panel">
           <div class="head"><div class="label">${t("system.firmware")}</div></div>
-          ${this.kv("ems_version",0,{version:!0})} ${this.kv("bms_version",0,{version:!0})}
+          ${this.kv("ems_version",0,{version:!0})} ${this.kvFirst(["battery_1_bms_version","bms_version"],0,{version:!0})}
           ${this.kv("vms_version",0,{version:!0})} ${this.kv("mppt_version",0,{version:!0})}
           ${this.kv("ems_boot_version",0,{version:!0})} ${this.kv("vns_boot_version",0,{version:!0})}
           ${this.kv("comm_module_firmware",0,{raw:!0})}
@@ -1399,7 +1400,8 @@
           <div class="head"><div class="label">${t("system.thermal")}</div></div>
           ${this.kv("internal_temperature",1)} ${this.kv("internal_mos1_temperature",1)}
           ${this.kv("max_cell_temperature",1)} ${this.kv("min_cell_temperature",1)}
-          ${this.kv("battery_voltage",2)} ${this.kv("battery_current",2)}
+          ${this.kvFirst(["battery_1_voltage","battery_voltage"],2)}
+          ${this.kvFirst(["battery_1_current","battery_current"],2)}
           ${this.kv("ac_voltage",1)} ${this.kv("ac_frequency",2)}
         </div>
       </div>

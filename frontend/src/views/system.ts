@@ -101,7 +101,7 @@ export class MkViewSystem extends MkView {
 
         <div class="panel">
           <div class="head"><div class="label">${t("system.firmware")}</div></div>
-          ${this.kv("ems_version", 0, { version: true })} ${this.kv("bms_version", 0, { version: true })}
+          ${this.kv("ems_version", 0, { version: true })} ${this.kvFirst(["battery_1_bms_version", "bms_version"], 0, { version: true })}
           ${this.kv("vms_version", 0, { version: true })} ${this.kv("mppt_version", 0, { version: true })}
           ${this.kv("ems_boot_version", 0, { version: true })} ${this.kv("vns_boot_version", 0, { version: true })}
           ${this.kv("comm_module_firmware", 0, { raw: true })}
@@ -135,7 +135,8 @@ export class MkViewSystem extends MkView {
           <div class="head"><div class="label">${t("system.thermal")}</div></div>
           ${this.kv("internal_temperature", 1)} ${this.kv("internal_mos1_temperature", 1)}
           ${this.kv("max_cell_temperature", 1)} ${this.kv("min_cell_temperature", 1)}
-          ${this.kv("battery_voltage", 2)} ${this.kv("battery_current", 2)}
+          ${this.kvFirst(["battery_1_voltage", "battery_voltage"], 2)}
+          ${this.kvFirst(["battery_1_current", "battery_current"], 2)}
           ${this.kv("ac_voltage", 1)} ${this.kv("ac_frequency", 2)}
         </div>
       </div>

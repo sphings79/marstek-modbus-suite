@@ -116,7 +116,8 @@ export class MkViewCore extends MkView {
         <div class="panel">
           <div class="label" style="margin-bottom:12px">${t("core.electrical")}</div>
           ${this.kv("ac_power", 0)} ${this.kv("battery_power", 0)}
-          ${this.kv("battery_voltage", 1)} ${this.kv("battery_current", 1)}
+          ${this.kvFirst(["battery_1_voltage", "battery_voltage"], 1)}
+          ${this.kvFirst(["battery_1_current", "battery_current"], 1)}
           ${this.kv("ac_voltage", 1)} ${this.kv("ac_frequency", 1)}
           ${this.kv("conversion_efficiency", 1)}
         </div>

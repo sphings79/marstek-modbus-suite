@@ -64,6 +64,25 @@ export abstract class MkView extends LitElement {
     `;
   }
 
+  /**
+   * The first of these keys the device actually has, as a `kv` row.
+   *
+   * Some readings live under two names depending on the model. The multi-pack
+   * Venus D and A carry the battery's terminal voltage, current and BMS version
+   * only as pack 1's entities, because the firmware serves 34000/34001/34010
+   * and 30100/30101/30204 from the same words and a second entity per word
+   * would say the same thing twice. The single-pack E models map those
+   * addresses as battery_voltage, battery_current and bms_version instead.
+   */
+  protected kvFirst(
+    keys: string[],
+    digits = 1,
+    opts: { tone?: string; label?: string; raw?: boolean; version?: boolean } = {},
+  ): TemplateResult | typeof nothing {
+    const key = keys.find((candidate) => this.reader.entityId(candidate));
+    return key ? this.kv(key, digits, opts) : nothing;
+  }
+
   /** A row with a value the view worked out itself. */
   protected row(
     label: string,
