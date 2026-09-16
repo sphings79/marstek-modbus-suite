@@ -910,6 +910,9 @@
       "alarm_status": {
         "name": "Alarm Status"
       },
+      "alarm_status_low": {
+        "name": "Alarm Status Low Word"
+      },
       "modbus_address": {
         "name": "Modbus Address"
       },

@@ -914,6 +914,9 @@
       "alarm_status": {
         "name": "Alarmstatus"
       },
+      "alarm_status_low": {
+        "name": "Alarmstatus laag woord"
+      },
       "modbus_address": {
         "name": "Modbus-adres"
       },

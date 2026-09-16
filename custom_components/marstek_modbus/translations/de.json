@@ -907,6 +907,9 @@
       "alarm_status": {
         "name": "Alarmstatus"
       },
+      "alarm_status_low": {
+        "name": "Alarmstatus Low-Word"
+      },
       "modbus_address": {
         "name": "Modbus-Adresse"
       },
