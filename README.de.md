@@ -407,6 +407,14 @@ konfiguriert hast.
   überstehen, und genau das tut die Integration seit 1.2.0. Mechanismus und Abhilfe:
   **[FIRMWARE-DROPOUTS.de.md](FIRMWARE-DROPOUTS.de.md)**.
 
+- **Alle paar Minuten scheitert ein Read, während die Batterie ihre Telemetrie hochlädt**
+  Firmware v150 schickt die Telemetrie über TLS, und der Schlüsselaustausch lässt das Gerät rund
+  viereinhalb Sekunden lang nicht mehr auf Modbus antworten. Jeder Read mit kürzerem Timeout gibt
+  auf, und die Antwort kommt danach, ohne dass noch jemand auf sie wartet. Hier gemessen, samt der
+  Frage, was die Client-Bibliothek mit dieser Antwort macht und warum das entscheidet, ob die Pause
+  einen fehlgeschlagenen Read kostet oder zwei:
+  **[TMODBUS-MIGRATION.de.md](TMODBUS-MIGRATION.de.md)**.
+
 ---
 
 ## Umbenannte Entitäten bei Venus A und D

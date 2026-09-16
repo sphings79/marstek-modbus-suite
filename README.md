@@ -392,6 +392,13 @@ outbound connection beyond the one TCP socket to the address you configured.
   your network. It cannot be prevented from here, only survived quickly, which is what 1.2.0
   onwards does. Mechanism, and how to stop it: **[FIRMWARE-DROPOUTS.md](FIRMWARE-DROPOUTS.md)**.
 
+- **A read fails every few minutes while the battery uploads its telemetry**
+  Firmware v150 sends telemetry over TLS, and the key exchange stops the device answering Modbus
+  for about four and a half seconds. Any read shorter than that gives up, and the answer arrives
+  afterwards with nobody waiting for it. Measured here, along with what the client library does
+  with that reply and why it decides whether the stall costs one failed read or two:
+  **[TMODBUS-MIGRATION.md](TMODBUS-MIGRATION.md)**.
+
 ---
 
 ## Renamed entities on the Venus A and D
