@@ -469,7 +469,20 @@ class MarstekCoordinator(DataUpdateCoordinator):
         return f"{ISSUE_RS485_CONTROL_MODE_RESET}_{self.config_entry.entry_id}"
 
     def _build_contiguous_read_groups(self, sensors: list[dict]) -> list[list[dict]]:
-        """Group sensor definitions into strictly contiguous register blocks."""
+        """Group sensor definitions into gapless register blocks.
+
+        A definition joins the current block when it starts no further along
+        than one register past the block's end. Two definitions may therefore
+        share a register: register 34003 on the Venus A and D carries both
+        `battery_cycle_count`, which every model has, and
+        `battery_1_cycle_count`, which completes the per-pack family the panel
+        reads. Requiring a strict step of one used to break the block between
+        them and buy the same word a second time - one extra request per poll
+        cycle, for a register already in the response.
+
+        Values are decoded per definition from its own offset into the block,
+        so an overlap costs nothing at decode time.
+        """
         if not sensors:
             return []
 
@@ -488,9 +501,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 current_end = sensor_end
                 continue
 
-            if current_end is not None and register == current_end + 1 and sensor_end - current_group[0]["register"] < 125:
+            # `ordered` is sorted by register, so the block can only grow to the
+            # right - but an overlapping definition may end short of one already
+            # in the block, which must not pull the block's end back.
+            if current_end is not None and register <= current_end + 1 and sensor_end - current_group[0]["register"] < 125:
                 current_group.append(sensor)
-                current_end = sensor_end
+                current_end = max(current_end, sensor_end)
                 continue
 
             groups.append(current_group)
