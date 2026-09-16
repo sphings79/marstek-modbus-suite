@@ -48,6 +48,8 @@
         "menu_options": {
           "connection": "Verbindungseinstellungen",
           "polling": "Polling-Intervalle",
+          "limits": "Energiefenster",
+          "packs": "Batteriepacks",
           "dev": "DEV-Register (experimentell)"
         }
       },
@@ -85,6 +87,13 @@
         "description": "Wie viel des Speichers als nutzbar gilt. Die obere Grenze liest die Integration aus dem Gerät, sofern es sie meldet. Die untere lässt sich bei Venus A, D und E v3 nicht auslesen — trage hier die Entladegrenze ein, die du in der Marstek-App eingestellt hast.",
         "data": {
           "discharge_floor_percent": "Entladegrenze (%)"
+        }
+      },
+      "packs": {
+        "title": "Batteriepacks",
+        "description": "Wie viele Packs gestapelt sind. Bei 0 erkennt die Integration es an den Messwerten - ein nicht vorhandener Pack antwortet auf seine Register mit Nullen. Eine feste Zahl spart zusätzlich die Abfragen der darüberliegenden Blöcke, bei drei Packs 64 der 234 Register pro Zyklus. Nach dem Nachrüsten eines Packs die Zahl erhöhen, sonst bleibt er unsichtbar.",
+        "data": {
+          "pack_count": "Anzahl Packs (0 = automatisch erkennen)"
         }
       }
     }

@@ -24,6 +24,10 @@ from .const import (
     DEFAULT_UNIT_ID,
     DEVICE_NAME_DEFAULTS,
     DOMAIN,
+    MAX_PACK_COUNT,
+    CONF_PACK_COUNT,
+    PACK_COUNT_AUTO,
+    PACK_COUNT_VERSIONS,
     SUPPORTED_VERSIONS,
 )
 from .helpers.modbus_client import MarstekModbusClient
@@ -65,6 +69,16 @@ SCHEMA_LIMITS = vol.Schema(
     {
         vol.Required(CONF_DISCHARGE_FLOOR): vol.All(
             vol.Coerce(float), vol.Clamp(min=0, max=100)
+        ),
+    }
+)
+
+# 0 is "work it out from the readings", 1 to 7 pins it and stops the blocks
+# above being polled.
+SCHEMA_PACKS = vol.Schema(
+    {
+        vol.Required(CONF_PACK_COUNT): vol.All(
+            vol.Coerce(int), vol.Clamp(min=PACK_COUNT_AUTO, max=MAX_PACK_COUNT)
         ),
     }
 )
@@ -266,10 +280,42 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         return await self.async_step_menu()
 
     async def async_step_menu(self, user_input=None):
-        """Show the options menu."""
-        return self.async_show_menu(
-            step_id="menu",
-            menu_options=["connection", "polling", "limits", "dev"],
+        """Show the options menu.
+
+        The pack entry only appears on the models that stack more than one, so
+        an E owner is not asked a question that has one possible answer.
+        """
+        options = ["connection", "polling", "limits"]
+        if self._has_pack_family():
+            options.append("packs")
+        options.append("dev")
+        return self.async_show_menu(step_id="menu", menu_options=options)
+
+    def _has_pack_family(self) -> bool:
+        """Return True when this entry's model carries per-pack registers."""
+        version = self._config_entry.data.get(CONF_DEVICE_VERSION) or ""
+        return str(version).strip().lower() in PACK_COUNT_VERSIONS
+
+    async def async_step_packs(self, user_input=None):
+        """Configure how many battery packs are stacked."""
+        config = self._config_entry
+
+        if user_input is not None:
+            self.hass.config_entries.async_update_entry(
+                config, options={**config.options, **user_input}
+            )
+            # The coordinator reads the count once at startup and builds its
+            # poll list from it, so the entry has to be reloaded.
+            await self.hass.config_entries.async_reload(config.entry_id)
+            return await self.async_step_menu()
+
+        current = config.options.get(CONF_PACK_COUNT, PACK_COUNT_AUTO)
+        return self.async_show_form(
+            step_id="packs",
+            data_schema=self.add_suggested_values_to_schema(
+                SCHEMA_PACKS, {CONF_PACK_COUNT: current}
+            ),
+            last_step=True,
         )
 
     async def async_step_polling(self, user_input=None):

@@ -52,6 +52,27 @@ DEFAULT_DEVICE_NAME = "Marstek Venus"
 CONF_DISCHARGE_FLOOR = "discharge_floor_percent"
 DEFAULT_DISCHARGE_FLOOR = 12
 
+# How many battery packs are actually stacked, on the models that take more than
+# one. The register map always describes all seven blocks, so without this every
+# Venus D and A shows seven packs whatever is installed.
+#
+# 0 means "read it off the device": a pack that is not there answers its whole
+# block with zeros, so the panel can recognise it. That costs the reads - the
+# integration cannot leave out a block and still see whether it answers - which
+# is what a fixed number is for. Set 1 to 7 and the blocks above it are not
+# polled at all: four absent packs are 64 registers a cycle out of 234.
+CONF_PACK_COUNT = "pack_count"
+PACK_COUNT_AUTO = 0
+MAX_PACK_COUNT = 7
+
+# Every pack block sits at 34000 + (N-1) * 100, packs numbered from 1.
+PACK_REGISTER_BASE = 34000
+PACK_REGISTER_STRIDE = 100
+
+# The models with a per-pack register family. The two E generations report one
+# battery and never show the setting.
+PACK_COUNT_VERSIONS = {"d", "a"}
+
 CONF_DEV_REGISTERS_UNKNOWN = "dev_registers_unknown"
 CONF_DEV_REGISTERS_DUPLICATE = "dev_registers_duplicate"
 DEFAULT_DEV_REGISTERS = False

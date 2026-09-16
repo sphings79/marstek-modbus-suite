@@ -48,6 +48,8 @@
         "menu_options": {
           "connection": "Verbindingsgegevens",
           "polling": "Polling-intervallen",
+          "limits": "Energievenster",
+          "packs": "Batterijpakketten",
           "dev": "DEV-registers (experimenteel)"
         }
       },
@@ -89,6 +91,13 @@
         "description": "Hoeveel van de accu als bruikbaar telt. De bovengrens leest de integratie uit het apparaat, als het die meldt. De ondergrens is bij Venus A, D en E v3 niet uitleesbaar — vul hier de ontlaadgrens in die je in de Marstek-app hebt ingesteld.",
         "data": {
           "discharge_floor_percent": "Ontlaadgrens (%)"
+        }
+      },
+      "packs": {
+        "title": "Batterijpakketten",
+        "description": "Hoeveel pakketten er gestapeld zijn. Bij 0 leidt de integratie het af uit de metingen - een afwezig pakket antwoordt met nullen op zijn registers. Een vast getal bespaart bovendien het uitvragen van de blokken erboven, bij drie pakketten 64 van de 234 registers per cyclus. Verhoog het getal na het bijplaatsen van een pakket, anders blijft het onzichtbaar.",
+        "data": {
+          "pack_count": "Aantal pakketten (0 = automatisch herkennen)"
         }
       }
     }

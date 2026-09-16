@@ -157,10 +157,29 @@ export class DeviceReader {
     return seen ? total : null;
   }
 
-  /** How many battery packs this device reports, counted from the register map. */
+  /**
+   * How many battery packs are actually stacked.
+   *
+   * The register map describes every block the firmware serves — seven on the
+   * Venus D and A — so counting it would show seven packs to somebody who has
+   * three. A pack that is not there answers its whole block with zeros, and a
+   * block the integration was told not to poll has no state at all, so the
+   * readings are what settles it: the highest pack index reporting a cell
+   * voltage. Highest rather than "up to the first gap", so a pack that drops
+   * out for one cycle does not take the ones behind it off the screen.
+   *
+   * With no reading at all — the battery is unreachable — the mapped count
+   * stands in, so the view keeps its shape instead of collapsing to nothing.
+   */
   packCount(): number {
-    let count = 0;
-    while (this.device.byKey[`battery_${count + 1}_max_cell_voltage`]) count++;
-    return count;
+    let mapped = 0;
+    while (this.device.byKey[`battery_${mapped + 1}_max_cell_voltage`]) mapped++;
+
+    let reporting = 0;
+    for (let pack = 1; pack <= mapped; pack++) {
+      const cellVoltage = this.num(`battery_${pack}_max_cell_voltage`);
+      if (cellVoltage !== null && cellVoltage > 0) reporting = pack;
+    }
+    return reporting || mapped;
   }
 }

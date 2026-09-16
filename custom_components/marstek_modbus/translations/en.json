@@ -48,6 +48,8 @@
         "menu_options": {
           "connection": "Connection settings",
           "polling": "Polling intervals",
+          "limits": "Energy window",
+          "packs": "Battery packs",
           "dev": "DEV registers (experimental)"
         }
       },
@@ -85,6 +87,13 @@
         "description": "How much of the pack counts as usable. The upper end is read from the battery when it reports one; the lower end cannot be read on Venus A, D and E v3, so set here whatever discharge limit you configured in the Marstek app.",
         "data": {
           "discharge_floor_percent": "Discharge floor (%)"
+        }
+      },
+      "packs": {
+        "title": "Battery packs",
+        "description": "How many packs are stacked. Left at 0, the integration works it out from the readings - a pack that is not there answers its registers with zeros. Setting the number instead also stops the blocks above it being asked for at all, which on a three-pack battery saves 64 of the 234 registers every poll cycle. Raise it again after adding a pack, or the new one stays invisible.",
+        "data": {
+          "pack_count": "Number of packs (0 = detect automatically)"
         }
       }
     }

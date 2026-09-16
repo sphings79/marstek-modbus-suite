@@ -18,6 +18,8 @@ from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
                     CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR,
                     CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
+                    CONF_PACK_COUNT, PACK_COUNT_AUTO, MAX_PACK_COUNT,
+                    PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
                     RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET)
 
 from .helpers.modbus_client import MarstekModbusClient
@@ -71,6 +73,17 @@ class MarstekCoordinator(DataUpdateCoordinator):
             max(float(_opts.get(CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR)), 0.0),
             100.0,
         )
+        # 0 keeps every pack block in the poll and lets the panel work out from
+        # the readings which packs are there. A number stops the blocks above it
+        # being asked for at all. Clamped rather than validated, for the same
+        # reason as the floor above: a bad value must not hide real packs.
+        try:
+            self.pack_count = int(_opts.get(CONF_PACK_COUNT, PACK_COUNT_AUTO))
+        except (TypeError, ValueError):
+            self.pack_count = PACK_COUNT_AUTO
+        if not 0 <= self.pack_count <= MAX_PACK_COUNT:
+            self.pack_count = PACK_COUNT_AUTO
+
         self.dev_unknown_enabled = bool(_opts.get(CONF_DEV_REGISTERS_UNKNOWN, _legacy))
         self.dev_duplicate_enabled = bool(_opts.get(CONF_DEV_REGISTERS_DUPLICATE, _legacy))
 
@@ -349,6 +362,26 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
         return False
+
+    def _is_absent_pack(self, definition: dict) -> bool:
+        """Return True for a register belonging to a pack that is not installed.
+
+        Only when the pack count was configured. On `PACK_COUNT_AUTO` every
+        block is read, because an absent pack is recognised by the zeros it
+        answers with and a block that is never asked for answers nothing.
+        """
+        if self.pack_count == PACK_COUNT_AUTO:
+            return False
+        register = definition.get("register")
+        if register is None:
+            return False
+        try:
+            index = (int(register) - PACK_REGISTER_BASE) // PACK_REGISTER_STRIDE + 1
+        except (TypeError, ValueError):
+            return False
+        if not 1 <= index <= MAX_PACK_COUNT:
+            return False
+        return index > self.pack_count
 
     def _rs485_control_mode_definition(self) -> dict | None:
         """Return the switch definition for register 42000, if this model has it."""
@@ -1221,6 +1254,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 else:
                     _LOGGER.debug("Skipping disabled entity '%s'", sensor.get("name", key))
                     continue
+
+            if self._is_absent_pack(sensor):
+                continue
 
             readable_sensors.append(sensor)
 
