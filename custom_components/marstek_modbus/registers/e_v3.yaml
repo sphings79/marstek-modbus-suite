@@ -207,13 +207,16 @@ SENSOR_DEFINITIONS:
         precision: 2
         scan_interval: low
     battery_cycle_count:
+        # i16 per the Venus D v150 descriptor table (type code 0x12). Carried over
+        # for the Venus E v3 by analogy - the E's own descriptor table has not been
+        # unpacked, but the 34000 block is laid out the same on both.
         register: 34003
         scale: 1
         icon: "mdi:counter"
         state_class: total_increasing
         category: diagnostic
         enabled_by_default: true
-        data_type: uint16
+        data_type: int16
         precision: 0
         scan_interval: low
     total_daily_charging_energy:

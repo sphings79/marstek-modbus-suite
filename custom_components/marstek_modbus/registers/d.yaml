@@ -25,6 +25,8 @@ SENSOR_DEFINITIONS:
         icon: "mdi:package-variant-closed"
         scan_interval: low
     bms_version:
+        # Same firmware word as battery_1_bms_version (source pointer
+        # 0x20014FD2): pack 1's BMS version, not a device-wide one.
         register: 30204
         icon: "mdi:battery-check-outline"
         category: diagnostic
@@ -146,6 +148,10 @@ SENSOR_DEFINITIONS:
         precision: 3
         scan_interval: low
     battery_voltage:
+        # 30100 and 34000 are one firmware word served at two addresses (source
+        # pointer 0x20014FB4), so this is pack 1's terminal voltage, not a total
+        # across the packs. Kept under both names because the panel's summary
+        # reads this one and its pack table reads battery_1_voltage.
         register: 30100
         scale: 0.01
         unit: V
@@ -156,6 +162,11 @@ SENSOR_DEFINITIONS:
         precision: 1
         scan_interval: high
     battery_current:
+        # 30101 and 34001 are one firmware word (source pointer 0x20014FB6), so
+        # this is pack 1's current. The device works one pack at a time, so it
+        # reads 0 whenever another pack is the active one - measured: pack 2 at
+        # -45.9 A while this register sat at 0. For a figure that covers every
+        # pack, use bms_power, which sums the per-pack currents.
         register: 30101
         scale: 0.1
         unit: A
@@ -2359,6 +2370,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         scan_interval: high
     battery_1_bms_version:
+        # Same firmware word as bms_version (30204); see the note there.
         register: 34010
         data_type: uint16
         icon: "mdi:battery-check-outline"
@@ -2503,6 +2515,7 @@ SENSOR_DEFINITIONS:
     # 65078 on 34101, 34201 and 34301, which is -458 -> -45.8 A while discharging.
     # These stay int16 on purpose; do not "align" them with the firmware table.
     battery_1_voltage:
+        # Same firmware word as battery_voltage (30100); see the note there.
         register: 34000
         scale: 0.01
         unit: V
@@ -2513,6 +2526,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         scan_interval: low
     battery_1_current:
+        # Same firmware word as battery_current (30101); see the note there.
         register: 34001
         scale: 0.1
         unit: A
