@@ -727,10 +727,34 @@ class MarstekEfficiencySensor(MarstekCalculatedSensor):
 class MarstekBatteryCycleSensor(MarstekCalculatedSensor):
     """Calculate estimated battery cycles from discharge energy and capacity."""
 
+    # Below this, the capacity register is not reporting a capacity. It holds
+    # whole watt hours - 5120 for one pack - and the smallest Marstek pack is
+    # well over a kilowatt hour, so a tenth of one can only be the register
+    # before the BMS has filled it in. Guarding only against zero is not enough:
+    # a capacity of a few watt hours turns a few hundred kilowatt hours of
+    # discharge into a cycle count in the tens of thousands, and because this
+    # sensor is total_increasing that reading would sit in the long-term
+    # statistics as a high-water mark that nothing brings back down.
+    MIN_PLAUSIBLE_CAPACITY = 0.1
+
     def calculate_value(self, dep_values: dict):
         discharge = dep_values.get("discharge")
         capacity = dep_values.get("capacity")
-        if discharge is None or capacity in (None, 0):
+        if discharge is None or capacity is None:
+            return None
+
+        try:
+            discharge = float(discharge)
+            capacity = float(capacity)
+        except (TypeError, ValueError):
+            return None
+
+        if capacity < self.MIN_PLAUSIBLE_CAPACITY:
+            _LOGGER.debug(
+                "Skipping %s: capacity is %s kWh, which is not a pack size",
+                self._key,
+                capacity,
+            )
             return None
 
         cycles = round(discharge / capacity, 2)
