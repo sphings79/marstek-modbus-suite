@@ -6,8 +6,8 @@ import "../components/mk-stat";
 
 interface Period {
   titleKey: string;
-  charge: string;
-  discharge: string;
+  charge: string[];
+  discharge: string[];
   /** Efficiency sensor for this period, when the device reports one. */
   efficiency?: string;
 }
@@ -15,19 +15,19 @@ interface Period {
 const PERIODS: Period[] = [
   {
     titleKey: "energy.today",
-    charge: "total_daily_charging_energy",
-    discharge: "total_daily_discharging_energy",
+    charge: ["total_daily_ac_input_energy", "total_daily_charging_energy"],
+    discharge: ["total_daily_ac_output_energy", "total_daily_discharging_energy"],
   },
   {
     titleKey: "energy.month",
-    charge: "total_monthly_charging_energy",
-    discharge: "total_monthly_discharging_energy",
+    charge: ["total_monthly_ac_input_energy", "total_monthly_charging_energy"],
+    discharge: ["total_monthly_ac_output_energy", "total_monthly_discharging_energy"],
     efficiency: "round_trip_efficiency_monthly",
   },
   {
     titleKey: "energy.lifetime",
-    charge: "total_charging_energy",
-    discharge: "total_discharging_energy",
+    charge: ["total_ac_input_energy", "total_charging_energy"],
+    discharge: ["total_ac_output_energy", "total_discharging_energy"],
     efficiency: "round_trip_efficiency_total",
   },
 ];
@@ -131,8 +131,10 @@ export class MkViewEnergy extends MkView {
     const f = this.fmt;
     const t = this.t;
 
-    const charge = r.num(p.charge);
-    const discharge = r.num(p.discharge);
+    const chargeKey = r.firstKey(p.charge);
+    const dischargeKey = r.firstKey(p.discharge);
+    const charge = chargeKey ? r.num(chargeKey) : null;
+    const discharge = dischargeKey ? r.num(dischargeKey) : null;
     if (charge === null && discharge === null) return nothing;
 
     // The ratio is only meaningful once something has actually gone in.

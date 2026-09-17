@@ -158,6 +158,18 @@ export class DeviceReader {
   }
 
   /**
+   * The first of these keys the device actually has.
+   *
+   * Some readings changed key on the models where the old name turned out to
+   * describe the wrong thing - the AC-side energy counters on the Venus A and
+   * D, which the E models keep under their original names because there they
+   * really are battery flows. Views name both and take whichever exists.
+   */
+  firstKey(keys: string[]): string | null {
+    return keys.find((key) => this.entityId(key)) ?? null;
+  }
+
+  /**
    * How many battery packs are actually stacked.
    *
    * The register map describes every block the firmware serves — seven on the

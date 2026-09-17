@@ -383,6 +383,36 @@ konfiguriert hast.
 
 ---
 
+## Umbenannte Entitäten bei Venus A und D
+
+Sieben Sensoren haben in 3.0.0-beta.3 ihren Schlüssel gewechselt, weil Messungen
+gezeigt haben, dass sie nicht das liefern, was ihr Name behauptet. **Mehrere davon
+sind typische Kandidaten für das Energie-Dashboard**, also dort zuerst nachsehen:
+eine Entität mit geändertem Schlüssel verschwindet aus der Dashboard-Konfiguration
+und muss neu ausgewählt werden.
+
+| Alter Schlüssel | Neuer Schlüssel | Warum |
+|---|---|---|
+| `battery_power` | `dc_sample_power` | Register 30001 ist eine einzelne Messstelle auf der DC-Seite. Ohne etwas an den MPPT-Eingängen führt sie nur die Packs — auf einer Venus D stimmte sie auf 0,4 % mit ihnen überein —, mit PV führt sie die Strings mit. Eine Venus A zeigte hier −1557 W, während ihre Packs 870 W lieferten und 723 W vom Dach kamen. |
+| *(neu, berechnet)* | `battery_power` | Den Schlüssel gibt es weiterhin, jetzt als Summe aus `dc_sample_power` und den vier String-Leistungen — übrig bleibt, was die Packs tun. Gegen Packspannung mal Packstrom auf einer Venus A geprüft: 39 W mittlere Abweichung, 85 W im schlechtesten Fall, beim Laden wie beim Entladen. **Automationen laufen weiter** — die Entity-ID bleibt, nur der Wert stimmt jetzt. |
+| `total_charging_energy` | `total_ac_input_energy` | Wird am Netzanschluss gezählt, nicht an den Packs. Auf einer Venus A nahm die Batterie in 52 Minuten 0,483 kWh aus PV auf, während dieser Zähler sich überhaupt nicht bewegte. |
+| `total_discharging_energy` | `total_ac_output_energy` | Dieselbe Stelle, andere Richtung: er stieg um 0,280 kWh, das Integral von `ac_power` betrug 0,274 kWh — sechs Wattstunden Unterschied — unabhängig davon, ob die Energie aus den Packs kam oder direkt vom Dach. |
+| `total_daily_charging_energy` | `total_daily_ac_input_energy` | Wie oben, für den Tageszähler. |
+| `total_daily_discharging_energy` | `total_daily_ac_output_energy` | Wie oben, für den Tageszähler. |
+| `total_monthly_charging_energy` | `total_monthly_ac_input_energy` | Wie oben, für den Monatszähler. |
+| `total_monthly_discharging_energy` | `total_monthly_ac_output_energy` | Wie oben, für den Monatszähler. |
+
+Ohne angeschlossenes PV waren die alten Namen zutreffend, deshalb ist es nie
+aufgefallen: AC-Seite und Batterie sind derselbe Fluss, solange nichts sonst in
+den DC-Bus einspeist. Venus E v3 und E v1/v2 haben keinen PV-Eingang und behalten
+die ursprünglichen Schlüssel.
+
+`battery_cycle_count_calc` entfällt bei diesen beiden Modellen, und
+`battery_health` sowie `remaining_cycles` lesen jetzt den Zyklenzähler des BMS,
+statt den Energiezähler durch die Packgröße zu teilen. Auf der Venus A ergab
+diese Division 1211 Zyklen, wo das BMS 153 meldete, und einen Batteriezustand von
+79,8 %, wo das BMS 97,5 % nahelegt.
+
 ## Häufige Fragen
 
 **Brauche ich ein Gateway, oder kann der Speicher selbst Modbus TCP?**

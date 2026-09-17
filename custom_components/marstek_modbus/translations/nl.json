@@ -491,6 +491,9 @@
       "battery_power": {
         "name": "Batterijvermogen"
       },
+      "dc_sample_power": {
+        "name": "DC-meetpunt vermogen"
+      },
       "internal_temperature": {
         "name": "Interne Temperatuur"
       },
@@ -515,8 +518,14 @@
       "total_charging_energy": {
         "name": "Totale Oplaadenergie"
       },
+      "total_ac_input_energy": {
+        "name": "Totale AC-invoer"
+      },
       "total_discharging_energy": {
         "name": "Totale Ontlaadenergie"
+      },
+      "total_ac_output_energy": {
+        "name": "Totale AC-uitvoer"
       },
       "battery_cycle_count": {
         "name": "Volledige cycli (BMS)"
@@ -548,14 +557,26 @@
       "total_daily_charging_energy": {
         "name": "Dagelijkse Oplaadenergie"
       },
+      "total_daily_ac_input_energy": {
+        "name": "AC-invoer vandaag"
+      },
       "total_daily_discharging_energy": {
         "name": "Dagelijkse Ontlaadenergie"
+      },
+      "total_daily_ac_output_energy": {
+        "name": "AC-uitvoer vandaag"
       },
       "total_monthly_charging_energy": {
         "name": "Maandelijkse Oplaadenergie"
       },
+      "total_monthly_ac_input_energy": {
+        "name": "AC-invoer deze maand"
+      },
       "total_monthly_discharging_energy": {
         "name": "Maandelijkse Ontlaadenergie"
+      },
+      "total_monthly_ac_output_energy": {
+        "name": "AC-uitvoer deze maand"
       },
       "max_cell_temperature": {
         "name": "Max. Celtemperatuur"

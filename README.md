@@ -370,6 +370,36 @@ outbound connection beyond the one TCP socket to the address you configured.
 
 ---
 
+## Renamed entities on the Venus A and D
+
+Seven sensors changed their key in 3.0.0-beta.3, because measurements showed
+they did not report what their names claimed. **Several of them are the kind
+that people put in the Energy dashboard**, so check that first: an entity whose
+key changed is gone from the dashboard's configuration and has to be selected
+again.
+
+| Old key | New key | Why |
+|---|---|---|
+| `battery_power` | `dc_sample_power` | Register 30001 is one measurement point on the DC side. With nothing on the MPPT inputs it carries only the packs — it matched them to 0.4 % on a Venus D — but with PV it carries the strings as well. A Venus A read −1557 W here while its packs supplied 870 W and 723 W came off the roof. |
+| *(new, calculated)* | `battery_power` | The key is back, as the sum of `dc_sample_power` and the four string powers, which leaves what the packs are doing. Checked against pack voltage times pack current on a Venus A: 39 W mean error, 85 W worst, charging and discharging alike. **Automations keep working** — the entity id is unchanged and the value is now correct. |
+| `total_charging_energy` | `total_ac_input_energy` | Counted at the grid connection, not at the packs. On a Venus A the battery took in 0.483 kWh from PV over 52 minutes while this counter did not move at all. |
+| `total_discharging_energy` | `total_ac_output_energy` | Same point, other direction: it rose 0.280 kWh while the integral of `ac_power` was 0.274 kWh — six watt hours apart — regardless of whether the energy came from the packs or straight off the roof. |
+| `total_daily_charging_energy` | `total_daily_ac_input_energy` | As above, for the day counter. |
+| `total_daily_discharging_energy` | `total_daily_ac_output_energy` | As above, for the day counter. |
+| `total_monthly_charging_energy` | `total_monthly_ac_input_energy` | As above, for the month counter. |
+| `total_monthly_discharging_energy` | `total_monthly_ac_output_energy` | As above, for the month counter. |
+
+Without PV connected the old names were accurate, which is why this went
+unnoticed: the AC side and the battery are the same flow when nothing else
+feeds the DC bus. The Venus E v3 and E v1/v2 have no PV input and keep the
+original keys.
+
+`battery_cycle_count_calc` is gone on these two models, and `battery_health`
+and `remaining_cycles` now read the BMS's own cycle count instead of dividing
+the energy counter by the pack size. On the Venus A that division returned 1211
+cycles where the BMS reported 153, and a state of health of 79.8 % where the
+BMS implies 97.5 %.
+
 ## FAQ
 
 **Do I need a gateway, or can the battery do Modbus TCP itself?**
