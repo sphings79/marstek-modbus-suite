@@ -167,7 +167,7 @@ export class MkViewCore extends MkView {
                 ? t("core.discharging_to_house")
                 : t("core.charging_from_grid")
               : t("core.at_rest")}
-            ${r.str("inverter_state") ? ` · ${r.str("inverter_state")}` : ""}
+            ${r.inverterState() ? ` · ${r.inverterState()}` : ""}
           </div>
         </div>
 

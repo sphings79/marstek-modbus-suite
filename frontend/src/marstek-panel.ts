@@ -619,8 +619,8 @@ export class MarstekPanel extends LitElement {
               <i class="led on"></i>${this.t("status.wifi")}
               ${this.formatter.num(wifi, 0)} dBm
             </span>`}
-        ${reader.str("inverter_state")
-          ? html`<span>${reader.str("inverter_state")}</span>`
+        ${reader.inverterState()
+          ? html`<span>${reader.inverterState()}</span>`
           : nothing}
         <button
           class="gear"

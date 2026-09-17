@@ -96,6 +96,8 @@ export class MkViewSystem extends MkView {
           ${this.kv("device_name", 0, { raw: true })}
           ${this.row(t("system.packs"), String(this.packs.length))}
           ${this.kv("battery_total_energy", 2)} ${this.kv("modbus_address", 0, { raw: true })}
+          <!-- The raw register on purpose: the summary corrects 35100 where it
+               calls solar passing through "Discharge", a diagnostics view should not. -->
           ${this.kv("inverter_state", 0, { raw: true })} ${this.kv("work_mode", 0, { raw: true })}
         </div>
 
