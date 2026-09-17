@@ -1559,7 +1559,52 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         # Update the coordinator's data
         self.data.update(updated_data)
+        self._derive_battery_power()
         return self.data
+
+    def _derive_battery_power(self) -> None:
+        """Work out the battery power and put it in `data` with the registers.
+
+        A calculated sensor reads its dependencies out of `self.data`, which
+        holds register readings only - so one calculated value cannot be built
+        on another. `battery_power` has to be, because it is a sum of the DC
+        measurement point and the string powers, and `runtime_to_empty`,
+        `runtime_to_full` and anything a user writes against it need it in turn.
+
+        Doing it here instead puts the result next to the registers, where every
+        consumer already looks. The definition still lives in the register map;
+        this only evaluates it.
+
+        Missing strings count as zero, the same rule the sensor applies: one
+        unavailable MPPT register must not blank the battery power and both
+        runtimes with it.
+
+        `data` holds raw register words, with each definition's scale applied by
+        whoever reads them, so the scales have to be applied here before the sum
+        - the DC point counts whole watts and the strings tenths. The result is
+        stored already scaled, which is what a consumer of a key that has no
+        scale of its own will assume.
+        """
+        for definition in self.BATTERY_POWER_SENSOR_DEFINITIONS:
+            key = definition.get("key")
+            dependencies = definition.get("dependency_keys") or {}
+            base_key = dependencies.get("dc")
+            base = self.data.get(base_key)
+            if key is None or base is None:
+                continue
+
+            try:
+                total = float(base) * float(self._scales.get(base_key, 1))
+                for alias, source in dependencies.items():
+                    if alias == "dc":
+                        continue
+                    value = self.data.get(source)
+                    if value is not None:
+                        total += float(value) * float(self._scales.get(source, 1))
+            except (TypeError, ValueError):
+                continue
+
+            self.data[key] = round(total, 2)
     
 
     async def async_close(self):

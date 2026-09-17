@@ -529,31 +529,17 @@ class MarstekBatteryPowerSensor(MarstekCalculatedSensor):
     """
 
     def calculate_value(self, dep_values: dict):
-        dc = dep_values.get("dc")
-        if dc is None:
+        # The coordinator works this out with the register readings, so that
+        # runtime_to_empty, runtime_to_full and anything a user builds can
+        # depend on it - a calculated sensor reads its inputs from the
+        # coordinator's data, and one calculated value cannot be built on
+        # another. Reading the result back here keeps a single sum rather than
+        # two that could drift apart.
+        value = self.coordinator.data.get(self._key)
+        if value is None:
             return None
-
-        total = float(dc)
-        missing = []
-        for alias in self.get_dependency_keys():
-            if alias == "dc":
-                continue
-            value = dep_values.get(alias)
-            if value is None:
-                missing.append(alias)
-                continue
-            total += float(value)
-
-        if missing:
-            _LOGGER.debug(
-                "%s: no reading from %s, counting those as 0 W",
-                self._key,
-                ", ".join(missing),
-            )
-
-        total = round(total, 2)
-        self._attr_native_value = total
-        return total
+        self._attr_native_value = value
+        return value
 
 
 class MarstekCellVoltageDeltaSensor(MarstekCalculatedSensor):
