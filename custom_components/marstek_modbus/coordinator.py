@@ -123,6 +123,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.GRID_POWER_SENSOR_DEFINITIONS = []
         self.BMS_POWER_SENSOR_DEFINITIONS = []
         self.BATTERY_POWER_SENSOR_DEFINITIONS = []
+        self.MIRROR_SENSOR_DEFINITIONS = []
         self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
         self.DEV_DUPLICATE_SENSOR_DEFINITIONS = []
 
@@ -796,6 +797,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.BATTERY_POWER_SENSOR_DEFINITIONS = data.get(
                 "BATTERY_POWER_SENSOR_DEFINITIONS", []
             )
+            self.MIRROR_SENSOR_DEFINITIONS = data.get("MIRROR_SENSOR_DEFINITIONS", [])
             # DEV-Register: je Gruppe nur laden, wenn die zugehoerige Option
             # gesetzt ist. Beide sind experimentell und standardmaessig aus.
             if self.dev_unknown_enabled:
@@ -1209,6 +1211,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.GRID_POWER_SENSOR_DEFINITIONS
             + self.BMS_POWER_SENSOR_DEFINITIONS
             + self.BATTERY_POWER_SENSOR_DEFINITIONS
+            + self.MIRROR_SENSOR_DEFINITIONS
         )
         # Only a calculated sensor that is actually enabled needs its inputs. Without
         # this check the source registers are polled even when nothing consumes them,
@@ -1592,6 +1595,7 @@ def get_registers(version: str):
     - GRID_POWER_SENSOR_DEFINITIONS
     - BMS_POWER_SENSOR_DEFINITIONS
     - BATTERY_POWER_SENSOR_DEFINITIONS
+    - MIRROR_SENSOR_DEFINITIONS
     - DEV_UNKNOWN_SENSOR_DEFINITIONS
     - DEV_DUPLICATE_SENSOR_DEFINITIONS
 
@@ -1709,6 +1713,9 @@ def get_registers(version: str):
                     ),
                     "BATTERY_POWER_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("BATTERY_POWER_SENSOR_DEFINITIONS")
+                    ),
+                    "MIRROR_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("MIRROR_SENSOR_DEFINITIONS")
                     ),
                     "DEV_UNKNOWN_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("DEV_UNKNOWN_SENSOR_DEFINITIONS")

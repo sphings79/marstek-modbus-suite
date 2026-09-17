@@ -3410,6 +3410,82 @@ BACKUP_RESERVE_SENSOR_DEFINITIONS:
             soc: battery_soc
             capacity: battery_total_energy
 
+MIRROR_SENSOR_DEFINITIONS:
+
+    # The six counters above were renamed in 3.0.0-beta.3, because they are
+    # measured at the grid connection rather than at the packs. A rename changes
+    # the unique id, which drops the entity out of every Energy dashboard,
+    # template and automation that named it.
+    #
+    # So the old keys stay, as pass-throughs of the new ones. The unique id is
+    # unchanged, so an existing install keeps the entity, its id and its
+    # statistics; the value is identical, because it is the same register.
+    # They ship disabled, which only applies to entities being created for the
+    # first time - an installation that already has them enabled keeps them.
+    #
+    # Nothing new should depend on these. They exist so that upgrading does not
+    # break what somebody already built.
+    total_charging_energy:
+        key: total_charging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-export"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_ac_input_energy
+    total_discharging_energy:
+        key: total_discharging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-import"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_ac_output_energy
+    total_daily_charging_energy:
+        key: total_daily_charging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-export"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_daily_ac_input_energy
+    total_daily_discharging_energy:
+        key: total_daily_discharging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-import"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_daily_ac_output_energy
+    total_monthly_charging_energy:
+        key: total_monthly_charging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-export"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_monthly_ac_input_energy
+    total_monthly_discharging_energy:
+        key: total_monthly_discharging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-import"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_monthly_ac_output_energy
+
 BATTERY_POWER_SENSOR_DEFINITIONS:
 
     # What actually flows in and out of the packs, which no register reports on

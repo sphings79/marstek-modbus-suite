@@ -389,6 +389,13 @@ again.
 | `total_monthly_charging_energy` | `total_monthly_ac_input_energy` | As above, for the month counter. |
 | `total_monthly_discharging_energy` | `total_monthly_ac_output_energy` | As above, for the month counter. |
 
+**Nothing breaks on upgrade.** The six old keys stay as pass-through mirrors of
+the new ones: same unique id, so the entity, its id and its statistics carry on,
+and the value is identical because it is the same register. They ship disabled,
+which only applies to entities created for the first time — an installation that
+already has them keeps them. Point new work at the new names; the mirrors exist
+so that upgrading does not break what you already built.
+
 Without PV connected the old names were accurate, which is why this went
 unnoticed: the AC side and the battery are the same flow when nothing else
 feeds the DC bus. The Venus E v3 and E v1/v2 have no PV input and keep the

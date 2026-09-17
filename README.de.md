@@ -402,6 +402,13 @@ und muss neu ausgewählt werden.
 | `total_monthly_charging_energy` | `total_monthly_ac_input_energy` | Wie oben, für den Monatszähler. |
 | `total_monthly_discharging_energy` | `total_monthly_ac_output_energy` | Wie oben, für den Monatszähler. |
 
+**Beim Update bricht nichts.** Die sechs alten Schlüssel bleiben als Spiegel der
+neuen bestehen: gleiche Unique-ID, also behalten Entität, Entity-ID und Statistik
+ihren Lauf, und der Wert ist identisch, weil es dasselbe Register ist. Sie sind
+deaktiviert ausgeliefert, was nur für neu angelegte Entitäten gilt — eine
+bestehende Installation behält sie. Neues sollte auf die neuen Namen zeigen; die
+Spiegel gibt es, damit ein Update nicht kaputtmacht, was schon gebaut wurde.
+
 Ohne angeschlossenes PV waren die alten Namen zutreffend, deshalb ist es nie
 aufgefallen: AC-Seite und Batterie sind derselbe Fluss, solange nichts sonst in
 den DC-Bus einspeist. Venus E v3 und E v1/v2 haben keinen PV-Eingang und behalten

@@ -46,6 +46,7 @@ async def async_setup_entry(
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
         (MarstekBmsBatteryPowerSensor, coordinator.BMS_POWER_SENSOR_DEFINITIONS),
         (MarstekBatteryPowerSensor, getattr(coordinator, "BATTERY_POWER_SENSOR_DEFINITIONS", []) or []),
+        (MarstekMirrorSensor, getattr(coordinator, "MIRROR_SENSOR_DEFINITIONS", []) or []),
         # getattr: Die DEV-Sektionen sind optional. Fehlt ein Attribut (z. B. weil
         # eine aeltere Coordinator-Version geladen ist), soll das nicht die gesamte
         # Sensor-Plattform scheitern lassen.
@@ -487,19 +488,72 @@ class MarstekSolarPowerSensor(MarstekCalculatedSensor):
         return total
 
 
-class MarstekBatteryPowerSensor(MarstekSolarPowerSensor):
+class MarstekMirrorSensor(MarstekCalculatedSensor):
+    """An old key kept alive, reporting the value of the one that replaced it.
+
+    Renaming a register key changes the entity's unique id, and Home Assistant
+    treats that as a different entity: the old one is dropped from every Energy
+    dashboard, template and automation that named it, and its statistics stop.
+    A mirror under the old key keeps the unique id, so none of that happens -
+    the entity, its id and its history carry on, reporting the same register
+    through its new name.
+    """
+
+    def calculate_value(self, dep_values: dict):
+        value = dep_values.get("value")
+        if value is None:
+            return None
+        self._attr_native_value = value
+        return value
+
+
+class MarstekBatteryPowerSensor(MarstekCalculatedSensor):
     """What the packs are doing, on a device whose DC register cannot say.
 
     Register 30001 is one measurement point on the DC side. With nothing on the
     MPPT inputs it carries only the packs, which is why it matched them to 0.4 %
-    on a Venus D; with PV it carries the strings too. Adding the string powers
-    back leaves the packs, because the point counts power heading for the AC
-    side as negative - so this is a plain sum of the DC register and the four
-    MPPT powers, which is what the inherited implementation does.
+    on a Venus D; with PV it carries the strings too. The point counts power
+    heading for the AC side as negative, so adding the string powers back leaves
+    the packs:
+
+        battery = dc_sample_power + mppt1 + mppt2 + mppt3 + mppt4
 
     Checked on a Venus A: 39 W mean error against pack voltage times pack
     current, 85 W at worst, over charging and discharging alike.
+
+    Only `dc` is required. A string that is missing - disabled, unavailable for
+    a cycle, or simply not fitted - counts as zero rather than taking the whole
+    reading with it. Being strict here would be worse than approximate: this
+    value carries the panel's headline figure and both runtime estimates, and
+    one unavailable MPPT register would blank all three.
     """
+
+    def calculate_value(self, dep_values: dict):
+        dc = dep_values.get("dc")
+        if dc is None:
+            return None
+
+        total = float(dc)
+        missing = []
+        for alias in self.get_dependency_keys():
+            if alias == "dc":
+                continue
+            value = dep_values.get(alias)
+            if value is None:
+                missing.append(alias)
+                continue
+            total += float(value)
+
+        if missing:
+            _LOGGER.debug(
+                "%s: no reading from %s, counting those as 0 W",
+                self._key,
+                ", ".join(missing),
+            )
+
+        total = round(total, 2)
+        self._attr_native_value = total
+        return total
 
 
 class MarstekCellVoltageDeltaSensor(MarstekCalculatedSensor):
