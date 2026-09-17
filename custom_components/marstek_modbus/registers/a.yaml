@@ -246,18 +246,6 @@ SENSOR_DEFINITIONS:
         data_type: uint32
         precision: 2
         scan_interval: low
-    battery_cycle_count:
-        # i16 per the v150 descriptor table (type code 0x12), same word as
-        # battery_1_cycle_count. Both must decode it the same way.
-        register: 34003
-        scale: 1
-        icon: "mdi:counter"
-        state_class: total_increasing
-        category: diagnostic
-        enabled_by_default: true
-        data_type: int16
-        precision: 0
-        scan_interval: low
     total_daily_ac_input_energy:
         register: 33004
         count: 2
@@ -3277,6 +3265,42 @@ MIRROR_SENSOR_DEFINITIONS:
         enabled_by_default: false
         dependency_keys:
             value: total_monthly_ac_output_energy
+
+PACK_AGGREGATE_SENSOR_DEFINITIONS:
+
+    # Register 34003 is pack 1's cycle count, not the stack's - the 34000 block
+    # is pack 1, the same way 30100 and 30101 were pack 1's voltage and current.
+    # Reporting it as the battery's figure understates a stack whose packs have
+    # aged apart: one measured seven packs at 6, 27, 26, 31, 29, 73 and 67
+    # cycles, and 34003 showed the 6.
+    #
+    # The mean over the packs that are actually fitted is what this reports
+    # instead. Pack 1's own count stays available as battery_1_cycle_count.
+    # A pack that is not installed answers its whole block with zeros, so the
+    # voltages decide which ones count - averaging in absent packs as zero would
+    # drag the figure down by however many slots happen to be empty.
+    battery_cycle_count:
+        key: battery_cycle_count
+        icon: "mdi:counter"
+        state_class: total_increasing
+        category: diagnostic
+        precision: 0
+        enabled_by_default: true
+        dependency_keys:
+            cycles1: battery_1_cycle_count
+            cycles2: battery_2_cycle_count
+            cycles3: battery_3_cycle_count
+            cycles4: battery_4_cycle_count
+            cycles5: battery_5_cycle_count
+            cycles6: battery_6_cycle_count
+            cycles7: battery_7_cycle_count
+            present1: battery_1_voltage
+            present2: battery_2_voltage
+            present3: battery_3_voltage
+            present4: battery_4_voltage
+            present5: battery_5_voltage
+            present6: battery_6_voltage
+            present7: battery_7_voltage
 
 BATTERY_POWER_SENSOR_DEFINITIONS:
 

@@ -45,8 +45,9 @@ async def async_setup_entry(
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
         (MarstekBmsBatteryPowerSensor, coordinator.BMS_POWER_SENSOR_DEFINITIONS),
-        (MarstekBatteryPowerSensor, getattr(coordinator, "BATTERY_POWER_SENSOR_DEFINITIONS", []) or []),
+        (MarstekDerivedSensor, getattr(coordinator, "BATTERY_POWER_SENSOR_DEFINITIONS", []) or []),
         (MarstekMirrorSensor, getattr(coordinator, "MIRROR_SENSOR_DEFINITIONS", []) or []),
+        (MarstekDerivedSensor, getattr(coordinator, "PACK_AGGREGATE_SENSOR_DEFINITIONS", []) or []),
         # getattr: Die DEV-Sektionen sind optional. Fehlt ein Attribut (z. B. weil
         # eine aeltere Coordinator-Version geladen ist), soll das nicht die gesamte
         # Sensor-Plattform scheitern lassen.
@@ -507,34 +508,22 @@ class MarstekMirrorSensor(MarstekCalculatedSensor):
         return value
 
 
-class MarstekBatteryPowerSensor(MarstekCalculatedSensor):
-    """What the packs are doing, on a device whose DC register cannot say.
+class MarstekDerivedSensor(MarstekCalculatedSensor):
+    """A value the coordinator worked out and left beside the register readings.
 
-    Register 30001 is one measurement point on the DC side. With nothing on the
-    MPPT inputs it carries only the packs, which is why it matched them to 0.4 %
-    on a Venus D; with PV it carries the strings too. The point counts power
-    heading for the AC side as negative, so adding the string powers back leaves
-    the packs:
+    Normally a calculated sensor does its own arithmetic here. These cannot,
+    because other sensors depend on them: a calculated sensor reads its inputs
+    out of the coordinator's data, which holds register readings, so one
+    calculated value cannot be built on another. `battery_power` has both
+    runtimes hanging off it and `battery_cycle_count` has the two life
+    estimates, so the coordinator works them out as the readings land and this
+    only reports the result - one sum rather than two that could drift apart.
 
-        battery = dc_sample_power + mppt1 + mppt2 + mppt3 + mppt4
-
-    Checked on a Venus A: 39 W mean error against pack voltage times pack
-    current, 85 W at worst, over charging and discharging alike.
-
-    Only `dc` is required. A string that is missing - disabled, unavailable for
-    a cycle, or simply not fitted - counts as zero rather than taking the whole
-    reading with it. Being strict here would be worse than approximate: this
-    value carries the panel's headline figure and both runtime estimates, and
-    one unavailable MPPT register would blank all three.
+    What each one means is documented where it is computed, in
+    `_derive_battery_power` and `_derive_pack_averages`.
     """
 
     def calculate_value(self, dep_values: dict):
-        # The coordinator works this out with the register readings, so that
-        # runtime_to_empty, runtime_to_full and anything a user builds can
-        # depend on it - a calculated sensor reads its inputs from the
-        # coordinator's data, and one calculated value cannot be built on
-        # another. Reading the result back here keeps a single sum rather than
-        # two that could drift apart.
         value = self.coordinator.data.get(self._key)
         if value is None:
             return None

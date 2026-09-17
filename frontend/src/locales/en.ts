@@ -127,7 +127,7 @@ export const en: Record<string, string> = {
   "packs.summed": "packs add up to {value} kWh",
   "packs.per_pack": "Per pack",
   "packs.nominal": "nominal, capacity ÷ packs",
-  "packs.cycles_sum": "Cycles, all packs",
+  "packs.cycles_mean": "Cycles, mean per pack",
   "packs.cycles_partial": "{have} of {total} packs report",
   "packs.fill_title": "State of charge per pack",
   "packs.fill_axis": "column height = SOC · figure inside = kWh",

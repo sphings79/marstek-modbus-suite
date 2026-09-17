@@ -119,7 +119,7 @@ export const de: Record<string, string> = {
   "packs.summed": "Packs ergeben {value} kWh",
   "packs.per_pack": "Je Pack",
   "packs.nominal": "nominal, Kapazität ÷ Packs",
-  "packs.cycles_sum": "Zyklen, alle Packs",
+  "packs.cycles_mean": "Zyklen, Mittel je Pack",
   "packs.cycles_partial": "{have} von {total} Packs melden",
   "packs.fill_title": "Ladezustand je Pack",
   "packs.fill_axis": "Säulenhöhe = SoC · Zahl darin = kWh",

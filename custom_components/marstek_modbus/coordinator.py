@@ -124,6 +124,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.BMS_POWER_SENSOR_DEFINITIONS = []
         self.BATTERY_POWER_SENSOR_DEFINITIONS = []
         self.MIRROR_SENSOR_DEFINITIONS = []
+        self.PACK_AGGREGATE_SENSOR_DEFINITIONS = []
         self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
         self.DEV_DUPLICATE_SENSOR_DEFINITIONS = []
 
@@ -798,6 +799,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 "BATTERY_POWER_SENSOR_DEFINITIONS", []
             )
             self.MIRROR_SENSOR_DEFINITIONS = data.get("MIRROR_SENSOR_DEFINITIONS", [])
+            self.PACK_AGGREGATE_SENSOR_DEFINITIONS = data.get(
+                "PACK_AGGREGATE_SENSOR_DEFINITIONS", []
+            )
             # DEV-Register: je Gruppe nur laden, wenn die zugehoerige Option
             # gesetzt ist. Beide sind experimentell und standardmaessig aus.
             if self.dev_unknown_enabled:
@@ -1212,6 +1216,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.BMS_POWER_SENSOR_DEFINITIONS
             + self.BATTERY_POWER_SENSOR_DEFINITIONS
             + self.MIRROR_SENSOR_DEFINITIONS
+            + self.PACK_AGGREGATE_SENSOR_DEFINITIONS
         )
         # Only a calculated sensor that is actually enabled needs its inputs. Without
         # this check the source registers are polled even when nothing consumes them,
@@ -1560,7 +1565,48 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # Update the coordinator's data
         self.data.update(updated_data)
         self._derive_battery_power()
+        self._derive_pack_averages()
         return self.data
+
+    def _derive_pack_averages(self) -> None:
+        """Average a per-pack reading over the packs that are actually fitted.
+
+        The 34000 block is pack 1, so a register from it is pack 1's answer and
+        not the stack's. `battery_cycle_count` read 34003 and therefore reported
+        one pack: on a seven-pack Venus D measuring 6, 27, 26, 31, 29, 73 and 67
+        cycles it showed the 6, and `battery_health` and `remaining_cycles`
+        inherited that when they moved onto it.
+
+        A pack that is not installed answers its whole block with zeros, so the
+        voltages decide who counts - averaging absent packs in as zero would
+        drag the figure down by however many slots are empty. Like the battery
+        power, the result goes into `data` so the sensors built on it can find
+        it there.
+        """
+        for definition in self.PACK_AGGREGATE_SENSOR_DEFINITIONS:
+            key = definition.get("key")
+            dependencies = definition.get("dependency_keys") or {}
+            if key is None:
+                continue
+
+            values = []
+            for alias, source in dependencies.items():
+                if not alias.startswith("cycles"):
+                    continue
+                index = alias[len("cycles"):]
+                present = self.data.get(dependencies.get(f"present{index}"))
+                value = self.data.get(source)
+                if value is None or present is None:
+                    continue
+                try:
+                    if float(present) <= 0:
+                        continue
+                    values.append(float(value) * float(self._scales.get(source, 1)))
+                except (TypeError, ValueError):
+                    continue
+
+            if values:
+                self.data[key] = round(sum(values) / len(values), 2)
 
     def _derive_battery_power(self) -> None:
         """Work out the battery power and put it in `data` with the registers.
@@ -1641,6 +1687,7 @@ def get_registers(version: str):
     - BMS_POWER_SENSOR_DEFINITIONS
     - BATTERY_POWER_SENSOR_DEFINITIONS
     - MIRROR_SENSOR_DEFINITIONS
+    - PACK_AGGREGATE_SENSOR_DEFINITIONS
     - DEV_UNKNOWN_SENSOR_DEFINITIONS
     - DEV_DUPLICATE_SENSOR_DEFINITIONS
 
@@ -1761,6 +1808,9 @@ def get_registers(version: str):
                     ),
                     "MIRROR_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("MIRROR_SENSOR_DEFINITIONS")
+                    ),
+                    "PACK_AGGREGATE_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("PACK_AGGREGATE_SENSOR_DEFINITIONS")
                     ),
                     "DEV_UNKNOWN_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("DEV_UNKNOWN_SENSOR_DEFINITIONS")
