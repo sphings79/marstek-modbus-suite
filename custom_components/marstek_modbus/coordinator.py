@@ -20,7 +20,9 @@ from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
                     CONF_PACK_COUNT, PACK_COUNT_AUTO, MAX_PACK_COUNT,
                     PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
-                    RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET)
+                    RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET,
+                    CONF_POLLING_MODE, DEFAULT_POLLING_MODE, POLLING_MODES,
+                    POLLING_MODE_ACTIVE, POLLING_MODE_PAUSED_UNAVAILABLE)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -158,6 +160,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._max_consecutive_failures = 5
         self._connection_suspended = False
         self._suspension_reset_time = None
+
+        # What the user asked this entry to do: poll, or stand down until they
+        # say otherwise. Read before the first connection attempt, because a
+        # battery that is switched off for the season must still load.
+        self.polling_mode = self._read_polling_mode(entry.options)
 
         # True once the device counts as gone rather than glitching. A full
         # cycle at a switched-off battery costs one timeout per register and
@@ -378,6 +385,82 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
         return False
+
+    @staticmethod
+    def _read_polling_mode(options) -> str:
+        """Return the stored polling mode, falling back to polling."""
+        mode = (options or {}).get(CONF_POLLING_MODE, DEFAULT_POLLING_MODE)
+        return mode if mode in POLLING_MODES else DEFAULT_POLLING_MODE
+
+    @property
+    def polling_paused(self) -> bool:
+        """True while the user has this entry standing down."""
+        return self.polling_mode != POLLING_MODE_ACTIVE
+
+    @property
+    def readings_available(self) -> bool:
+        """False when a pause is meant to take the readings away with it."""
+        return self.polling_mode != POLLING_MODE_PAUSED_UNAVAILABLE
+
+    @property
+    def controls_available(self) -> bool:
+        """False while paused, in either mode.
+
+        A write would reconnect and wake the device, which is the one thing a
+        pause is for. The readings can stand still and stay readable; a control
+        that looks usable but must not be used cannot.
+        """
+        return not self.polling_paused
+
+    async def async_set_polling_mode(self, mode: str) -> None:
+        """Switch between polling and standing down, and remember which.
+
+        Stored on the config entry rather than held in memory, so a battery
+        switched off in October is still switched off after a restart in
+        January.
+        """
+        if mode not in POLLING_MODES:
+            _LOGGER.warning("Ignoring unknown polling mode %r", mode)
+            return
+
+        was_paused = self.polling_paused
+        self.polling_mode = mode
+
+        options = dict(self.config_entry.options or {})
+        options[CONF_POLLING_MODE] = mode
+        # No reload: nothing here changes what the entities are, only what the
+        # coordinator does with them, and a reload would drop every reading the
+        # frozen mode exists to keep.
+        self.hass.config_entries.async_update_entry(self.config_entry, options=options)
+
+        if self.polling_paused:
+            if not was_paused:
+                _LOGGER.info(
+                    "Polling paused for %s:%d - closing the connection until it is resumed",
+                    self.host,
+                    self.port,
+                )
+            await self.async_close()
+            # Tell the entities, so availability follows the mode immediately
+            # instead of at the next tick that will not come.
+            self.async_update_listeners()
+            return
+
+        _LOGGER.info("Polling resumed for %s:%d", self.host, self.port)
+        # Start from a clean slate: the failure counts and the offline state all
+        # describe a device nobody was talking to.
+        self._link_offline = False
+        self._connection_suspended = False
+        self._suspension_reset_time = None
+        self._consecutive_failures = 0
+        self._consecutive_timeout_cycles = 0
+        self._register_failures.clear()
+        self._last_probe_at = None
+        try:
+            await self.client.async_connect()
+        except Exception as exc:  # noqa: BLE001 - the refresh reports it again
+            _LOGGER.debug("Connect on resume failed, the refresh will retry: %s", exc)
+        await self.async_request_refresh()
 
     def _probe_definition(self) -> dict | None:
         """The single register used to test whether a dead link is back.
@@ -772,7 +855,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         """Return True when Modbus communication is considered healthy."""
         from homeassistant.util.dt import utcnow
 
-        if self._connection_suspended or self._last_successful_read is None:
+        if self.polling_paused or self._connection_suspended or self._last_successful_read is None:
             return False
 
         age_seconds = (utcnow() - self._last_successful_read).total_seconds()
@@ -794,7 +877,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
     def get_connection_health_attributes(self) -> dict:
         """Return diagnostic state attributes for the Modbus connection entity."""
         stats = self._last_cycle_stats or {}
-        health = "offline"
+        # Paused outranks offline: the device may well be answering, nobody is
+        # asking. Saying "offline" there would send people looking for a fault.
+        health = "paused" if self.polling_paused else "offline"
         if self.is_connection_healthy():
             health = "degraded" if self.is_connection_degraded() else "ok"
 
@@ -817,6 +902,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             "consecutive_failures": self._consecutive_failures,
             "consecutive_timeout_cycles": self._consecutive_timeout_cycles,
             "connection_suspended": self._connection_suspended,
+            "polling_mode": self.polling_mode,
             "stale_after_seconds": self.get_connection_health_threshold_seconds(),
         }
 
@@ -1276,6 +1362,13 @@ class MarstekCoordinator(DataUpdateCoordinator):
         attempted_reads = 0
         successful_reads = 0
         self._timeouts_in_cycle = 0
+
+        # Standing down on request: no reads, no probe, nothing on the wire. The
+        # socket was closed when the mode was set, and the entities keep or drop
+        # their readings according to the mode.
+        if self.polling_paused:
+            _LOGGER.debug("Polling paused for %s:%d - nothing to do", self.host, self.port)
+            return self.data or {}
 
         # While the device counts as offline the cycle is a single probe register
         # on its own interval, not every due read waiting out its own timeout at

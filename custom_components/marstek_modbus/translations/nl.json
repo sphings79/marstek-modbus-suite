@@ -1232,6 +1232,14 @@
           "friday": "Vrijdag",
           "saturday": "Zaterdag"
         }
+      },
+      "modbus_device_polling": {
+        "name": "Modbus-uitlezen van het apparaat",
+        "state": {
+          "active": "Actief",
+          "paused_unavailable": "Gepauzeerd, entiteiten niet beschikbaar",
+          "paused_frozen": "Gepauzeerd, entiteiten bevroren"
+        }
       }
     },
     "switch": {

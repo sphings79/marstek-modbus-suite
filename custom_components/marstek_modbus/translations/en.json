@@ -1228,6 +1228,14 @@
           "friday": "Friday",
           "saturday": "Saturday"
         }
+      },
+      "modbus_device_polling": {
+        "name": "Modbus device polling",
+        "state": {
+          "active": "Active",
+          "paused_unavailable": "Paused, entities unavailable",
+          "paused_frozen": "Paused, entities frozen"
+        }
       }
     },
     "switch": {

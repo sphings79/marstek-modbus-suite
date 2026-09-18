@@ -1228,6 +1228,14 @@
           "friday": "Freitag",
           "saturday": "Samstag"
         }
+      },
+      "modbus_device_polling": {
+        "name": "Modbus-Abfrage des Geräts",
+        "state": {
+          "active": "Aktiv",
+          "paused_unavailable": "Pausiert, Entitäten nicht verfügbar",
+          "paused_frozen": "Pausiert, Entitäten eingefroren"
+        }
       }
     },
     "switch": {

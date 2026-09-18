@@ -597,7 +597,7 @@ export class MarstekPanel extends LitElement {
     // Every register keeps its last value through a dropout, so with the link
     // down the rest of this bar is history, not status. Say so instead of
     // presenting it as current.
-    const live = link.led !== "off";
+    const live = link.led === "on" || link.led === "warn";
 
     return html`
       <div class="status">
@@ -675,6 +675,16 @@ export class MarstekPanel extends LitElement {
     const health = String(
       entity.attributes.health ?? (entity.state === "on" ? "ok" : "offline"),
     );
+
+    // Paused is not a fault, so it does not get a fault's colour. The base
+    // class leaves the light grey.
+    if (health === "paused") {
+      return {
+        led: "",
+        label: this.t("status.modbus_paused"),
+        detail: this.t("status.modbus_paused_hint"),
+      };
+    }
 
     if (health === "offline") {
       const since = this.lastRead(entity);

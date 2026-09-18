@@ -335,6 +335,30 @@ Adjacent due registers are combined into a single block read where possible; if 
 the affected entities fall back to individual reads. Disabled entities are skipped — unless a
 calculated sensor depends on them, in which case they are polled anyway.
 
+### Pausing a battery
+
+A battery switched off for the season answers nothing, and an integration that keeps asking fills
+the log and holds a socket open at a device that would rather sleep. **Modbus device polling**, on
+the device page and in the panel's Control tab, stops that:
+
+| Option | What it does |
+|---|---|
+| **Active** | Normal operation. |
+| **Paused, entities unavailable** | Stops polling, closes the connection, and takes the readings with it. Leaves a gap in the history and claims nothing while the battery is off. |
+| **Paused, entities frozen** | Stops polling and closes the connection, but leaves every entity showing its last reading. Keeps statistics unbroken, at the price of a value from before the pause looking like a current one. |
+
+There is one of these per battery, on every model, and the setting survives a restart — a battery
+paused in October is still paused in January. A paused entry loads without connecting at all, so it
+comes up cleanly even when the device has been off for months. While it is paused, the controls are
+unavailable: writing would reopen the connection and wake the device.
+
+Frozen readings do **not** survive a restart of Home Assistant, which keeps nothing to freeze. After
+a restart, a frozen battery looks the same as an unavailable one until it is resumed.
+
+Home Assistant's own **Enable polling for updates**, under the entry's system options, still works
+and is independent of this. If both are set, Home Assistant's wins, because it stops the scheduler
+before the integration is asked.
+
 ---
 
 ## What stays local

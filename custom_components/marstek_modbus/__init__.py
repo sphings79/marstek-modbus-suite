@@ -107,7 +107,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Establish the Modbus connection upfront so the first refresh does not
         # lazily reconnect on individual sensor reads, and failure is properly
         # tracked from the start.
-        if not await coordinator.async_init():
+        #
+        # Unless the user asked this entry to stand down. Connecting would wake
+        # the device a pause exists to leave alone, and failing to connect would
+        # put the entry into a setup retry - taking with it the very entity the
+        # pause is lifted from. A paused entry therefore loads with no traffic
+        # at all, which is what makes the mode usable over a winter.
+        if coordinator.polling_paused:
+            _LOGGER.info(
+                "Polling is paused for %s:%d, setting up without connecting",
+                coordinator.host,
+                coordinator.port,
+            )
+        elif not await coordinator.async_init():
             raise ConfigEntryNotReady(
                 f"Cannot connect to Modbus device at {coordinator.host}:{coordinator.port}"
             )
@@ -118,7 +130,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # Perform first refresh to ensure coordinator has up-to-date data.
         # Raises ConfigEntryNotReady by itself if the first poll fails.
-        await coordinator.async_config_entry_first_refresh()
+        if not coordinator.polling_paused:
+            await coordinator.async_config_entry_first_refresh()
 
         # The sidebar panel belongs to the integration, not to one device: this
         # is a no-op once a second entry arrives.

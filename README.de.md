@@ -345,6 +345,32 @@ scheitert dieser, fallen die betroffenen Entitäten auf Einzelabfragen zurück. 
 Entitäten werden übersprungen — außer ein berechneter Sensor hängt an ihnen, dann werden sie
 trotzdem abgefragt.
 
+### Einen Speicher pausieren
+
+Ein Speicher, der über die Saison ausgeschaltet ist, antwortet nicht, und eine Integration, die
+trotzdem weiterfragt, füllt das Log und hält einen Socket an ein Gerät offen, das lieber schlafen
+würde. **Modbus-Abfrage des Geräts** auf der Geräteseite und im Control-Tab des Panels beendet das:
+
+| Option | Wirkung |
+|---|---|
+| **Aktiv** | Normalbetrieb. |
+| **Pausiert, Entitäten nicht verfügbar** | Hält die Abfrage an, schließt die Verbindung und nimmt die Messwerte mit. Reißt eine Lücke in die Historie und behauptet nichts, solange der Speicher aus ist. |
+| **Pausiert, Entitäten eingefroren** | Hält die Abfrage an und schließt die Verbindung, lässt aber jede Entität auf ihrem letzten Wert stehen. Hält die Statistik lückenlos — um den Preis, dass ein Wert von vor der Pause aussieht wie ein aktueller. |
+
+Es gibt die Einstellung einmal pro Speicher, bei jedem Modell, und sie überlebt einen Neustart —
+was im Oktober pausiert wurde, ist im Januar noch pausiert. Ein pausierter Eintrag lädt ganz ohne
+Verbindungsversuch und kommt deshalb auch dann sauber hoch, wenn das Gerät seit Monaten aus ist.
+Während der Pause sind die Bedienelemente nicht verfügbar: ein Schreibzugriff würde die Verbindung
+wieder aufbauen und das Gerät wecken.
+
+Eingefrorene Werte überleben einen **Neustart von Home Assistant nicht** — es gibt dann nichts mehr
+einzufrieren. Nach einem Neustart sieht ein eingefrorener Speicher aus wie ein nicht verfügbarer,
+bis die Abfrage wieder eingeschaltet wird.
+
+Home Assistants eigenes **Abfrage von Aktualisierungen aktivieren** in den Systemoptionen des
+Eintrags funktioniert weiterhin und ist davon unabhängig. Sind beide gesetzt, gewinnt das von Home
+Assistant, weil es den Zeitplan abklemmt, bevor die Integration überhaupt gefragt wird.
+
 ---
 
 ## Was lokal bleibt

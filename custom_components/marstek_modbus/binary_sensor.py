@@ -101,9 +101,11 @@ class MarstekBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def available(self) -> bool:
         """
         Return True if the coordinator has successfully fetched data.
-        Used by Home Assistant to determine entity availability.
+
+        A pause set to drop its readings takes these with it; the connection
+        entity below keeps reporting either way.
         """
-        return self.coordinator.last_update_success
+        return self.coordinator.readings_available and self.coordinator.last_update_success
 
     @property
     def is_on(self) -> bool | None:

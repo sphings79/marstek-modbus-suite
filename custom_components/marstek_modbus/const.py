@@ -96,3 +96,25 @@ CONF_DEV_REGISTERS_LEGACY = "dev_registers"
 RS485_CONTROL_MODE_KEY = "rs485_control_mode"
 ISSUE_RS485_CONTROL_MODE_RESET = "rs485_control_mode_reset"
 
+
+# Polling mode, set per config entry from the select entity of the same name.
+# Not a register: it says what this integration does, not what the device is,
+# which is why it exists on every model and survives the device being off.
+#
+# The two paused modes differ only in what the read-only entities do. Frozen
+# keeps the last reading, which leaves statistics unbroken but carries a value
+# from before the pause as though it were measured now. Unavailable tears a hole
+# in the history and claims nothing. Both stop the polling and close the socket;
+# neither survives a restart of Home Assistant, which keeps no readings to
+# freeze.
+CONF_POLLING_MODE = "polling_mode"
+POLLING_MODE_KEY = "modbus_device_polling"
+POLLING_MODE_ACTIVE = "active"
+POLLING_MODE_PAUSED_UNAVAILABLE = "paused_unavailable"
+POLLING_MODE_PAUSED_FROZEN = "paused_frozen"
+POLLING_MODES = [
+    POLLING_MODE_ACTIVE,
+    POLLING_MODE_PAUSED_UNAVAILABLE,
+    POLLING_MODE_PAUSED_FROZEN,
+]
+DEFAULT_POLLING_MODE = POLLING_MODE_ACTIVE

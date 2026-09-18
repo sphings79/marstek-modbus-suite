@@ -109,6 +109,11 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
         # Consider the sensor available when coordinator has provided a value
         # for this key. This avoids sensors remaining 'unknown' when the
         # coordinator had transient update failures but still supplies data.
+        #
+        # A pause set to drop its readings overrides that: the value is still in
+        # the coordinator, it just no longer stands for anything current.
+        if not self.coordinator.readings_available:
+            return False
         data = getattr(self.coordinator, "data", None)
         return isinstance(data, dict) and self._key in data
 

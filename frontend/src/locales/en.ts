@@ -21,6 +21,9 @@ export const en: Record<string, string> = {
     "These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.",
   "control.limits": "Limits",
   "control.mode": "Mode",
+  "control.polling": "Polling",
+  "control.polling_hint":
+    "Stops this battery being read at all and closes the connection, for a device switched off over the winter. Paused entities either keep their last reading or go unavailable, whichever you pick here. Readings are not restored after a Home Assistant restart.",
   "control.backup_hint": "Keeps a reserve for the off-grid output.",
   "control.rs485_hint":
     "Switching this off hands control back to the device, and this page stops having any effect.",
@@ -49,6 +52,9 @@ export const en: Record<string, string> = {
   "control.opt.standby": "Standby",
   "control.opt.charge": "Charge",
   "control.opt.discharge": "Discharge",
+  "control.opt.active": "Polling",
+  "control.opt.paused_unavailable": "Paused · entities unavailable",
+  "control.opt.paused_frozen": "Paused · entities frozen",
 
   "control.day.monday": "Mon",
   "control.day.tuesday": "Tue",
@@ -61,6 +67,9 @@ export const en: Record<string, string> = {
   "status.modbus": "MODBUS",
   "status.modbus_offline": "MODBUS OFFLINE",
   "status.modbus_offline_since": "MODBUS OFFLINE · last answer {time}",
+  "status.modbus_paused": "MODBUS PAUSED",
+  "status.modbus_paused_hint":
+    "Polling is switched off for this battery. Nothing is being read, and the values below are whatever was last seen.",
   "status.modbus_offline_hint":
     "The battery is not answering. Every value below is the last one read before the link dropped.",
   "status.modbus_degraded": "The link answers, but registers timed out in the last poll.",

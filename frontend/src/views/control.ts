@@ -231,6 +231,14 @@ export class MkViewControl extends MkView {
       </div>
 
       <div class="grid below">
+        <div class="panel stack">
+          <div class="head"><div class="label">${t("control.polling")}</div></div>
+          ${this.segment("modbus_device_polling")}
+          <div class="note">${t("control.polling_hint")}</div>
+        </div>
+      </div>
+
+      <div class="grid below">
         <div class="panel">
           <div class="head">
             <div class="label">${t("control.schedules")}</div>

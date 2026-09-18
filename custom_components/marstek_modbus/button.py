@@ -85,9 +85,11 @@ class MarstekButton(ButtonEntity):
     def available(self) -> bool:
         """
         Return True if the coordinator has successfully fetched data.
-        Used by Home Assistant to determine entity availability.
+
+        A paused entry offers no controls: writing would reopen the connection
+        and wake the battery the pause was meant to leave alone.
         """
-        return self.coordinator.last_update_success
+        return self.coordinator.controls_available and self.coordinator.last_update_success
 
     async def async_press(self) -> None:
         """
