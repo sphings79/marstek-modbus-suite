@@ -62,6 +62,12 @@ class MarstekModbusClient:
         self.host = host
         self.port = port
 
+        # Set for the duration of one call by a caller that already knows the
+        # device is not answering. The failures below then go to debug: a probe
+        # that fails while the battery is switched off is the expected outcome,
+        # and repeating it in the log once a minute tells nobody anything.
+        self.quiet = False
+
         # Normalize and guard the timeout. The config flow has no timeout field,
         # so entry.data.get("timeout") is None for every entry created through
         # the UI — and pymodbus reads None as "wait forever", which turns a
@@ -231,6 +237,10 @@ class MarstekModbusClient:
         self._connect_blocked_until = 0.0
         self._connected_once = True
 
+    def _log_failure(self, level: int, message: str, *args) -> None:
+        """Report a communication failure, at debug while a caller is probing."""
+        _LOGGER.log(logging.DEBUG if self.quiet else level, message, *args)
+
     async def async_connect(self) -> bool:
         """
         Connect asynchronously to the Modbus TCP server.
@@ -325,7 +335,8 @@ class MarstekModbusClient:
                 )
             else:
                 self._note_connect_failure()
-                _LOGGER.warning(
+                self._log_failure(
+                    logging.WARNING,
                     "Failed to connect to Modbus server at %s:%s with unit %s",
                     self.host,
                     self.port,
@@ -425,7 +436,12 @@ class MarstekModbusClient:
                 if connected:
                     _LOGGER.info("Reconnected to Modbus server at %s:%s", self.host, self.port)
                 else:
-                    _LOGGER.warning("Reconnect failed to Modbus server at %s:%s", self.host, self.port)
+                    self._log_failure(
+                        logging.WARNING,
+                        "Reconnect failed to Modbus server at %s:%s",
+                        self.host,
+                        self.port,
+                    )
 
                 return connected
             except Exception as e:
@@ -591,7 +607,8 @@ class MarstekModbusClient:
                 client_connected = False
 
             if not await self._ensure_connected():
-                _LOGGER.error(
+                self._log_failure(
+                    logging.ERROR,
                     "Modbus client not connected, skipping register %d (0x%04X)",
                     register,
                     register,

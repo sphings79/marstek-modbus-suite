@@ -410,10 +410,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._suspension_reset_time = now + timedelta(
             seconds=self._offline_probe_interval
         )
-        # Not counted as a cycle timeout: a probe that fails is the expected
-        # outcome while the battery is off, not a symptom worth reporting.
+        # Neither counted nor reported: a probe that fails while the battery is
+        # off is the expected outcome, and saying so once a minute for as long
+        # as it stays off is the noise this whole state exists to avoid.
         value = await self.async_read_value(
-            definition, definition["key"], track_failure=False
+            definition, definition["key"], track_failure=False, quiet=True
         )
         return value is not None
 
@@ -924,13 +925,19 @@ class MarstekCoordinator(DataUpdateCoordinator):
             # Keep empty definitions as fallback; platforms will see no entities
             self._all_definitions = []
 
-    async def async_read_value(self, sensor: dict, key: str, track_failure: bool = True):
+    async def async_read_value(
+        self, sensor: dict, key: str, track_failure: bool = True, quiet: bool = False
+    ):
         """Helper to read a single sensor value from Modbus with logging and type checking.
 
         Args:
             sensor: sensor definition dict
             key: the sensor key
             track_failure: if False, timeouts will not count towards timeout metrics
+            quiet: the caller already knows the device is not answering, so a
+                failed read is the expected outcome rather than news. Everything
+                this read would report, here and inside the client, goes to
+                debug instead. Every other caller keeps its levels.
         """
         entity_type = self._entity_types.get(key, get_entity_type(sensor))
 
@@ -938,11 +945,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
         scale = self._scales.get(key, sensor.get("scale", 1))
         unit = sensor.get("unit", "N/A")
 
+        def report(level: int, message: str, *args) -> None:
+            _LOGGER.log(logging.DEBUG if quiet else level, message, *args)
+
         # Guard: ensure client exists
         if not hasattr(self, "client") or self.client is None:
-            _LOGGER.error("Modbus client is not available when reading %s '%s'", entity_type, key)
+            report(logging.ERROR, "Modbus client is not available when reading %s '%s'", entity_type, key)
             return None
 
+        self.client.quiet = quiet
         try:
             # Backstop against a wedged coroutine. The client is expected to give
             # up first, on its own timeout, and to retry on a fresh socket.
@@ -969,7 +980,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     unit,
                 )
                 return value
-            _LOGGER.warning(
+            report(
+                logging.WARNING,
                 "Invalid value for %s '%s': %r (type %s)",
                 entity_type,
                 key,
@@ -983,20 +995,27 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 self._timeouts_in_cycle = getattr(self, "_timeouts_in_cycle", 0) + 1
             from homeassistant.util.dt import utcnow
             self._last_failed_read = utcnow()
-            _LOGGER.warning(
+            report(
+                logging.WARNING,
                 "Timeout reading %s '%s' at register %d from %s:%d - connection may be slow or incorrect",
                 entity_type, key, sensor["register"], self.client.host, self.client.port
             )
-            await self._async_recover_half_open(
-                f"{entity_type} '{key}' at register {sensor['register']}"
-            )
+            # Nothing to recover at a device that is known to be away: the socket
+            # is not half open, the other end is gone.
+            if not quiet:
+                await self._async_recover_half_open(
+                    f"{entity_type} '{key}' at register {sensor['register']}"
+                )
             return None
         except Exception as e:
-            _LOGGER.error(
+            report(
+                logging.ERROR,
                 "Error reading %s '%s' at register %d: %s",
                 entity_type, key, sensor["register"], e,
             )
             return None
+        finally:
+            self.client.quiet = False
 
     async def _async_read_contiguous_group(
         self,
