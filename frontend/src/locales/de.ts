@@ -51,6 +51,11 @@ export const de: Record<string, string> = {
   "control.day.sunday": "So",
 
   "status.modbus": "MODBUS",
+  "status.modbus_offline": "MODBUS OFFLINE",
+  "status.modbus_offline_since": "MODBUS OFFLINE · letzte Antwort {time}",
+  "status.modbus_offline_hint":
+    "Die Batterie antwortet nicht. Alle Werte darunter sind die zuletzt gelesenen, bevor die Verbindung abriss.",
+  "status.modbus_degraded": "Die Verbindung antwortet, aber im letzten Abruf liefen Register in einen Timeout.",
   "status.wifi": "WLAN",
 
   "common.pack": "PACK",

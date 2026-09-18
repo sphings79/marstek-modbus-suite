@@ -59,6 +59,11 @@ export const en: Record<string, string> = {
   "control.day.sunday": "Sun",
 
   "status.modbus": "MODBUS",
+  "status.modbus_offline": "MODBUS OFFLINE",
+  "status.modbus_offline_since": "MODBUS OFFLINE · last answer {time}",
+  "status.modbus_offline_hint":
+    "The battery is not answering. Every value below is the last one read before the link dropped.",
+  "status.modbus_degraded": "The link answers, but registers timed out in the last poll.",
   "status.wifi": "WIFI",
 
   "common.pack": "PACK",

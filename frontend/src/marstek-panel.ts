@@ -2,6 +2,7 @@ import { LitElement, html, css, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { themeStyles, baseStyles } from "./styles";
 import { findDevices, DeviceReader, type MarstekDevice } from "./entities";
+import type { HassEntity } from "./types";
 import { DeviceControls } from "./controls";
 import { loadCatalogue, translate, type Strings } from "./localize";
 import { Formatter } from "./format";
@@ -219,6 +220,9 @@ export class MarstekPanel extends LitElement {
       }
       .led.off {
         background: var(--mk-crit);
+      }
+      .led.warn {
+        background: var(--mk-warn);
       }
 
       select {
@@ -589,6 +593,11 @@ export class MarstekPanel extends LitElement {
     const devices = this.devices;
     const selected = this.device?.deviceId;
     const wifi = reader.num("wifi_signal_strength");
+    const link = this.link(reader);
+    // Every register keeps its last value through a dropout, so with the link
+    // down the rest of this bar is history, not status. Say so instead of
+    // presenting it as current.
+    const live = link.led !== "off";
 
     return html`
       <div class="status">
@@ -609,17 +618,17 @@ export class MarstekPanel extends LitElement {
               </select>
             `
           : nothing}
-        <span>
-          <i class="led ${reader.has("battery_soc") ? "on" : "off"}"></i>
-          ${this.t("status.modbus")}
+        <span title=${link.detail || nothing}>
+          <i class="led ${link.led}"></i>
+          ${link.label}
         </span>
         ${wifi === null
           ? nothing
           : html`<span>
-              <i class="led on"></i>${this.t("status.wifi")}
+              <i class="led ${live ? "on" : ""}"></i>${this.t("status.wifi")}
               ${this.formatter.num(wifi, 0)} dBm
             </span>`}
-        ${reader.inverterState()
+        ${live && reader.inverterState()
           ? html`<span>${reader.inverterState()}</span>`
           : nothing}
         <button
@@ -637,6 +646,68 @@ export class MarstekPanel extends LitElement {
         </button>
       </div>
     `;
+  }
+
+  /**
+   * The state of the Modbus link, taken from the connection entity.
+   *
+   * Not from whether a reading is there: the coordinator hands out its last
+   * values through a dropout, so a present measurement says only that the link
+   * worked at some point. A battery switched off for the winter would sit here
+   * green until Home Assistant restarts.
+   */
+  private link(reader: DeviceReader): { led: string; label: string; detail: string } {
+    const entity = reader.rawState("modbus_connection");
+
+    // Installations from before the connection entity, and anyone who disabled
+    // it, keep what the panel showed until now rather than being told about an
+    // outage the panel has no way of seeing.
+    if (!entity || entity.state === "unavailable" || entity.state === "unknown") {
+      return {
+        led: reader.has("battery_soc") ? "on" : "off",
+        label: this.t("status.modbus"),
+        detail: "",
+      };
+    }
+
+    // The attribute carries the third case the on/off state cannot: a link that
+    // answers but lost registers to timeouts in the last cycle.
+    const health = String(
+      entity.attributes.health ?? (entity.state === "on" ? "ok" : "offline"),
+    );
+
+    if (health === "offline") {
+      const since = this.lastRead(entity);
+      return {
+        led: "off",
+        label: since
+          ? this.t("status.modbus_offline_since", { time: since })
+          : this.t("status.modbus_offline"),
+        detail: this.t("status.modbus_offline_hint"),
+      };
+    }
+
+    return {
+      led: health === "degraded" ? "warn" : "on",
+      label: this.t("status.modbus"),
+      detail: health === "degraded" ? this.t("status.modbus_degraded") : "",
+    };
+  }
+
+  /**
+   * When the last answer arrived, as a clock time rather than an age: while the
+   * link is down nothing updates the attribute, and a counted age would freeze
+   * at the value it had the moment the panel last rendered.
+   */
+  private lastRead(entity: HassEntity): string {
+    const iso = entity.attributes.last_successful_read;
+    if (typeof iso !== "string") return "";
+    const at = new Date(iso);
+    if (Number.isNaN(at.getTime())) return "";
+    return at.toLocaleTimeString(this.hass?.language || "en", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   /**
