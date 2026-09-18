@@ -158,6 +158,19 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._max_consecutive_failures = 5
         self._connection_suspended = False
         self._suspension_reset_time = None
+
+        # True once the device counts as gone rather than glitching. A full
+        # cycle at a switched-off battery costs one timeout per register and
+        # says nothing a single read would not, so while this is set the cycle
+        # is replaced by one probe register - and the log stays quiet until the
+        # state changes, instead of repeating itself for as long as the battery
+        # is off.
+        self._link_offline = False
+        self._last_probe_at = None
+        # Fixed, not derived from the poll interval: one request a minute is
+        # nothing, and it keeps the battery back within a minute of being
+        # switched on.
+        self._offline_probe_interval = 60
         
         self._consecutive_timeout_cycles = 0
         self._max_consecutive_timeout_cycles = 3
@@ -365,6 +378,78 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
         return False
+
+    def _probe_definition(self) -> dict | None:
+        """The single register used to test whether a dead link is back.
+
+        Any cheap register the firmware always answers will do; the state of
+        charge is in every map. Nothing is done with the value - the point is
+        whether an answer arrives at all.
+        """
+        for key in ("battery_soc", "inverter_state"):
+            for definition in self._all_definitions:
+                if (
+                    definition.get("key") == key
+                    and self._definition_register_count(definition) == 1
+                ):
+                    return definition
+
+        # A map naming neither: the first single-register read serves as well.
+        for definition in self._all_definitions:
+            if self._definition_register_count(definition) == 1:
+                return definition
+        return None
+
+    async def _async_probe_link(self, now) -> bool:
+        """Read the probe register and report whether the device answered."""
+        definition = self._probe_definition()
+        if definition is None:
+            return False
+
+        self._last_probe_at = now
+        self._suspension_reset_time = now + timedelta(
+            seconds=self._offline_probe_interval
+        )
+        # Not counted as a cycle timeout: a probe that fails is the expected
+        # outcome while the battery is off, not a symptom worth reporting.
+        value = await self.async_read_value(
+            definition, definition["key"], track_failure=False
+        )
+        return value is not None
+
+    def _link_recovered(self) -> None:
+        """Leave the offline state and let the next cycle read everything.
+
+        Clearing the per-register failure counts is the point of this. They
+        stretch a register's effective interval to as much as an hour, and they
+        only reset on a successful read of that same register - so a battery
+        switched back on would otherwise trickle its sensors in over the rest of
+        that hour rather than filling the panel at once.
+        """
+        self._link_offline = False
+        self._connection_suspended = False
+        self._suspension_reset_time = None
+        self._consecutive_failures = 0
+        self._consecutive_timeout_cycles = 0
+        self._register_failures.clear()
+        _LOGGER.info("Modbus link to %s:%d is back", self.host, self.port)
+
+    def _link_lost(self, now) -> None:
+        """Enter the offline state, once, with one message to show for it."""
+        self._link_offline = True
+        self._connection_suspended = True
+        self._last_probe_at = now
+        self._suspension_reset_time = now + timedelta(
+            seconds=self._offline_probe_interval
+        )
+        _LOGGER.warning(
+            "No answer from %s:%d after %d cycles - treating the device as offline "
+            "and probing one register every %ds until it answers again",
+            self.host,
+            self.port,
+            self._consecutive_failures,
+            self._offline_probe_interval,
+        )
 
     def _is_absent_pack(self, definition: dict) -> bool:
         """Return True for a register belonging to a pack that is not installed.
@@ -1173,27 +1258,28 @@ class MarstekCoordinator(DataUpdateCoordinator):
         successful_reads = 0
         self._timeouts_in_cycle = 0
 
-        # Connection throttling: if too many failures, temporarily stop attempting connections
-        if self._connection_suspended:
-            if self._suspension_reset_time and now > self._suspension_reset_time:
-                _LOGGER.info("Connection suspension expired - attempting reconnection")
-                self._connection_suspended = False
-                self._consecutive_failures = 0
-                
-                # Force reconnect after suspension
-                try:
-                    connected = await self.client.async_reconnect()
-                    if connected:
-                        _LOGGER.info("Successfully reconnected after suspension")
-                    else:
-                        _LOGGER.warning("Failed to reconnect after suspension - will retry next cycle")
-                        return self.data or {}
-                except Exception as exc:
-                    _LOGGER.error("Exception during reconnect: %s", exc)
-                    return self.data or {}
-            else:
-                _LOGGER.debug("Connection suspended - skipping update to prevent resource exhaustion")
+        # While the device counts as offline the cycle is a single probe register
+        # on its own interval, not every due read waiting out its own timeout at
+        # a battery that is switched off. A probe that gets an answer means the
+        # battery is back, and this same cycle goes on to read everything.
+        if self._link_offline:
+            elapsed = (
+                (now - self._last_probe_at).total_seconds()
+                if self._last_probe_at
+                else None
+            )
+            if elapsed is not None and elapsed < self._offline_probe_interval:
                 return self.data or {}
+
+            if not await self._async_probe_link(now):
+                _LOGGER.debug(
+                    "Probe of %s:%d went unanswered - link still offline",
+                    self.host,
+                    self.port,
+                )
+                return self.data or {}
+
+            self._link_recovered()
 
         _LOGGER.debug("Coordinator poll tick at %s", now.isoformat())
 
@@ -1508,20 +1594,18 @@ class MarstekCoordinator(DataUpdateCoordinator):
                         _LOGGER.info("Successfully reconnected")
                         self._consecutive_failures = 0
                         self._connection_established_at = now
+                        # The per-register backoff was counting a dead socket,
+                        # not dead registers. Leaving it in place would hold
+                        # readings back for up to an hour after the link is
+                        # already working again.
+                        self._register_failures.clear()
                     else:
                         _LOGGER.warning("Immediate reconnection failed")
                 except Exception as exc:
                     _LOGGER.error("Exception during immediate reconnect: %s", exc)
                 
                 if self._consecutive_failures >= self._max_consecutive_failures:
-                    # Too many failures - suspend connection attempts for 1 minute
-                    self._connection_suspended = True
-                    self._suspension_reset_time = now + timedelta(minutes=1)
-                    _LOGGER.error(
-                        "Connection suspended after %d consecutive failures. "
-                        "Will retry in 1 minute to prevent resource exhaustion.",
-                        self._consecutive_failures
-                    )
+                    self._link_lost(now)
                 self._consecutive_timeout_cycles = 0
         else:
             _LOGGER.debug("No sensors due for update in this cycle")
