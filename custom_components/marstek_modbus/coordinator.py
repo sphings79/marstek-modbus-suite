@@ -440,7 +440,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     self.host,
                     self.port,
                 )
-            await self.async_close()
+            # Before the close, not after: a cycle still in flight would
+            # otherwise find the socket gone and rebuild it, and nothing would
+            # close it again until the mode is next touched.
+            self.client.hold_closed = True
+            await self.client.async_close_idle()
             # Tell the entities, so availability follows the mode immediately
             # instead of at the next tick that will not come.
             self.async_update_listeners()
@@ -456,6 +460,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._consecutive_timeout_cycles = 0
         self._register_failures.clear()
         self._last_probe_at = None
+        self.client.hold_closed = False
         try:
             await self.client.async_connect()
         except Exception as exc:  # noqa: BLE001 - the refresh reports it again
@@ -1521,6 +1526,13 @@ class MarstekCoordinator(DataUpdateCoordinator):
         due_by_key = self._definitions_by_key(due_sensors)
 
         for block_group in self._build_contiguous_read_groups(readable_sensors):
+            # The mode can change under a running cycle: the select that sets it
+            # runs in a task of its own. Carrying on would mean a timeout per
+            # remaining register at a device somebody just said to leave alone.
+            if self.polling_paused:
+                _LOGGER.debug("Polling paused mid-cycle - abandoning the rest of it")
+                break
+
             group_due_sensors = [sensor for sensor in block_group if sensor["key"] in due_by_key]
             if not group_due_sensors:
                 continue

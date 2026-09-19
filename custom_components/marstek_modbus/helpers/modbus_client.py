@@ -62,6 +62,13 @@ class MarstekModbusClient:
         self.host = host
         self.port = port
 
+        # Set while the integration has deliberately closed the connection and
+        # does not want it back. Every way a connection can come into being runs
+        # through the suppression check below, so one gate here holds the socket
+        # shut against a read that finds it gone, a failover after a block read,
+        # and a half-open recovery alike.
+        self.hold_closed = False
+
         # Set for the duration of one call by a caller that already knows the
         # device is not answering. The failures below then go to debug: a probe
         # that fails while the battery is switched off is the expected outcome,
@@ -199,7 +206,15 @@ class MarstekModbusClient:
             self._last_request_duration = self._last_request_finished_at - request_start
 
     def _connect_suppressed(self) -> bool:
-        """Return True while the backoff after failed connects is still running."""
+        """Return True while something is keeping the connection from being made."""
+        if self.hold_closed:
+            _LOGGER.debug(
+                "Not connecting to %s:%s - the connection is being held closed",
+                self.host,
+                self.port,
+            )
+            return True
+
         if not self._connect_blocked_until:
             return False
         remaining = self._connect_blocked_until - asyncio.get_running_loop().time()
@@ -348,6 +363,16 @@ class MarstekModbusClient:
             self._note_connect_failure()
             _LOGGER.exception("Exception while connecting to Modbus server: %s", e)
             return False
+
+    async def async_close_idle(self) -> None:
+        """Close once the request in flight, if any, has finished.
+
+        Pulling the socket out from under a running request leaves the caller to
+        discover the loss and rebuild it, which is the opposite of what someone
+        closing it deliberately wants. Waiting costs one request.
+        """
+        async with self._request_lock:
+            await self.async_close()
 
     async def async_close(self) -> None:
         """
