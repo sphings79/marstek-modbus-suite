@@ -212,6 +212,25 @@ export class DeviceReader {
    * With no reading at all — the battery is unreachable — the mapped count
    * stands in, so the view keeps its shape instead of collapsing to nothing.
    */
+  /**
+   * How many cells one pack has, counted rather than assumed.
+   *
+   * The Venus D and E v3 carry 16 per pack and the Venus A 13. Both firmwares
+   * declare 16 slots; the A's hardware simply does not fill them, so the only
+   * thing that is right on every model is what the register map names.
+   *
+   * The highest index rather than a stop at the first gap, for the same reason
+   * packCount below works that way: one entity the user disabled must not take
+   * the cells behind it off the count.
+   */
+  cellsPerPack(): number {
+    let highest = 0;
+    for (let cell = 1; cell <= 32; cell++) {
+      if (this.device.byKey[`battery_1_cell_${cell}_voltage`]) highest = cell;
+    }
+    return highest;
+  }
+
   packCount(): number {
     let mapped = 0;
     while (this.device.byKey[`battery_${mapped + 1}_max_cell_voltage`]) mapped++;
