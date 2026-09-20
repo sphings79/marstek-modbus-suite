@@ -16,3 +16,10 @@ frontend/node_modules
 !custom_components/marstek_modbus/brand/icon@2x.png
 !custom_components/marstek_modbus/brand/logo.png
 !custom_components/marstek_modbus/brand/logo@2x.png
+
+# SSH keys and other credentials kept next to the project
+macmini-haos
+macmini-haos.pub
+id_*
+*.pem
+*.key
