@@ -88,9 +88,9 @@ body:
   - type: input
     id: device_firmware
     attributes:
-      label: Your device version and firmware
-      description: Only if you can test — it decides which register map a finding applies to.
-      placeholder: Venus D, V150.2.115.104.118
+      label: Firmware on the battery you can test with
+      description: Only if you can test — a finding holds for the firmware it was seen on.
+      placeholder: V150.2.115.104.118
 
   - type: textarea
     id: attachments
