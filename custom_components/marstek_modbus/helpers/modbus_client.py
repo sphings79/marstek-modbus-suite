@@ -4,7 +4,6 @@ Provides an abstraction for reading and writing registers from
 a Marstek Venus battery system asynchronously.
 """
 
-from tmodbus import create_async_tcp_client
 from tmodbus.client import AsyncModbusClient
 from tmodbus.exceptions import (
     ModbusConnectionError,
@@ -18,6 +17,7 @@ from typing import Optional
 import logging
 
 from ..const import DEFAULT_MESSAGE_WAIT_MS, DEFAULT_TIMEOUT, DEFAULT_UNIT_ID
+from .exception_frame import create_exception_frame_tcp_client
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -143,8 +143,13 @@ class MarstekModbusClient:
         The pacing gap is kept here rather than handed to
         `wait_between_requests`: `request_budget` has to account for it, and a
         wait the transport applies on its own is one this module cannot see.
+
+        Built through `exception_frame` rather than tmodbus' own factory, so a
+        rejected register comes back as the exception the device actually sent
+        instead of stalling until the timeout. See that module for why the
+        firmware makes this necessary.
         """
-        return create_async_tcp_client(
+        return create_exception_frame_tcp_client(
             self.host,
             self.port,
             unit_id=self.unit_id,
@@ -159,7 +164,7 @@ class MarstekModbusClient:
     def _socket(self):
         """Return the socket under the client, or None if there is none yet.
 
-        Reached through the smart transport that `create_async_tcp_client`
+        Reached through the smart transport that the client factory
         wraps around the TCP one; every step is optional so a change in that
         layering costs a debug line rather than a failed connect.
         """
