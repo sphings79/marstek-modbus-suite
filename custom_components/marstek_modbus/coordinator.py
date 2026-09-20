@@ -22,7 +22,9 @@ from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
                     RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET,
                     CONF_POLLING_MODE, DEFAULT_POLLING_MODE, POLLING_MODES,
-                    POLLING_MODE_ACTIVE, POLLING_MODE_PAUSED_UNAVAILABLE)
+                    POLLING_MODE_ACTIVE, POLLING_MODE_PAUSED_UNAVAILABLE,
+                    DEFAULT_MAX_READ_GAP, CONF_BAD_GAPS, CONF_BAD_GAPS_FIRMWARE,
+                    GAP_MEMORY_FIRMWARE_KEY)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -195,6 +197,28 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # into one reconnect per register.
         self._half_open_reconnects = 0
         self._last_half_open_reconnect_at = None
+        # Gap bridging. A block read may span a few registers nobody asked for
+        # rather than pay for a second request, because a request costs the
+        # same whatever it carries - measured at a median of 126 ms on a Venus
+        # D whether it fetched one register or forty.
+        #
+        # Which gaps a device tolerates is a property of that device, so it is
+        # learned rather than assumed. A gap the device refuses is remembered;
+        # a gap that has worked once is protected from ever being blamed, so
+        # that a passing stall cannot cost a saving permanently. The two are
+        # told apart by what came back: a Modbus exception is the device
+        # refusing these registers, a timeout is the device being busy.
+        self._max_read_gap = DEFAULT_MAX_READ_GAP
+        self._bad_gaps: set[tuple[int, int]] = set()
+        self._good_gaps: set[tuple[int, int]] = set()
+        self._gap_memory_firmware = (self.config_entry.options or {}).get(CONF_BAD_GAPS_FIRMWARE)
+        for pair in (self.config_entry.options or {}).get(CONF_BAD_GAPS) or []:
+            try:
+                left, right = pair
+                self._bad_gaps.add((int(left), int(right)))
+            except (TypeError, ValueError):
+                _LOGGER.debug("Ignoring malformed remembered gap %r", pair)
+
         # Last value seen in register 42000, to spot the device dropping out of
         # RS485 control mode on its own. None until the register is first read.
         self._last_rs485_control_mode = None
@@ -679,7 +703,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         return f"{ISSUE_RS485_CONTROL_MODE_RESET}_{self.config_entry.entry_id}"
 
     def _build_contiguous_read_groups(self, sensors: list[dict]) -> list[list[dict]]:
-        """Group sensor definitions into gapless register blocks.
+        """Group sensor definitions into register blocks.
 
         A definition joins the current block when it starts no further along
         than one register past the block's end. Two definitions may therefore
@@ -692,6 +716,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         Values are decoded per definition from its own offset into the block,
         so an overlap costs nothing at decode time.
+
+        A definition may also join across a small gap. A request costs about
+        the same whatever it carries, so reading a handful of registers nobody
+        asked for is cheaper than a second round trip - but only where the
+        device tolerates it, which `_bad_gaps` records and `_max_read_gap`
+        bounds. Both are per device, never assumed.
         """
         if not sensors:
             return []
@@ -714,7 +744,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
             # `ordered` is sorted by register, so the block can only grow to the
             # right - but an overlapping definition may end short of one already
             # in the block, which must not pull the block's end back.
-            if current_end is not None and register <= current_end + 1 and sensor_end - current_group[0]["register"] < 125:
+            gap = register - current_end - 1 if current_end is not None else 0
+            bridgeable = gap <= 0 or (
+                gap <= self._max_read_gap and not self._gap_is_refused(current_end, register)
+            )
+            if (
+                current_end is not None
+                and bridgeable
+                and sensor_end - current_group[0]["register"] < 125
+            ):
                 current_group.append(sensor)
                 current_end = max(current_end, sensor_end)
                 continue
@@ -727,6 +765,102 @@ class MarstekCoordinator(DataUpdateCoordinator):
             groups.append(current_group)
 
         return groups
+
+    def _gap_is_refused(self, left: int, right: int) -> bool:
+        """Has the device refused a block that spanned this gap?
+
+        Containment rather than equality, because a refusal is recorded for the
+        registers that were actually asked for in that cycle, and a later cycle
+        may ask for a different subset and so describe the same dead ground
+        with a narrower pair. A recorded refusal therefore rules out every gap
+        inside it. That errs towards splitting a block that might have worked -
+        the cost is one request - while a gap already served is protected by
+        `_good_gaps` and never recorded in the first place.
+        """
+        return any(bad_left <= left and right <= bad_right for bad_left, bad_right in self._bad_gaps)
+
+    @staticmethod
+    def _bridged_gaps(group: list[dict]) -> list[tuple[int, int]]:
+        """Return the gaps a block spans, as (last needed, next needed) pairs.
+
+        Recomputed from the group rather than carried alongside it, so there is
+        one description of a block and not two that can drift apart.
+        """
+        gaps: list[tuple[int, int]] = []
+        end: int | None = None
+        for sensor in sorted(group, key=lambda definition: definition["register"]):
+            register = sensor["register"]
+            if end is not None and register > end + 1:
+                gaps.append((end, register))
+            span = register + MarstekCoordinator._definition_register_count(sensor) - 1
+            end = span if end is None else max(end, span)
+        return gaps
+
+    def _note_gaps_survived(self, group: list[dict]) -> None:
+        """Record that this block's gaps are ones the device serves."""
+        for gap in self._bridged_gaps(group):
+            if gap not in self._good_gaps:
+                self._good_gaps.add(gap)
+                _LOGGER.debug("Gap %d -> %d is served by the device", *gap)
+
+    def _note_gaps_refused(self, group: list[dict]) -> None:
+        """Record that the device refused a block, and stop bridging its gaps.
+
+        Only ever called for a refusal, never for a timeout. A gap that has
+        been served before is left alone: a device can decline a request it
+        served a minute ago for reasons that have nothing to do with which
+        registers it covers, and losing a saving permanently over one of those
+        is the failure mode this guards against.
+        """
+        learned = False
+        for gap in self._bridged_gaps(group):
+            if gap in self._good_gaps or gap in self._bad_gaps:
+                continue
+            self._bad_gaps.add(gap)
+            learned = True
+            _LOGGER.info(
+                "Device refused a block spanning %d -> %d; reading those separately from now on",
+                *gap,
+            )
+        if learned:
+            self._persist_gap_memory()
+
+    def _persist_gap_memory(self) -> None:
+        """Store the refused gaps on the config entry, keyed by firmware."""
+        options = dict(self.config_entry.options or {})
+        options[CONF_BAD_GAPS] = sorted([left, right] for left, right in self._bad_gaps)
+        if self._gap_memory_firmware is not None:
+            options[CONF_BAD_GAPS_FIRMWARE] = self._gap_memory_firmware
+        # No reload: this changes how the registers are fetched, not which
+        # entities exist, and a reload here would throw away every reading.
+        self.hass.config_entries.async_update_entry(self.config_entry, options=options)
+
+    def _sync_gap_memory_with_firmware(self) -> None:
+        """Drop what was learned under a different firmware.
+
+        Which registers a device serves can change with its firmware, so a
+        memory learned under one build says nothing about the next. Cheap to
+        re-learn - a refusal costs one request - and wrong to carry forward.
+        """
+        firmware = None
+        if isinstance(self.data, dict):
+            firmware = self.data.get(GAP_MEMORY_FIRMWARE_KEY)
+        if firmware is None:
+            return
+        firmware = str(firmware)
+        if firmware == self._gap_memory_firmware:
+            return
+        if self._gap_memory_firmware is not None and (self._bad_gaps or self._good_gaps):
+            _LOGGER.info(
+                "Firmware changed from %s to %s, forgetting %d learned gap(s)",
+                self._gap_memory_firmware,
+                firmware,
+                len(self._bad_gaps),
+            )
+            self._bad_gaps.clear()
+            self._good_gaps.clear()
+        self._gap_memory_firmware = firmware
+        self._persist_gap_memory()
 
     @staticmethod
     def _definitions_by_key(definitions: list[dict]) -> dict[str, dict]:
@@ -1171,6 +1305,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
             )
 
         if block_registers is None:
+            # Only a refusal says anything about which registers the device
+            # serves. A timeout says the device was busy, and blaming the gaps
+            # for that would cost a saving permanently over a passing stall.
+            if not block_timeout_occurred and getattr(self.client, "last_read_rejected", False):
+                self._note_gaps_refused(due_sensors)
             _LOGGER.debug(
                 "Contiguous block read failed for %d-%d; falling back to individual reads",
                 block_start,
@@ -1192,6 +1331,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 "single_requests": len(due_sensors),
                 "failover_single_requests": len(due_sensors),
             }
+
+        self._note_gaps_survived(due_sensors)
 
         values: dict[str, object] = {}
         for sensor in due_sensors:
@@ -1668,6 +1809,10 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 self._consecutive_failures = 0
                 self._connection_suspended = False
                 self._last_successful_read = now
+
+                # Once there is data, check the firmware the gap memory was
+                # learned under. Cheap, and it costs nothing when unchanged.
+                self._sync_gap_memory_with_firmware()
                 
                 if timeout_reads and (timeout_reads / attempted_reads) >= self._timeout_ratio_reconnect_threshold:
                     self._consecutive_timeout_cycles += 1

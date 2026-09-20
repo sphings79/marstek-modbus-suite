@@ -12,6 +12,23 @@ CONF_MESSAGE_WAIT_MS = "message_wait_milliseconds"
 DEFAULT_UNIT_ID = 1  # Default Modbus Unit ID (unit ID)
 DEFAULT_TIMEOUT = 3  # Default Modbus request timeout in seconds
 
+# How many unrequested registers a block read may span to avoid a second
+# request. Measured on a Venus D: bridging gaps of one or two never drew a
+# rejection across the full register map, the default entity set, or the map
+# with the DEV registers added, and saved 18 to 27 percent of the requests in
+# a cycle. Wider bridging saves a little more but starts hitting registers the
+# device does not implement, and each of those costs a request of its own.
+DEFAULT_MAX_READ_GAP = 2
+
+# Gaps the device refused to bridge, remembered per firmware so a map that
+# changes with an update is re-learned rather than carried forward.
+CONF_BAD_GAPS = "bad_gaps"
+CONF_BAD_GAPS_FIRMWARE = "bad_gaps_firmware"
+
+# The register whose value keys that memory: ems_version, the Control app
+# build. A different firmware may serve a different set of registers.
+GAP_MEMORY_FIRMWARE_KEY = "ems_version"
+
 # General scan intervals (in seconds)
 DEFAULT_SCAN_INTERVALS = {
     "high": 10,      # fast-changing sensors and former medium-priority sensors

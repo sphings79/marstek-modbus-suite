@@ -78,6 +78,13 @@ class MarstekModbusClient:
         # and a half-open recovery alike.
         self.hold_closed = False
 
+        # Set by the last read that failed: True when the device refused the
+        # request with a Modbus exception, False when it simply did not answer.
+        # A refusal is a statement about the registers that were asked for and
+        # can be learned from; a timeout is a statement about the moment and
+        # must not be. The block reader needs to tell the two apart.
+        self.last_read_rejected = False
+
         # Set for the duration of one call by a caller that already knows the
         # device is not answering. The failures below then go to debug: a probe
         # that fails while the battery is switched off is the expected outcome,
@@ -646,6 +653,8 @@ class MarstekModbusClient:
             )
             return None
 
+        self.last_read_rejected = False
+
         attempt = 0
         while attempt < max_retries:
             client_connected = False
@@ -777,6 +786,7 @@ class MarstekModbusClient:
                 # The device answered, and the answer was a refusal — an illegal
                 # address inside a probed block being the usual one. Same
                 # treatment the old backend gave an error response.
+                self.last_read_rejected = True
                 _LOGGER.error(
                     "Modbus read error at register %d (0x%04X) on attempt %d: %s",
                     register,
