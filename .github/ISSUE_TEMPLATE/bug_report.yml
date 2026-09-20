@@ -205,16 +205,14 @@ body:
             custom_components.marstek_modbus: debug
         ```
 
-  - type: upload
+  - type: textarea
     id: attachments
     attributes:
       label: Debug log and screenshots
       description: >-
-        Drop the log file in here — without one, most problems cannot be diagnosed.
-        Screenshots of the panel or of an entity's history go here too.
-    validations:
-      required: false
-      accept: ".log,.txt,.zip,.gz,.tar.gz,.json,.csv,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mov"
+        Drag the log file into this field to attach it — without a log, most problems cannot
+        be diagnosed. Screenshots of the panel or of an entity's history belong here too.
+      placeholder: Drag files in here, or paste a short log excerpt between three backticks.
 
   - type: textarea
     id: anything_else
