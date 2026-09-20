@@ -18,18 +18,33 @@ purpose when tmodbus changes, including when it stops needing this at all.
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import struct
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from custom_components.marstek_modbus.helpers.exception_frame import (  # noqa: E402
-    EXCEPTION_FRAME_SIZE,
-    ExceptionFrameProtocol,
-    ExceptionFrameTcpTransport,
-    create_exception_frame_tcp_client,
+# Loaded by path rather than as `custom_components.marstek_modbus.helpers...`:
+# importing the package would run the integration's __init__, which pulls in
+# Home Assistant. The module under test needs only tmodbus, and keeping it that
+# way is what lets this script run anywhere.
+_MODULE_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "custom_components"
+    / "marstek_modbus"
+    / "helpers"
+    / "exception_frame.py"
 )
+_spec = importlib.util.spec_from_file_location("marstek_exception_frame", _MODULE_PATH)
+if _spec is None or _spec.loader is None:  # pragma: no cover
+    raise SystemExit(f"cannot load {_MODULE_PATH}")
+exception_frame = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(exception_frame)
+
+EXCEPTION_FRAME_SIZE = exception_frame.EXCEPTION_FRAME_SIZE
+ExceptionFrameProtocol = exception_frame.ExceptionFrameProtocol
+ExceptionFrameTcpTransport = exception_frame.ExceptionFrameTcpTransport
+create_exception_frame_tcp_client = exception_frame.create_exception_frame_tcp_client
+
 from tmodbus.transport.async_tcp import AsyncTcpTransport, ModbusTcpProtocol  # noqa: E402
 
 IMPLEMENTED = set(range(30200, 30204))
@@ -183,12 +198,45 @@ async def behaviour_checks(variant: str, *, coalesce: bool = False) -> None:
         await server.wait_closed()
 
 
+async def one_segment_check() -> None:
+    """Rejection and the reply after it arriving in a single TCP segment.
+
+    This cannot be produced through the client - tmodbus serialises requests,
+    so only one is ever outstanding - but a device is free to coalesce its
+    writes, and the parser sees whatever the socket hands over. Driven at the
+    protocol directly, the way tmodbus tests its own framing.
+    """
+    print("\nVerhalten, wenn Ablehnung und Folgeantwort in einem Segment ankommen:")
+
+    protocol = ExceptionFrameProtocol(on_connection_lost=lambda _exc: None, timeout=2.0)
+    protocol.connection_made(asyncio.Transport())
+
+    loop = asyncio.get_running_loop()
+    rejected: asyncio.Future = loop.create_future()
+    following: asyncio.Future = loop.create_future()
+    protocol._pending_requests[1] = rejected  # noqa: SLF001
+    protocol._pending_requests[2] = following  # noqa: SLF001
+
+    good = struct.pack(">HHHBBB", 2, 0, 5, 1, 3, 2) + struct.pack(">H", 0x1234)
+    protocol.data_received(exception_frame(1, 1, 3, 2, "short") + good)
+    await asyncio.sleep(0.01)
+
+    check("Ablehnung zugestellt", rejected.done(), "" if rejected.done() else "haengt")
+    if rejected.done():
+        check("  als Exception 2", rejected.result().pdu_bytes == b"\x83\x02", rejected.result().pdu_bytes.hex(" "))
+    check("Folgeantwort unversehrt", following.done(), "" if following.done() else "verloren")
+    if following.done():
+        check("  mit ihren Daten", following.result().pdu_bytes == b"\x03\x02\x12\x34", following.result().pdu_bytes.hex(" "))
+
+    check("Puffer danach leer", not protocol._buffer, protocol._buffer.hex(" ") or "leer")  # noqa: SLF001
+
+
 async def main() -> int:
     check("EXCEPTION_FRAME_SIZE ist 9", EXCEPTION_FRAME_SIZE == 9, str(EXCEPTION_FRAME_SIZE))
     await guard_checks()
     for variant in ("short", "correct", "padded"):
         await behaviour_checks(variant)
-    await behaviour_checks("short", coalesce=True)
+    await one_segment_check()
 
     failed = [label for label, ok, _ in results if not ok]
     print(f"\n{len(results) - len(failed)}/{len(results)} bestanden")

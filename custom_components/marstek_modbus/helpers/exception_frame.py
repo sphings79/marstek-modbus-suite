@@ -25,13 +25,20 @@ module does.
 
 Scope of the coupling, so the next person knows what they are looking at:
 
-  * `ModbusTcpProtocol` is not in `tmodbus.transport.async_tcp.__all__`. It is
-    importable but carries no stability promise, so `manifest.json` pins the
-    tmodbus minor version and `tests/` has a guard that fails loudly if the
-    upstream framing changes underneath this.
-  * `AsyncTcpTransport.open()` names the protocol class inside a lambda, so
-    there is no seam to hook and the method has to be restated here. It is
-    reproduced from tmodbus 0.6.2 with one line changed.
+  * Two methods are reproduced from tmodbus 0.6.2, each with one line changed:
+    `data_received`, where the frame is measured, and `open()`, which names
+    the protocol class inside a lambda and so offers nothing to override.
+  * `ModbusTcpProtocol` is not in `tmodbus.transport.async_tcp.__all__`, and
+    `_ModbusMessage`, `log_raw_traffic` and `MODBUS_TCP_MAX_LENGTH` are module
+    internals. None of them promise stability, so `manifest.json` pins the
+    tmodbus minor version and `scripts/check_exception_frame.py` guards the
+    assumptions - including whether the library still needs this at all.
+  * Correcting only what the parser left stuck in the buffer would have been
+    a third of the code and was tried first. It is wrong: when the rejection
+    and the reply after it arrive in one segment, the parser satisfies the
+    oversized length out of the next frame's bytes and destroys both before
+    anything downstream can intervene. The measurement has to be corrected
+    where it happens.
   * Patching the library at module level would have been shorter and is not
     done on purpose: Home Assistant runs every integration in one process, and
     that would change framing for anything else using tmodbus.
@@ -44,13 +51,20 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import struct
 from collections.abc import Awaitable, Callable
 from typing import Any
 
 from tmodbus.client import AsyncModbusClient
+from tmodbus.const import EXCEPTION_RESPONSE_BIT
 from tmodbus.exceptions import ModbusConnectionError
 from tmodbus.transport import AsyncSmartTransport, AsyncTcpTransport
-from tmodbus.transport.async_tcp import ModbusTcpProtocol
+from tmodbus.transport.async_tcp import (
+    MODBUS_TCP_MAX_LENGTH,
+    ModbusTcpProtocol,
+    _ModbusMessage,
+    log_raw_traffic,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,60 +79,82 @@ MBAP_PROTOCOL_ID = b"\x00\x00"
 
 
 class ExceptionFrameProtocol(ModbusTcpProtocol):
-    """Protocol that reframes an exception reply whose declared length is wrong.
+    """Protocol that frames an exception reply by its size, not by the header.
 
-    Rather than restating the upstream parser, this lets it run first and then
-    looks at what it left behind. An exception frame that the parser could not
-    complete stays at the head of the buffer, because it is waiting for bytes
-    the device already decided not to send. That is recognisable without
-    guessing: a Modbus TCP header, the exception bit set on the function code,
-    and a declared length larger than the three bytes an exception can hold.
-
-    Its length field is then corrected and the parser is run again over the
-    unchanged buffer, so the frame is delivered by the library's own code path
-    with its own transaction matching. Nothing else is touched.
+    `data_received` is reproduced from tmodbus 0.6.2 with one change, marked
+    below. A first attempt only corrected what the upstream parser had left
+    stuck in the buffer, which was shorter but wrong: when the rejection and
+    the reply after it arrive in the same segment, the parser can satisfy the
+    oversized length out of the next frame's bytes and take both apart before
+    anything downstream gets a say. The correction has to happen while the
+    frame is being measured, which means owning the loop.
     """
 
     def data_received(self, data: bytes) -> None:
-        """Feed the upstream parser, then release anything it got stuck on."""
-        super().data_received(data)
-        self._release_stuck_exception_frames()
+        """Handle data received event."""
+        self._buffer.extend(data)
+        log_raw_traffic("recv", data)
 
-    def _release_stuck_exception_frames(self) -> None:
-        buffer = getattr(self, "_buffer", None)
-        if buffer is None:
-            return
+        first_message_incomplete = False
+        # Check if we have enough data for MBAP header
+        while (
+            len(self._buffer) >= 7  # MBAP header is 7 bytes
+            and not first_message_incomplete  # stop when the first message in the buffer is not complete yet
+        ):
+            # Unpack MBAP header
+            transaction_id, protocol_id, length, unit_id = struct.unpack_from(">HHHB", self._buffer)
 
-        while self._head_is_undersized_exception(buffer):
-            declared = int.from_bytes(buffer[4:6], "big")
-            buffer[4:6] = EXCEPTION_FRAME_LENGTH.to_bytes(2, "big")
-            _LOGGER.debug(
-                "Exception frame declared %d bytes after the length field, reading 3",
-                declared,
-            )
+            # Do some sanity checks on the header: can it be the start of a valid message?
+            # A valid MBAP header has protocol id 0x0000 and a length within the Modbus TCP
+            # bounds. An out-of-range length is just as much a sign of a misaligned buffer as
+            # a bad protocol id, and trusting it would stall the parser forever waiting for
+            # bytes that never come, so resync in that case too.
+            if protocol_id != 0x0000 or not (1 <= length <= MODBUS_TCP_MAX_LENGTH):
+                discard_count = self._resync_discard_count()
+                _LOGGER.debug("Discarding garbage bytes: %s", self._buffer[:discard_count].hex(" ").upper())
+                del self._buffer[:discard_count]
+                continue  # Re-evaluate the buffer from the start
 
-            before = len(buffer)
-            # Re-run the parser over the corrected buffer. Nothing is appended;
-            # the frame is delivered through the library's normal path.
-            super().data_received(b"")
-            if len(buffer) >= before:
-                # The parser did not take it after all. Stop rather than spin,
-                # and leave the bytes for the resync to deal with.
-                _LOGGER.debug("Corrected exception frame was not consumed, leaving it")
-                return
+            # we have a valid protocol ID, now check if we have the full message
 
-    @staticmethod
-    def _head_is_undersized_exception(buffer: bytearray) -> bool:
-        """Is a complete exception frame stuck at the head of the buffer?"""
-        if len(buffer) < EXCEPTION_FRAME_SIZE:
-            return False
-        if bytes(buffer[2:4]) != MBAP_PROTOCOL_ID:
-            # Not a Modbus TCP header - the buffer is misaligned and the
-            # upstream resync owns this case.
-            return False
-        if not buffer[7] & 0x80:
-            return False
-        return int.from_bytes(buffer[4:6], "big") > EXCEPTION_FRAME_LENGTH
+            total_length = 7 + (length - 1)  # Total length = MBAP header + PDU length
+
+            # --- the one change against tmodbus 0.6.2 -------------------------
+            # An exception PDU is two bytes, the function code with bit 7 set
+            # and the exception code, so its frame is nine bytes whatever the
+            # header claims. The Marstek firmware claims ten. Measuring it by
+            # the header leaves the parser waiting for a byte that is never
+            # sent, or - when the next reply is already here - taking that
+            # byte out of the following frame and destroying both.
+            if len(self._buffer) > 7 and self._buffer[7] & EXCEPTION_RESPONSE_BIT:
+                total_length = EXCEPTION_FRAME_SIZE
+            # ------------------------------------------------------------------
+
+            if len(self._buffer) >= total_length:
+                # Extract complete response
+                response = bytes(self._buffer[:total_length])
+                del self._buffer[:total_length]
+
+                # Match response to pending request
+                future = self._pending_requests.get(transaction_id)
+                if future and not future.done():
+                    future.set_result(
+                        _ModbusMessage(
+                            transaction_id=transaction_id,
+                            protocol_id=protocol_id,
+                            length=length,
+                            unit_id=unit_id,
+                            pdu_bytes=response[7:],  # PDU starts after MBAP header
+                        )
+                    )
+                else:
+                    _LOGGER.warning(
+                        "Received unexpected response with Transaction ID: %d. Discarding bytes: %s",
+                        transaction_id,
+                        response.hex(" ").upper(),
+                    )
+            else:
+                first_message_incomplete = True
 
 
 class ExceptionFrameTcpTransport(AsyncTcpTransport):
