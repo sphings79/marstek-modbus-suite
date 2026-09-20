@@ -95,7 +95,7 @@ body:
     attributes:
       label: Device firmware
       description: 'State of the "Firmware Version" sensor, which carries EMS, VMS, MPPT and BMS in one string. Add the individual version sensors if you have them enabled.'
-      placeholder: V147.6.117.112
+      placeholder: V150.116.104.118
     validations:
       required: true
 

@@ -90,7 +90,7 @@ body:
     attributes:
       label: Firmware on the battery you can test with
       description: Only if you can test — a finding holds for the firmware it was seen on.
-      placeholder: V150.2.115.104.118
+      placeholder: V150.116.104.118
 
   - type: textarea
     id: attachments
