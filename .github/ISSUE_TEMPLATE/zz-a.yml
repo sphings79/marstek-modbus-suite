@@ -1,0 +1,166 @@
+name: ZZ A
+description: bug form without markdown blocks
+body:
+- type: checkboxes
+  id: preflight
+  attributes:
+    label: Before reporting
+    options:
+    - label: I searched the existing issues and none of them match.
+      required: true
+    - label: I am running the latest released version of the integration.
+      required: true
+    - label: I read [Known issues](https://github.com/sphings79/marstek-modbus-suite#known-issues) and
+        [FIRMWARE-DROPOUTS.md](https://github.com/sphings79/marstek-modbus-suite/blob/main/FIRMWARE-DROPOUTS.md),
+        and this is not one of them.
+      required: true
+- type: textarea
+  id: problem
+  attributes:
+    label: What happens
+    description: The behaviour you are seeing, and which entity or panel tab it concerns.
+  validations:
+    required: true
+- type: textarea
+  id: expected
+  attributes:
+    label: What you expected instead
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Steps to reproduce
+    description: Also say how often it happens — every time, or now and then?
+    value: '1.
+
+      2.
+
+      3.
+
+      '
+  validations:
+    required: true
+- type: dropdown
+  id: regression
+  attributes:
+    label: Did it work before?
+    options:
+    - It never worked for me
+    - It worked and broke after an update
+    - Not sure
+  validations:
+    required: true
+- type: input
+  id: last_working_version
+  attributes:
+    label: Last version that worked
+    description: Only if it broke after an update.
+    placeholder: 3.0.0-beta.7
+- type: dropdown
+  id: device_version
+  attributes:
+    label: Device version
+    description: The one you picked during setup. It selects the register map.
+    options:
+    - Venus A
+    - Venus D
+    - Venus E v1/v2
+    - Venus E v3
+    - Other / not sure
+  validations:
+    required: true
+- type: input
+  id: pack_count
+  attributes:
+    label: Number of battery packs
+    description: Venus A and D only — a Venus E has one built-in battery.
+    placeholder: '3'
+- type: input
+  id: firmware
+  attributes:
+    label: Device firmware
+    description: State of the "Firmware Version" sensor, which carries EMS, VMS, MPPT and BMS in one string.
+      Add the individual version sensors if you have them enabled.
+    placeholder: V147.6.117.112
+  validations:
+    required: true
+- type: input
+  id: integration_version
+  attributes:
+    label: Integration version
+    placeholder: 3.0.0-beta.8
+  validations:
+    required: true
+- type: input
+  id: ha_version
+  attributes:
+    label: Home Assistant version
+    placeholder: 2026.9.1
+  validations:
+    required: true
+- type: dropdown
+  id: ha_installation
+  attributes:
+    label: Installation type
+    options:
+    - Home Assistant OS
+    - Home Assistant Supervised
+    - Home Assistant Container
+    - Home Assistant Core
+  validations:
+    required: true
+- type: dropdown
+  id: connection
+  attributes:
+    label: How the battery is connected
+    description: The battery's own Modbus TCP is served on its Ethernet port only — over WiFi the battery
+      does not answer Modbus at all, so there an RS485 adapter is the only way in.
+    options:
+    - Battery straight to Ethernet, built-in Modbus TCP (Venus A / D / E v3)
+    - RS485 adapter over WiFi (e.g. Elfin EW11)
+    - RS485 adapter over Ethernet (e.g. Waveshare, PUSR DR134)
+    - Other
+  validations:
+    required: true
+- type: input
+  id: adapter
+  attributes:
+    label: Adapter model and its firmware
+    description: RS485 adapters only.
+    placeholder: Elfin EW11A, firmware 1.7.22
+- type: dropdown
+  id: proxy
+  attributes:
+    label: Is a Modbus proxy or multiplexer in between?
+    options:
+    - No, Home Assistant talks to the gateway directly
+    - true
+    - Not sure
+  validations:
+    required: true
+- type: textarea
+  id: other_clients
+  attributes:
+    label: The proxy, and anything else reading this battery
+    description: Which proxy (modbus-proxy, evcc, the gateway's own multiplexing), and which other clients
+      share the connection — an inverter, an energy manager, a second Home Assistant integration. Most
+      gateways serve one TCP client at a time, which is worth ruling out before anything else.
+- type: textarea
+  id: options
+  attributes:
+    label: Options you changed
+    description: 'Anything moved away from the defaults: wait between messages (80 ms), polling intervals
+      (10 s high / 60 s low), discharge floor (12 %), pack count.'
+- type: textarea
+  id: attachments
+  attributes:
+    label: Debug log and screenshots
+    description: Drag the log file into this field to attach it — without a log, most problems cannot
+      be diagnosed. Screenshots of the panel or of an entity's history belong here too.
+    placeholder: Drag files in here, or paste a short log excerpt between three backticks.
+- type: textarea
+  id: anything_else
+  attributes:
+    label: Anything else
+    description: Network setup, what else changed around the time it started, remarks.

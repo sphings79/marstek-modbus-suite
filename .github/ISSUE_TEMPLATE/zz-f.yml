@@ -1,0 +1,7 @@
+name: ZZ F
+description: control template
+body:
+- type: textarea
+  id: x
+  attributes:
+    label: Anything
