@@ -79,9 +79,9 @@ body:
       label: Can you test this on your own hardware?
       description: Not every model is available here, so a request nobody can verify tends to stall.
       options:
-        - Yes, reading and writing, including forced charge and discharge
-        - Yes, reading only
-        - No
+        - "Yes, reading and writing, including forced charge and discharge"
+        - "Yes, reading only"
+        - "No"
     validations:
       required: true
 

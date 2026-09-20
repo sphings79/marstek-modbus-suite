@@ -162,9 +162,9 @@ body:
     attributes:
       label: Is a Modbus proxy or multiplexer in between?
       options:
-        - No, Home Assistant talks to the gateway directly
-        - Yes
-        - Not sure
+        - "No, Home Assistant talks to the gateway directly"
+        - "Yes, there is a proxy or multiplexer in between"
+        - "Not sure"
     validations:
       required: true
 
