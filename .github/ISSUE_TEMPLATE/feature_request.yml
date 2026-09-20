@@ -92,10 +92,8 @@ body:
       description: Only if you can test — it decides which register map a finding applies to.
       placeholder: Venus D, V150.2.115.104.118
 
-  - type: upload
+  - type: textarea
     id: attachments
     attributes:
       label: Screenshots, mockups, register scans
-    validations:
-      required: false
-      accept: ".log,.txt,.zip,.gz,.tar.gz,.json,.csv,.pdf,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mov"
+      description: Drag files into this field to attach them.
