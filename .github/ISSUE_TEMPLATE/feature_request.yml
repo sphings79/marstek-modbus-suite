@@ -1,0 +1,101 @@
+name: Feature request
+description: Suggest a new entity, a panel feature or an improvement
+labels: ["enhancement"]
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before requesting
+      options:
+        - label: I searched the existing issues and none of them ask for this.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Start with the situation, not the solution — what are you trying to do that does not work today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: models
+    attributes:
+      label: Which models does this concern?
+      options:
+        - label: Venus A
+        - label: Venus D
+        - label: Venus E v1/v2
+        - label: Venus E v3
+        - label: Model independent
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Entity or sensor
+        - Panel
+        - Config flow and options
+        - Documentation
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: registers
+    attributes:
+      label: Register details, if this is about a value the integration does not read yet
+      description: >-
+        Register number, data type and scale, the values you observed and what the battery was
+        doing at the time, and where it comes from (your own scan, another project, Marstek
+        documentation). Register meanings do not carry across firmware families: Venus A, D and
+        E v3 share one base, Venus E v1/v2 runs a different one, and a matching register number
+        across the two means nothing until it is verified on that family's own firmware. See
+        [registers/README.md](https://github.com/sphings79/marstek-modbus-suite/blob/main/custom_components/marstek_modbus/registers/README.md)
+        for how findings are documented here.
+      placeholder: |
+        Register: 34010
+        Type / scale: uint16, no scale
+        Observed: 116 before the BMS update, 1177 (v117.7) after
+        Source: read on my own Venus D, cross-checked against the app
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: A template sensor, an automation, another integration — and where it falls short.
+
+  - type: dropdown
+    id: testing
+    attributes:
+      label: Can you test this on your own hardware?
+      description: Not every model is available here, so a request nobody can verify tends to stall.
+      options:
+        - Yes, reading and writing, including forced charge and discharge
+        - Yes, reading only
+        - No
+    validations:
+      required: true
+
+  - type: input
+    id: device_firmware
+    attributes:
+      label: Your device version and firmware
+      description: Only if you can test — it decides which register map a finding applies to.
+      placeholder: Venus D, V150.2.115.104.118
+
+  - type: upload
+    id: attachments
+    attributes:
+      label: Screenshots, mockups, register scans
+    validations:
+      required: false
+      accept: ".log,.txt,.zip,.gz,.tar.gz,.json,.csv,.pdf,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mov"

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question, or help with your setup
+    url: https://github.com/sphings79/marstek-modbus-suite/discussions/categories/q-a
+    about: Not sure it is a bug? Ask in Discussions — gateways, entities, automations, migration.
+  - name: The battery disappears from the network every 30 minutes
+    url: https://github.com/sphings79/marstek-modbus-suite/blob/main/FIRMWARE-DROPOUTS.md
+    about: The device's own firmware resetting its network chip, not an integration bug. Mechanism and how to stop it.
+  - name: Known issues
+    url: https://github.com/sphings79/marstek-modbus-suite#known-issues
+    about: RS485 control mode against User Work Mode, AI Optimized not reflected, and the rest already documented.
