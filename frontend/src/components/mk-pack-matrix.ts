@@ -11,8 +11,6 @@ export interface PackRange {
   note?: string;
 }
 
-/** Delta in volts above which a pack is called out. */
-
 /**
  * Every pack's cell range on one shared voltage axis.
  *
