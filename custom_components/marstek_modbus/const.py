@@ -56,12 +56,41 @@ DEFAULT_SCAN_INTERVALS = {
     "low": 60,       # slower-changing sensors and former very_low-priority sensors
 }
 
-# Supported device versions
+# Supported device versions.
+#
+# These strings are stored in the config entry and choose the register map, so
+# they are identifiers rather than labels - respelling one would orphan every
+# device set up under the old spelling. What the setup dialog shows comes from
+# DEVICE_VERSION_LABELS below. The order here is the order of the dropdown.
 SUPPORTED_VERSIONS = [
-    "E v1/v2", 
-    "E v3",
+    "A",
     "D",
-    "A"]
+    "E v3",
+    "E v1/v2"]
+
+# The label each version carries in the setup dialog. Product names instead of
+# the internal codes, because "D" on its own tells nobody holding the box which
+# entry is theirs. Deliberately not translated: Marstek calls the models the
+# same in every language.
+DEVICE_VERSION_LABELS = {
+    "A": "Venus A",
+    "D": "Venus D",
+    "E v3": "Venus E v3",
+    "E v1/v2": "Venus E v1 & v2",
+}
+
+# Lower bounds for the polling intervals, in seconds.
+#
+# Measured on a three-pack Venus A with no PV: one high-priority cycle is 22 to
+# 33 Modbus requests, the device answers each in about 0.15 s, and a cycle took
+# 3.4 to 9.9 s end to end. Asking for a shorter interval than that does not
+# poll faster, it only queues - the coordinator was already drifting to 13 s
+# with 10 s configured. A larger register map or more packs makes it worse, so
+# these are a floor against the obviously pointless rather than a promise.
+MIN_SCAN_INTERVALS = {
+    "high": 3,
+    "low": 10,
+}
 
 # Device names offered as the default during setup, keyed by SUPPORTED_VERSIONS.
 # The name becomes the config entry title, and the title is what the device and

@@ -18,6 +18,7 @@ from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
                     CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR,
                     CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
+                    MIN_SCAN_INTERVALS,
                     CONF_PACK_COUNT, PACK_COUNT_AUTO, MAX_PACK_COUNT,
                     PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
                     RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET,
@@ -273,9 +274,22 @@ class MarstekCoordinator(DataUpdateCoordinator):
         for key in DEFAULT_SCAN_INTERVALS:
             if key in normalized_options:
                 try:
-                    self.scan_intervals[key] = int(normalized_options[key])
+                    wanted = int(normalized_options[key])
                 except Exception:
                     _LOGGER.warning("Invalid scan interval for %s: %s", key, normalized_options[key])
+                    continue
+                # The dialog keeps new settings above the floor, but an entry
+                # configured before the floor existed still carries its old
+                # value. Lifting it here rather than rewriting the stored option
+                # leaves the user's setting alone if the floor ever changes.
+                floor = MIN_SCAN_INTERVALS.get(key, 1)
+                if wanted < floor:
+                    _LOGGER.info(
+                        "Scan interval for %s is %ds, below what a poll cycle takes; using %ds",
+                        key, wanted, floor,
+                    )
+                    wanted = floor
+                self.scan_intervals[key] = wanted
 
         # Compute minimum interval for coordinator
         min_interval = min(self.scan_intervals.values()) if self.scan_intervals else 30

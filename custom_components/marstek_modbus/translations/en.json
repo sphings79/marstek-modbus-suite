@@ -59,6 +59,10 @@
         "data": {
           "high": "High priority interval (s)",
           "low": "Low priority interval (s)"
+        },
+        "data_description": {
+          "high": "Fast-moving values such as power and SoC. Minimum 3 s — one poll cycle took 3–10 s on a measured device, so a shorter setting does not poll faster, it queues.",
+          "low": "Slow-moving values such as energy counters and versions. Minimum 10 s."
         }
       },
       "connection": {

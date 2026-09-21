@@ -6,6 +6,7 @@ import socket
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
+from homeassistant.helpers import selector
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import slugify
 
@@ -23,7 +24,9 @@ from .const import (
     DEFAULT_SCAN_INTERVALS,
     DEFAULT_UNIT_ID,
     DEVICE_NAME_DEFAULTS,
+    DEVICE_VERSION_LABELS,
     DOMAIN,
+    MIN_SCAN_INTERVALS,
     MAX_PACK_COUNT,
     CONF_PACK_COUNT,
     PACK_COUNT_AUTO,
@@ -57,11 +60,52 @@ SCHEMA_CONNECTION = SCHEMA_HOST_BASE.extend(
     }
 )
 
+# The version picker. A plain vol.In would put the stored identifiers on screen
+# - "D", "E v1/v2" - so the options carry their product name as a label instead.
+DEVICE_VERSION_SELECTOR = selector.SelectSelector(
+    selector.SelectSelectorConfig(
+        options=[
+            selector.SelectOptionDict(
+                value=version, label=DEVICE_VERSION_LABELS.get(version, version)
+            )
+            for version in SUPPORTED_VERSIONS
+        ],
+        mode=selector.SelectSelectorMode.DROPDOWN,
+    )
+)
+
+
+def _interval_selector(key: str):
+    """Seconds picker for one polling group, floored at what the device can keep up with.
+
+    A number box rather than a free field: the minimum is then visible in the
+    dialog and unreachable by typing, instead of a value that silently becomes
+    something else on save. See MIN_SCAN_INTERVALS for where the floors come from.
+    """
+    return selector.NumberSelector(
+        selector.NumberSelectorConfig(
+            min=MIN_SCAN_INTERVALS[key],
+            max=3600,
+            step=1,
+            unit_of_measurement="s",
+            mode=selector.NumberSelectorMode.BOX,
+        )
+    )
+
+
 # Schema for polling intervals
 SCHEMA_POLLING = vol.Schema(
     {
-        vol.Required("high"): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3600)),
-        vol.Required("low"): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3600)),
+        vol.Required("high"): vol.All(
+            _interval_selector("high"),
+            vol.Coerce(int),
+            vol.Clamp(min=MIN_SCAN_INTERVALS["high"], max=3600),
+        ),
+        vol.Required("low"): vol.All(
+            _interval_selector("low"),
+            vol.Coerce(int),
+            vol.Clamp(min=MIN_SCAN_INTERVALS["low"], max=3600),
+        ),
     }
 )
 
@@ -104,7 +148,7 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Extend base schema with device_version for initial config
         user_schema = SCHEMA_HOST_BASE.extend(
-            {vol.Required(CONF_DEVICE_VERSION): vol.In(SUPPORTED_VERSIONS)}
+            {vol.Required(CONF_DEVICE_VERSION): DEVICE_VERSION_SELECTOR}
         )
 
         if user_input is not None:
@@ -254,8 +298,8 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_DEVICE_VERSION, default=SUPPORTED_VERSIONS[0]
-                    ): vol.In(SUPPORTED_VERSIONS)
+                        CONF_DEVICE_VERSION, default="E v1/v2"
+                    ): DEVICE_VERSION_SELECTOR
                 }
             ),
             errors=errors,
@@ -336,6 +380,14 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                 key, config.data.get(key, DEFAULT_SCAN_INTERVALS[key])
             )
             for key in ("high", "low")
+        }
+
+        # An entry configured before the floors existed can carry a value the
+        # number box would now refuse. Raise what the form offers, so the dialog
+        # opens on something it will accept instead of on a rejected field.
+        defaults = {
+            key: max(int(value), MIN_SCAN_INTERVALS.get(key, 1))
+            for key, value in defaults.items()
         }
 
         # Calculate lowest scan interval for description
