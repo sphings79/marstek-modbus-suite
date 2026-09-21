@@ -759,6 +759,8 @@ export class MarstekPanel extends LitElement {
           .fmt=${shared.fmt}
           .t=${shared.t}
           .floor=${this.floorPercent(reader)}
+          .spreadWarn=${this.settings.spreadWarn}
+          .spreadCrit=${this.settings.spreadCrit}
         ></mk-view-packs>`;
       case "solar":
         return html`<mk-view-solar

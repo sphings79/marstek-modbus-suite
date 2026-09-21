@@ -9,14 +9,29 @@ import {
   cellDeltaFlag,
   SPREAD_WARN_PP,
   SPREAD_CRIT_PP,
-  SPREAD_SCALE_PP,
+  spreadScale,
+  spreadTone,
+  packIsOutlier,
 } from "../thresholds";
 
 @customElement("mk-view-packs")
 export class MkViewPacks extends MkView {
   /** Discharge floor in percent, so the columns can show where it sits. */
-  static properties = { floor: { type: Number } };
+  static properties = {
+    floor: { type: Number },
+    spreadWarn: { type: Number },
+    spreadCrit: { type: Number },
+  };
   declare floor: number | null;
+  /**
+   * When the packs count as drifting apart, from the panel settings.
+   *
+   * Held here rather than read from thresholds.ts directly so the tile and the
+   * table below it cannot end up judging by different numbers - which is
+   * exactly what happened while the table carried a hardcoded rule of its own.
+   */
+  declare spreadWarn: number;
+  declare spreadCrit: number;
 
   /**
    * Lower limit the backup socket reaches, read off the reserve sensor rather
@@ -36,6 +51,8 @@ export class MkViewPacks extends MkView {
   constructor() {
     super();
     this.floor = null;
+    this.spreadWarn = SPREAD_WARN_PP;
+    this.spreadCrit = SPREAD_CRIT_PP;
   }
 
   static styles = [
@@ -140,15 +157,9 @@ export class MkViewPacks extends MkView {
           label=${t("packs.spread")}
           value=${f.num(spread, 1)}
           unit="%"
-          tone=${spread === null
-            ? ""
-            : spread >= SPREAD_CRIT_PP
-              ? "crit"
-              : spread >= SPREAD_WARN_PP
-                ? "warn"
-                : "ok"}
+          tone=${spreadTone(spread, this.spreadWarn, this.spreadCrit)}
           .bar=${spread}
-          .max=${SPREAD_SCALE_PP}
+          .max=${spreadScale(this.spreadCrit)}
         ></mk-stat>
         <mk-stat
           label=${t("packs.stored_total")}
@@ -208,11 +219,11 @@ export class MkViewPacks extends MkView {
         </div>
       </div>
 
-      ${fills.length ? this.table() : nothing}
+      ${fills.length ? this.table(spread) : nothing}
     `;
   }
 
-  private table() {
+  private table(spread: number | null) {
     const r = this.reader;
     const f = this.fmt;
     const t = this.t;
@@ -259,8 +270,9 @@ export class MkViewPacks extends MkView {
                 // The device closes one pack's MOSFETs at a time; that pack
                 // is the one doing the work right now.
                 const conducting = r.num(`battery_${i}_mos_status`) === 3;
-                const odd =
-                  median !== null && soc !== null && Math.abs(soc - median) > 5;
+                // Only ever flagged once the spread tile above is flagged
+                // too - see packIsOutlier.
+                const odd = packIsOutlier(soc, median, spread, this.spreadWarn);
 
                 return html`
                   <tr class="${odd ? "flagged" : ""} ${conducting ? "conducting" : ""}">
@@ -292,7 +304,7 @@ export class MkViewPacks extends MkView {
           </table>
         </div>
         <div class="note">
-          ${t("packs.table_legend", { points: SPREAD_WARN_PP })}
+          ${t("packs.table_legend", { points: this.spreadWarn })}
         </div>
       </div>
     `;

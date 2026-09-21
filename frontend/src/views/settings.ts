@@ -13,6 +13,11 @@ import {
   WIDTH_STEP,
 } from "../settings";
 import { SCHEMES, followsHaTheme, type Palette } from "../palettes";
+import {
+  SPREAD_MAX_PP,
+  SPREAD_MIN_PP,
+  SPREAD_STEP_PP,
+} from "../thresholds";
 
 /** One tab as the settings list sees it: name, and why it may not be offered. */
 export interface TabChoice {
@@ -449,6 +454,46 @@ export class MkViewSettings extends LitElement {
 
       <div class="grid below">
         <div class="panel">
+          <div class="head"><div class="label">${t("settings.spread")}</div></div>
+
+          <div class="note">${t("settings.spread_hint")}</div>
+
+          <div class="field">
+            <span class="label">${t("settings.spread_warn")}</span>
+            <div class="slider">
+              <input
+                type="range"
+                min=${SPREAD_MIN_PP}
+                max=${SPREAD_MAX_PP}
+                step=${SPREAD_STEP_PP}
+                .value=${String(s.spreadWarn)}
+                aria-label=${t("settings.spread_warn")}
+                @input=${(e: Event) =>
+                  this.pickSpread("spreadWarn", Number((e.target as HTMLInputElement).value))}
+              />
+              <span class="readout">${s.spreadWarn} %</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="label">${t("settings.spread_crit")}</span>
+            <div class="slider">
+              <input
+                type="range"
+                min=${SPREAD_MIN_PP}
+                max=${SPREAD_MAX_PP}
+                step=${SPREAD_STEP_PP}
+                .value=${String(s.spreadCrit)}
+                aria-label=${t("settings.spread_crit")}
+                @input=${(e: Event) =>
+                  this.pickSpread("spreadCrit", Number((e.target as HTMLInputElement).value))}
+              />
+              <span class="readout">${s.spreadCrit} %</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
           <div class="head"><div class="label">${t("settings.start_tab")}</div></div>
           ${this.choices<string>(
             [
@@ -605,6 +650,23 @@ export class MkViewSettings extends LitElement {
     const max = this.widthMax();
     if (this.local.maxWidth === "full") return max;
     return Math.min(max, Math.max(WIDTH_MIN, this.local.maxWidth));
+  }
+
+  /**
+   * Move one spread threshold, pushing the other out of the way if need be.
+   *
+   * The two sliders share a range, so a user dragging the warning past the
+   * critical one would otherwise ask for a tile that is red before it is
+   * amber. Shoving rather than blocking: a slider that refuses to move reads
+   * as broken, while one that carries its partner along explains itself.
+   */
+  private pickSpread(field: "spreadWarn" | "spreadCrit", value: number): void {
+    const { spreadWarn, spreadCrit } = this.settings;
+    if (field === "spreadWarn") {
+      this.onChange({ spreadWarn: value, spreadCrit: Math.max(spreadCrit, value) });
+    } else {
+      this.onChange({ spreadCrit: value, spreadWarn: Math.min(spreadWarn, value) });
+    }
   }
 
   private pickWidth(event: Event): void {

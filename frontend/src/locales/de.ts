@@ -226,6 +226,14 @@ export const de: Record<string, string> = {
   "settings.digits": "Nachkommastellen",
   "settings.digits.normal": "Normal",
   "settings.digits.more": "Eine mehr",
+  "settings.spread":
+    "Spreizung der Packs",
+  "settings.spread_hint":
+    "Ab wann die Packs als auseinandergelaufen gelten. Die Anlage arbeitet einen Pack nach dem anderen ab, deshalb liegen sie im Betrieb regelmaessig gut zehn Punkte auseinander — das ist normal. Die Tabelle markiert einzelne Packs erst, wenn die Spreizung selbst die Warnschwelle erreicht.",
+  "settings.spread_warn":
+    "Warnung ab",
+  "settings.spread_crit":
+    "Kritisch ab",
   "settings.start_tab": "Reiter beim Öffnen",
   "settings.start_tab.last": "Zuletzt benutzt",
   "settings.start_tab_hint":

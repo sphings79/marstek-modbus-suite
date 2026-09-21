@@ -234,6 +234,14 @@ export const en: Record<string, string> = {
   "settings.digits": "Decimal places",
   "settings.digits.normal": "Normal",
   "settings.digits.more": "One more",
+  "settings.spread":
+    "Pack spread",
+  "settings.spread_hint":
+    "When the packs count as having drifted apart. The device works one pack at a time, so during normal operation they routinely sit a good ten points apart — that is the design working. The table only marks individual packs once the spread itself reaches the warning level.",
+  "settings.spread_warn":
+    "Warn above",
+  "settings.spread_crit":
+    "Critical above",
   "settings.start_tab": "Tab when opening",
   "settings.start_tab.last": "Last used",
   "settings.start_tab_hint":

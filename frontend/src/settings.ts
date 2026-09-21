@@ -14,6 +14,12 @@
  */
 
 import { DEFAULT_SCHEME, schemeById } from "./palettes";
+import {
+  SPREAD_CRIT_PP,
+  SPREAD_MAX_PP,
+  SPREAD_MIN_PP,
+  SPREAD_WARN_PP,
+} from "./thresholds";
 import type { HomeAssistant } from "./types";
 
 export type ThemeMode = "auto" | "dark" | "light";
@@ -29,6 +35,17 @@ export interface PanelSettings {
   hiddenTabs: string[];
   /** One decimal place more than each view asks for. */
   extraDigits: boolean;
+  /**
+   * When the packs' states of charge count as drifting apart, in points.
+   *
+   * Taste rather than physics: how far the stack may spread before the panel
+   * says so depends on how many packs are stacked and how hard they are
+   * driven, and one household may want to hear about it earlier than another.
+   * Stored with the rest of the panel settings, so it follows the viewer
+   * across their devices rather than living in one browser.
+   */
+  spreadWarn: number;
+  spreadCrit: number;
 }
 
 /**
@@ -59,6 +76,8 @@ export const DEFAULT_SETTINGS: PanelSettings = {
   startTab: "last",
   hiddenTabs: [],
   extraDigits: false,
+  spreadWarn: SPREAD_WARN_PP,
+  spreadCrit: SPREAD_CRIT_PP,
 };
 
 const STORAGE_KEY = "marstek-panel.settings";
@@ -110,7 +129,27 @@ export function parseSettings(stored: unknown): PanelSettings {
       ? raw.hiddenTabs.filter((id): id is string => typeof id === "string")
       : [],
     extraDigits: raw.extraDigits === true,
+    ...spreadPair(raw.spreadWarn, raw.spreadCrit),
   };
+}
+
+/**
+ * The two spread thresholds, held inside the range and in order.
+ *
+ * Read as a pair because a critical threshold below the warning one would
+ * paint a tile red and amber at the same time - the tile asks for crit first.
+ * A hand-edited import is the likely way in, so it is corrected rather than
+ * rejected: the nearer of the two keeps its value and the other follows.
+ */
+function spreadPair(warn: unknown, crit: unknown): { spreadWarn: number; spreadCrit: number } {
+  const clamp = (value: unknown, fallback: number): number =>
+    typeof value === "number" && Number.isFinite(value)
+      ? Math.min(SPREAD_MAX_PP, Math.max(SPREAD_MIN_PP, Math.round(value)))
+      : fallback;
+
+  const w = clamp(warn, DEFAULT_SETTINGS.spreadWarn);
+  const c = clamp(crit, DEFAULT_SETTINGS.spreadCrit);
+  return c < w ? { spreadWarn: w, spreadCrit: w } : { spreadWarn: w, spreadCrit: c };
 }
 
 /** The settings as text, for the export box. */
