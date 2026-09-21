@@ -100,12 +100,12 @@ export class MarstekPanel extends LitElement {
        * them has to know about this.
        *
        * Zoom scales lengths too, which would make a 1440px limit measure 1584
-       * real pixels at 110%. Dividing by the zoom cancels that, so the width
-       * the user set stays the width they get.
+       * real pixels at 110%. The limit arrives already divided by the zoom to
+       * cancel that, so the width the user set stays the width they get.
        */
       .shell {
         zoom: var(--mk-zoom, 1);
-        max-width: calc(var(--mk-max-width, 1440px) / var(--mk-zoom, 1));
+        max-width: var(--mk-max-width, 1440px);
         margin: 0 auto;
         padding: 0 24px 40px;
       }
@@ -375,10 +375,14 @@ export class MarstekPanel extends LitElement {
     if (signature === this.layoutFor) return;
     this.layoutFor = signature;
 
-    this.style.setProperty("--mk-zoom", String(fontScale / 100));
+    const zoom = fontScale / 100;
+    this.style.setProperty("--mk-zoom", String(zoom));
+    // Full width has no limit to undo the zoom on. Dividing there - or letting
+    // a percentage through, which the zoom has already converted - would shrink
+    // the shell by exactly the amount the scale was raised by.
     this.style.setProperty(
       "--mk-max-width",
-      maxWidth === "full" ? "100%" : `${maxWidth}px`,
+      maxWidth === "full" ? "none" : `${maxWidth / zoom}px`,
     );
   }
 
