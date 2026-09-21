@@ -82,26 +82,27 @@ DEVICE_VERSION_LABELS = {
 # Lower bounds for the polling intervals, in seconds, per model.
 #
 # A cycle costs what the device takes to answer, and that is measurable: on a
-# Venus A the device answered each request in about 0.15 s, a high-priority
-# cycle was 22 to 33 requests, and end to end it took 3.4 to 9.9 s. Counting the
-# enabled registers in each map against that 0.15 s gives:
+# Venus A the device answered each request in about 0.15 s, and a high-priority
+# cycle took 3.4 to 9.9 s. Counting the registers each map polls at high
+# priority against that 0.15 s:
 #
-#   Venus A / D    high alone ~4.0 s    high and low together ~10.3 s
-#   Venus E v3     high alone ~1.9 s    together ~3.8 s
-#   Venus E v1/v2  high alone ~1.3 s    together ~3.6 s
+#   Venus A / D    high ~2.7 s     full round, high and low together ~10.3 s
+#   Venus E v3     high ~0.9 s     together ~3.8 s
+#   Venus E v1/v2  high ~0.8 s     together ~3.6 s
 #
-# Asking for less than that does not poll faster, it queues - the coordinator on
-# the measured device was already drifting to 13 s with 10 s configured. The
-# floors therefore differ by model: one number would either strangle the E,
-# whose map is half the size, or let a D ask for something it cannot deliver.
+# Asking for less does not poll faster, it queues. The floors differ by model
+# because one number would either strangle the E, whose map is a third of the
+# size, or let a D ask for something it cannot deliver.
 #
-# The coordinator ticks at min(high, low), so the low floor is what keeps a full
-# round from starting before the last one finished. On the A and D that round is
-# ~10.3 s, which is why low sits at 12 rather than 10 - at 10 it would be exactly
-# at the edge, with nothing left for a retry or a slow answer.
+# The high floors are the same now that the groups have been sorted out - what
+# stayed at high priority is what actually moves second to second. The low floor
+# is where the models still differ: the coordinator ticks at min(high, low), so
+# when both groups come due in the same tick it pays for the full round, and on
+# the A and D that is ~10.3 s. Twelve leaves a little over it; ten would be
+# exactly at the edge with nothing left for a retry.
 MIN_SCAN_INTERVALS = {
-    "A": {"high": 5, "low": 12},
-    "D": {"high": 5, "low": 12},
+    "A": {"high": 3, "low": 12},
+    "D": {"high": 3, "low": 12},
     "E v3": {"high": 3, "low": 10},
     "E v1/v2": {"high": 3, "low": 10},
 }

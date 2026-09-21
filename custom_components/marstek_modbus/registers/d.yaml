@@ -166,7 +166,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 2
-        scan_interval: high
+        scan_interval: low
     internal_mos1_temperature:
         register: 35001
         scale: 0.1
@@ -176,7 +176,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 2
-        scan_interval: high
+        scan_interval: low
     ac_voltage:
         register: 32200
         scale: 0.1
@@ -290,7 +290,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     min_cell_temperature:
         register: 35011
         scale: 0.1
@@ -300,7 +300,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_1_voltage:
         register: 34018
         scale: 0.001
@@ -1537,7 +1537,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         precision: 0
-        scan_interval: high
+        scan_interval: low
         state_class: measurement
     mppt1_voltage:
         register: 30020
@@ -1548,7 +1548,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt1_current:
         register: 30024
         scale: 0.1
@@ -1558,7 +1558,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt1_power:
         register: 30037
         scale: 0.1
@@ -1578,7 +1578,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt2_current:
         register: 30025
         scale: 0.1
@@ -1588,7 +1588,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt2_power:
         register: 30038
         scale: 0.1
@@ -1608,7 +1608,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt3_current:
         register: 30026
         scale: 0.1
@@ -1618,7 +1618,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt3_power:
         register: 30039
         scale: 0.1
@@ -1638,7 +1638,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt4_current:
         register: 30027
         scale: 0.1
@@ -1648,7 +1648,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     mppt4_power:
         register: 30040
         scale: 0.1
@@ -1665,7 +1665,7 @@ SENSOR_DEFINITIONS:
         icon: "mdi:bluetooth"
         category: diagnostic
         enabled_by_default: true
-        scan_interval: high
+        scan_interval: low
     # --- Per-pack temperatures and protection bitmasks (firmware-confirmed 2026-08-16) ---
     battery_1_env_temperature:
         register: 34011
@@ -2806,7 +2806,7 @@ SELECT_DEFINITIONS:
     schedule_1_days:
         register: 43100
         enabled_by_default: true
-        scan_interval: high
+        scan_interval: low
         category: config
         options:
             sunday: 64
@@ -2819,7 +2819,7 @@ SELECT_DEFINITIONS:
     schedule_2_days:
         register: 43105
         enabled_by_default: true
-        scan_interval: high
+        scan_interval: low
         category: config
         options:
             sunday: 64
@@ -2889,7 +2889,7 @@ SWITCH_DEFINITIONS:
         command_off: 1
         enabled_by_default: true
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
     # Verified on this model: Venus D firmware v150.
     # Register 42000 and 43000 are the SAME byte in the firmware. Verified in the
     # v150 Write_Handler: 42000 = 0x55AA sets the mode byte to 0x0A, 0x55BB reads
@@ -2908,7 +2908,7 @@ SWITCH_DEFINITIONS:
         command_off: 21947
         enabled_by_default: true
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
     schedule_1_enabled:
         register: 43104
         command_on: 1
@@ -2917,7 +2917,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_2_enabled:
         register: 43109
         command_on: 1
@@ -2926,7 +2926,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_3_enabled:
         register: 43114
         command_on: 1
@@ -3000,7 +3000,7 @@ NUMBER_DEFINITIONS:
         step: 50
         unit: W
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
         affects:
             - ac_power
             - battery_power
@@ -3013,7 +3013,7 @@ NUMBER_DEFINITIONS:
         step: 50
         unit: W
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
         affects:
             - ac_power
             - battery_power
@@ -3027,7 +3027,7 @@ NUMBER_DEFINITIONS:
         unit: "%"
         scale: 1
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
 
     schedule_1_start:
         register: 43101
@@ -3039,7 +3039,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_2_start:
         register: 43106
         enabled_by_default: true
@@ -3050,7 +3050,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_3_start:
         register: 43111
         enabled_by_default: true
@@ -3105,7 +3105,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_2_end:
         register: 43107
         enabled_by_default: true
@@ -3116,7 +3116,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_3_end:
         register: 43112
         enabled_by_default: true
@@ -3171,7 +3171,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_2_mode:
         register: 43108
         enabled_by_default: true
@@ -3182,7 +3182,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: high
+        scan_interval: low
     schedule_3_mode:
         register: 43113
         enabled_by_default: true

@@ -125,7 +125,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 2
-        scan_interval: high
+        scan_interval: low
     internal_mos1_temperature:
         register: 35001
         scale: 0.1
@@ -135,7 +135,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 2
-        scan_interval: high
+        scan_interval: low
     internal_mos2_temperature:
         register: 35002
         scale: 0.1
@@ -262,7 +262,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     min_cell_temperature:
         register: 35011
         scale: 1
@@ -272,7 +272,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: int16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     max_cell_voltage:
         register: 37007
         scale: 0.001
@@ -414,14 +414,14 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         precision: 0
-        scan_interval: high
+        scan_interval: low
     bluetooth_status:
         register: 30301
         data_type: uint16
         icon: "mdi:bluetooth"
         category: diagnostic
         enabled_by_default: true
-        scan_interval: high
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -572,7 +572,7 @@ SWITCH_DEFINITIONS:
         command_off: 1
         enabled_by_default: true
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
     # NOT verified for this model. The paragraph below comes from Venus D firmware
     # v150; Venus E v1/v2 runs a different firmware base, where matching register
     # numbers are coincidence until proven on E v1/v2 firmware itself. Kept here
@@ -594,7 +594,7 @@ SWITCH_DEFINITIONS:
         command_off: 21947
         enabled_by_default: true
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
     schedule_1_enabled:
         register: 43104
         command_on: 1
@@ -686,7 +686,7 @@ NUMBER_DEFINITIONS:
         step: 50
         unit: W
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
         affects:
             - ac_power
             - battery_power
@@ -699,7 +699,7 @@ NUMBER_DEFINITIONS:
         step: 50
         unit: W
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
         affects:
             - ac_power
             - battery_power
@@ -735,7 +735,7 @@ NUMBER_DEFINITIONS:
         unit: "%"
         scale: 1
         data_type: uint16
-        scan_interval: high
+        scan_interval: low
     schedule_1_start:
         register: 43101
         enabled_by_default: true
