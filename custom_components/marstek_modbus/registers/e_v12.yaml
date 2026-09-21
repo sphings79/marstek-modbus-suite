@@ -30,7 +30,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         data_type: uint16
-        scan_interval: low
+        scan_interval: ultra
         version_format: true
     bms_version:
         register: 31102
@@ -38,7 +38,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         data_type: uint16
-        scan_interval: low
+        scan_interval: ultra
         version_format: true
     ems_version:
         register: 31101
@@ -47,7 +47,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scale: 1
-        scan_interval: low
+        scan_interval: ultra
         version_format: true
     comm_module_firmware:
         register: 30800
@@ -64,7 +64,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         icon: "mdi:bluetooth"
         data_type: mac
-        scan_interval: low
+        scan_interval: ultra
     battery_soc:
         register: 32104
         scale: 1
@@ -84,7 +84,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         precision: 3
-        scan_interval: low
+        scan_interval: ultra
     battery_voltage:
         register: 32100
         scale: 0.01
@@ -489,7 +489,7 @@ SELECT_DEFINITIONS:
     schedule_1_days:
         register: 43100
         enabled_by_default: true
-        scan_interval: low
+        scan_interval: ultra
         category: config
         options:
             sunday: 64
@@ -502,7 +502,7 @@ SELECT_DEFINITIONS:
     schedule_2_days:
         register: 43105
         enabled_by_default: true
-        scan_interval: low
+        scan_interval: ultra
         category: config
         options:
             sunday: 64
@@ -515,7 +515,7 @@ SELECT_DEFINITIONS:
     schedule_3_days:
         register: 43110
         enabled_by_default: true
-        scan_interval: low
+        scan_interval: ultra
         category: config
         options:
             sunday: 64
@@ -528,7 +528,7 @@ SELECT_DEFINITIONS:
     schedule_4_days:
         register: 43115
         enabled_by_default: true
-        scan_interval: low
+        scan_interval: ultra
         category: config
         options:
             sunday: 64
@@ -541,7 +541,7 @@ SELECT_DEFINITIONS:
     schedule_5_days:
         register: 43120
         enabled_by_default: true
-        scan_interval: low
+        scan_interval: ultra
         category: config
         options:
             sunday: 64
@@ -554,7 +554,7 @@ SELECT_DEFINITIONS:
     schedule_6_days:
         register: 43125
         enabled_by_default: true
-        scan_interval: low
+        scan_interval: ultra
         category: config
         options:
             sunday: 64
@@ -603,7 +603,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_2_enabled:
         register: 43109
         command_on: 1
@@ -612,7 +612,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_3_enabled:
         register: 43114
         command_on: 1
@@ -621,7 +621,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_4_enabled:
         register: 43119
         command_on: 1
@@ -630,7 +630,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_5_enabled:
         register: 43124
         command_on: 1
@@ -639,7 +639,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_6_enabled:
         register: 43129
         command_on: 1
@@ -648,7 +648,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
 
 NUMBER_DEFINITIONS:
     set_charge_power:
@@ -686,7 +686,7 @@ NUMBER_DEFINITIONS:
         step: 50
         unit: W
         data_type: uint16
-        scan_interval: low
+        scan_interval: ultra
         affects:
             - ac_power
             - battery_power
@@ -699,7 +699,7 @@ NUMBER_DEFINITIONS:
         step: 50
         unit: W
         data_type: uint16
-        scan_interval: low
+        scan_interval: ultra
         affects:
             - ac_power
             - battery_power
@@ -746,7 +746,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_2_start:
         register: 43106
         enabled_by_default: true
@@ -757,7 +757,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_3_start:
         register: 43111
         enabled_by_default: true
@@ -768,7 +768,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_4_start:
         register: 43116
         enabled_by_default: true
@@ -779,7 +779,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_5_start:
         register: 43121
         enabled_by_default: true
@@ -790,7 +790,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_6_start:
         register: 43126
         enabled_by_default: true
@@ -801,7 +801,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_1_end:
         register: 43102
         enabled_by_default: true
@@ -812,7 +812,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_2_end:
         register: 43107
         enabled_by_default: true
@@ -823,7 +823,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_3_end:
         register: 43112
         enabled_by_default: true
@@ -834,7 +834,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_4_end:
         register: 43117
         enabled_by_default: true
@@ -845,7 +845,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_5_end:
         register: 43122
         enabled_by_default: true
@@ -856,7 +856,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_6_end:
         register: 43127
         enabled_by_default: true
@@ -867,7 +867,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_1_mode:
         register: 43103
         enabled_by_default: true
@@ -878,7 +878,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_2_mode:
         register: 43108
         enabled_by_default: true
@@ -889,7 +889,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_3_mode:
         register: 43113
         enabled_by_default: true
@@ -900,7 +900,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_4_mode:
         register: 43118
         enabled_by_default: true
@@ -911,7 +911,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_5_mode:
         register: 43123
         enabled_by_default: true
@@ -922,7 +922,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: ultra
     schedule_6_mode:
         register: 43128
         enabled_by_default: true
@@ -933,7 +933,7 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: ultra
 
 BUTTON_DEFINITIONS:
     reset_device:

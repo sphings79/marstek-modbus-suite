@@ -1,22 +1,23 @@
 # Was wie oft abgefragt wird
 
-Die Integration fragt in zwei Takten ab. Diese Seite sagt, was im **schnellen** Takt
-liegt — alles, was hier nicht steht, liegt im langsamen.
+Die Integration fragt in drei Takten ab. Diese Seite sagt, was im **schnellen** Takt
+liegt und was im **Ultra-Low**-Takt — alles Übrige liegt im langsamen dazwischen.
 
 Die Einteilung hängt am Messwert, nicht am Modell: alle vier Registerkarten sind sich
 bei jedem einzelnen Schlüssel einig. Ob eine Entität standardmäßig angelegt wird, ist
 eine andere Frage — eine ausgeschaltete Entität wird gar nicht gelesen.
 
-| | schnell | langsam |
-|---|---|---|
-| Vorgabe | 10 s | 60 s |
-| Minimum Venus A / D | 3 s | 12 s |
-| Minimum Venus E | 3 s | 10 s |
+| | schnell | langsam | Ultra-Low |
+|---|---|---|---|
+| Vorgabe | 10 s | 60 s | 300 s |
+| Minimum | 3 s | 10 s | 60 s |
 
-**68 Messwerte im schnellen Takt**, davon 59 standardmäßig eingeschaltet.
-Die übrigen 282 liegen im langsamen.
+**76 Messwerte im schnellen Takt**, davon 67 standardmäßig eingeschaltet.
+58 liegen im Ultra-Low-Takt, die übrigen 216 im langsamen.
 
 Ein leeres Feld heißt: dieses Modell kennt den Wert nicht.
+
+# Der schnelle Takt
 
 ## Leistung und Energiefluss
 
@@ -93,10 +94,18 @@ Ein leeres Feld heißt: dieses Modell kennt den Wert nicht.
 
 | Messwert | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Vorgabe |
 |---|---|---|---|---|---|
+| `mppt1_current` | 30024 | 30024 |  |  | an |
 | `mppt1_power` | 30037 | 30037 |  |  | an |
+| `mppt1_voltage` | 30020 | 30020 |  |  | an |
+| `mppt2_current` | 30025 | 30025 |  |  | an |
 | `mppt2_power` | 30038 | 30038 |  |  | an |
+| `mppt2_voltage` | 30021 | 30021 |  |  | an |
+| `mppt3_current` | 30026 | 30026 |  |  | an |
 | `mppt3_power` | 30039 | 30039 |  |  | an |
+| `mppt3_voltage` | 30022 | 30022 |  |  | an |
+| `mppt4_current` | 30027 | 30027 |  |  | an |
 | `mppt4_power` | 30040 | 30040 |  |  | an |
+| `mppt4_voltage` | 30023 | 30023 |  |  | an |
 
 ## Von Automationen geschriebene Sollwerte
 
@@ -117,7 +126,7 @@ Ein leeres Feld heißt: dieses Modell kennt den Wert nicht.
 | `battery_6_mos_status` | 34504 | 34504 |  |  | an |
 | `battery_7_mos_status` | 34604 | 34604 |  |  | an |
 
-## Alles Weitere im schnellen Takt
+## Alles Weitere in dieser Gruppe
 
 | Messwert | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Vorgabe |
 |---|---|---|---|---|---|
@@ -131,16 +140,100 @@ Ein leeres Feld heißt: dieses Modell kennt den Wert nicht.
 | `min_cell_voltage` |  |  | 37008 | 37008 | aus |
 | `reset_device` | 41000 | 41000 | 41000 | 41000 | an |
 
-## Alles andere
+# Der Ultra-Low-Takt
 
-Jeder Messwert, der oben nicht steht, wird im langsamen Takt gelesen — Energiezähler,
-Versionen, Zellspannungen, Zeitpläne, Temperaturen, Konfigurationsschalter. Das sind
-Werte, die sich entweder von selbst kaum bewegen oder nur dann, wenn jemand sie ändert.
+Diese Werte ändern sich nicht von selbst, sondern nur, wenn jemand sie ändert — im
+Gerät, in der App oder per Firmware-Update. Sie werden alle fünf Minuten gelesen.
+
+Ein Zeitplan, den du in der Marstek-App umstellst, steht also bis zu fünf Minuten
+später hier. Das ist der ganze Preis dieser Gruppe.
+
+## PV
+
+| Messwert | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Vorgabe |
+|---|---|---|---|---|---|
+| `mppt_version` | 30205 | 30205 |  |  | an |
+
+## Pro Batteriepack
+
+| Messwert | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Vorgabe |
+|---|---|---|---|---|---|
+| `battery_1_bms_version` | 34010 | 34010 |  |  | an |
+| `battery_1_cycle_count` | 34003 | 34003 |  |  | an |
+| `battery_2_bms_version` | 34110 | 34110 |  |  | an |
+| `battery_2_cycle_count` | 34103 | 34103 |  |  | an |
+| `battery_3_bms_version` | 34210 | 34210 |  |  | an |
+| `battery_3_cycle_count` | 34203 | 34203 |  |  | an |
+| `battery_4_bms_version` | 34310 | 34310 |  |  | an |
+| `battery_4_cycle_count` | 34303 | 34303 |  |  | an |
+| `battery_5_bms_version` | 34410 | 34410 |  |  | an |
+| `battery_5_cycle_count` | 34403 | 34403 |  |  | an |
+| `battery_6_bms_version` | 34510 | 34510 |  |  | an |
+| `battery_6_cycle_count` | 34503 | 34503 |  |  | an |
+| `battery_7_bms_version` | 34610 | 34610 |  |  | an |
+| `battery_7_cycle_count` | 34603 | 34603 |  |  | an |
+
+## Alles Weitere in dieser Gruppe
+
+| Messwert | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Vorgabe |
+|---|---|---|---|---|---|
+| `battery_cycle_count` |  |  | 34003 |  | an |
+| `battery_total_energy` | 32105 | 32105 | 32105 | 32105 | an |
+| `ble_mac_address` | 30304 | 30304 | 30304 | 30402 | an |
+| `bms_version` |  |  | 30204 | 31102 | an |
+| `device_ip_address` | 30400 | 30400 |  |  | an |
+| `ems_boot_version` | 30201 | 30201 |  |  | an |
+| `ems_version` | 30200 | 30200 | 30200 | 31101 | an |
+| `gateway_ip_address` | 30402 | 30402 |  |  | an |
+| `max_charge_power` | 44002 | 44002 | 44002 | 44002 | an |
+| `max_discharge_power` | 44003 | 44003 | 44003 | 44003 | an |
+| `schedule_1_days` | 43100 | 43100 | 43100 | 43100 | an |
+| `schedule_1_enabled` | 43104 | 43104 | 43104 | 43104 | an |
+| `schedule_1_end` | 43102 | 43102 | 43102 | 43102 | an |
+| `schedule_1_mode` | 43103 | 43103 | 43103 | 43103 | an |
+| `schedule_1_start` | 43101 | 43101 | 43101 | 43101 | an |
+| `schedule_2_days` | 43105 | 43105 | 43105 | 43105 | an |
+| `schedule_2_enabled` | 43109 | 43109 | 43109 | 43109 | an |
+| `schedule_2_end` | 43107 | 43107 | 43107 | 43107 | an |
+| `schedule_2_mode` | 43108 | 43108 | 43108 | 43108 | an |
+| `schedule_2_start` | 43106 | 43106 | 43106 | 43106 | an |
+| `schedule_3_days` | 43110 | 43110 | 43110 | 43110 | an |
+| `schedule_3_enabled` | 43114 | 43114 | 43114 | 43114 | an |
+| `schedule_3_end` | 43112 | 43112 | 43112 | 43112 | an |
+| `schedule_3_mode` | 43113 | 43113 | 43113 | 43113 | an |
+| `schedule_3_start` | 43111 | 43111 | 43111 | 43111 | an |
+| `schedule_4_days` | 43115 | 43115 | 43115 | 43115 | an |
+| `schedule_4_enabled` | 43119 | 43119 | 43119 | 43119 | an |
+| `schedule_4_end` | 43117 | 43117 | 43117 | 43117 | an |
+| `schedule_4_mode` | 43118 | 43118 | 43118 | 43118 | an |
+| `schedule_4_start` | 43116 | 43116 | 43116 | 43116 | an |
+| `schedule_5_days` | 43120 | 43120 | 43120 | 43120 | an |
+| `schedule_5_enabled` | 43124 | 43124 | 43124 | 43124 | an |
+| `schedule_5_end` | 43122 | 43122 | 43122 | 43122 | an |
+| `schedule_5_mode` | 43123 | 43123 | 43123 | 43123 | an |
+| `schedule_5_start` | 43121 | 43121 | 43121 | 43121 | an |
+| `schedule_6_days` | 43125 | 43125 | 43125 | 43125 | an |
+| `schedule_6_enabled` | 43129 | 43129 | 43129 | 43129 | an |
+| `schedule_6_end` | 43127 | 43127 | 43127 | 43127 | an |
+| `schedule_6_mode` | 43128 | 43128 | 43128 | 43128 | an |
+| `schedule_6_start` | 43126 | 43126 | 43126 | 43126 | an |
+| `software_version` |  |  |  | 31100 | an |
+| `vms_version` | 30202 | 30202 | 30202 |  | an |
+| `vns_boot_version` | 30203 | 30203 |  |  | an |
+
+# Der langsame Takt
+
+Jeder Messwert, der oben nicht steht: Energiezähler, Zellspannungen, Temperaturen,
+Pack-Ströme und -Spannungen, Konfigurationsschalter. Werte also, die sich von selbst
+bewegen, nur eben langsam — anders als die Gruppe darüber, die stillsteht, bis
+jemand etwas umstellt.
 
 Zwei Dinge, die dabei leicht überraschen:
 
-- Der Koordinator taktet mit dem **kleineren** der beiden Werte. Ein niedriges
-  Low-Intervall lässt also auch den schnellen Takt öfter anlaufen.
+- Der Koordinator taktet mit dem **kleineren** von schnell und langsam. Fallen in
+  einem Takt mehrere Gruppen zusammen, wird erst die ganze Runde gelesen — die
+  schnellen Werte aus diesem Takt kommen also entsprechend später an. Deshalb liegt
+  das Minimum für den langsamen Takt über der Dauer einer vollen Runde.
 - Berechnete Werte haben kein eigenes Intervall. Sie rechnen bei jedem Takt neu, mit
   dem, was gerade da ist — wie frisch sie sind, entscheiden ihre Zulieferer.
 

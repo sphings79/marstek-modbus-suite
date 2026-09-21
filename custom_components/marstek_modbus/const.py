@@ -30,16 +30,24 @@ DEFAULT_TIMEOUT = 6  # Default Modbus request timeout in seconds
 # request. A request costs about the same whatever it carries, so reading a
 # couple of registers nobody asked for beats a second round trip.
 #
-# Two is the value that has been run rather than only measured: seventeen
-# hours on a Venus D with every register of the map enabled, and the gap
-# memory below stayed empty the whole time - not one bridged block refused.
+# Three, measured on a Venus D on EMS v150 with the standard register set:
 #
-# Wider bridging saves more requests on paper and now costs little when it
-# guesses wrong, because a refusal comes back in about 150 ms since the
-# exception frames became readable, and is learned once per firmware. It has
-# not been run for a day on a real battery, which is the only reason this
-# still says two.
-DEFAULT_MAX_READ_GAP = 2
+#   gap  requests (fast tick / fast+slow)   seconds
+#    2        25 / 40                        3.74 / 6.03
+#    3        22 / 37                        3.30 / 5.49
+#    4        22 / 37                        3.24 / 5.54
+#
+# Four buys nothing. It merges 30001-30010 into one block, the device refuses
+# it, and _note_gaps_refused then blacklists every gap in that block - taking
+# 30001 -> 30006, which the device serves perfectly well on its own, down with
+# 30006 -> 30010, which it does not. Both values therefore settle in the same
+# place, and three provokes the smaller wrong request to get there.
+#
+# The one refusal costs 6 to 9 ms and is learned once per firmware. It reads
+# that cheaply only because the exception frame is corrected on the way in -
+# see helpers/exception_frame.py; without that the malformed length field
+# turns it into a full client timeout.
+DEFAULT_MAX_READ_GAP = 3
 
 # Gaps the device refused to bridge, remembered per firmware so a map that
 # changes with an update is re-learned rather than carried forward.
@@ -54,6 +62,7 @@ GAP_MEMORY_FIRMWARE_KEY = "ems_version"
 DEFAULT_SCAN_INTERVALS = {
     "high": 10,      # fast-changing sensors and former medium-priority sensors
     "low": 60,       # slower-changing sensors and former very_low-priority sensors
+    "ultra": 300,    # readings that only change when somebody changes them
 }
 
 # Supported device versions.
@@ -81,30 +90,35 @@ DEVICE_VERSION_LABELS = {
 
 # Lower bounds for the polling intervals, in seconds, per model.
 #
-# A cycle costs what the device takes to answer, and that is measurable: on a
-# Venus A the device answered each request in about 0.15 s, and a high-priority
-# cycle took 3.4 to 9.9 s. Counting the registers each map polls at high
-# priority against that 0.15 s:
+# A cycle costs what the device takes to answer, and that is measurable. On a
+# Venus D on EMS v150, read directly at 192.168.181.154:502 with the standard
+# register set and the integration's 80 ms pacing between requests:
 #
-#   Venus A / D    high ~2.7 s     full round, high and low together ~10.3 s
-#   Venus E v3     high ~0.9 s     together ~3.8 s
-#   Venus E v1/v2  high ~0.8 s     together ~3.6 s
+#   fast tick            22 requests   3.30 s
+#   fast + slow together 37 requests   5.49 s
+#   per request          65 ms
 #
-# Asking for less does not poll faster, it queues. The floors differ by model
-# because one number would either strangle the E, whose map is a third of the
-# size, or let a D ask for something it cannot deliver.
+# The 150 ms per request this file used to quote came from a measurement taken
+# through a Modbus proxy and was more than twice too pessimistic; the full
+# round was put at 10.3 s where it actually takes 5.5 s.
 #
-# The high floors are the same now that the groups have been sorted out - what
-# stayed at high priority is what actually moves second to second. The low floor
-# is where the models still differ: the coordinator ticks at min(high, low), so
-# when both groups come due in the same tick it pays for the full round, and on
-# the A and D that is ~10.3 s. Twelve leaves a little over it; ten would be
-# exactly at the edge with nothing left for a retry.
+# Asking for less does not poll faster, it queues. The slow floor is the one
+# that matters: the coordinator ticks at min(high, low), and a tick where both
+# groups fall due pays for the whole round before the fast readings from that
+# same tick are in - so the slow interval must not be shorter than a full round
+# takes. Ten leaves most of a round's length as headroom over the measured 5.5,
+# which is where the retries and the occasional four second stall of the device
+# have to fit.
+#
+# The ultra floor is deliberately far above its own cost. Nothing in that group
+# changes on its own, so a minute is already generous; the bound exists to stop
+# somebody turning a group of firmware versions and schedules into a second
+# fast tick.
 MIN_SCAN_INTERVALS = {
-    "A": {"high": 3, "low": 12},
-    "D": {"high": 3, "low": 12},
-    "E v3": {"high": 3, "low": 10},
-    "E v1/v2": {"high": 3, "low": 10},
+    "A": {"high": 3, "low": 10, "ultra": 60},
+    "D": {"high": 3, "low": 10, "ultra": 60},
+    "E v3": {"high": 3, "low": 10, "ultra": 60},
+    "E v1/v2": {"high": 3, "low": 10, "ultra": 60},
 }
 
 # Where the polling page lives, per language. hassfest refuses a URL inside a
@@ -123,7 +137,7 @@ def polling_doc_url(language):
 
 
 # Used when the version is missing or unknown: the safe end of the range.
-DEFAULT_MIN_SCAN_INTERVALS = {"high": 5, "low": 12}
+DEFAULT_MIN_SCAN_INTERVALS = {"high": 5, "low": 12, "ultra": 60}
 
 
 def min_scan_intervals(version):

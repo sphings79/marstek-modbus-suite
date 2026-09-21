@@ -105,7 +105,13 @@ def _polling_schema(version):
             vol.Clamp(min=floors[key], max=3600),
         )
 
-    return vol.Schema({vol.Required("high"): box("high"), vol.Required("low"): box("low")})
+    return vol.Schema(
+        {
+            vol.Required("high"): box("high"),
+            vol.Required("low"): box("low"),
+            vol.Required("ultra"): box("ultra"),
+        }
+    )
 
 
 SCHEMA_LIMITS = vol.Schema(
@@ -457,7 +463,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
             key: normalized_options.get(
                 key, config.data.get(key, DEFAULT_SCAN_INTERVALS[key])
             )
-            for key in ("high", "low")
+            for key in ("high", "low", "ultra")
         }
 
         # An entry configured before the floors existed can carry a value the
@@ -501,6 +507,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                 "lowest": str(lowest),
                 "min_high": str(floors["high"]),
                 "min_low": str(floors["low"]),
+                "min_ultra": str(floors["ultra"]),
                 "docs_url": polling_doc_url(self.hass.config.language),
             },
             last_step=True,

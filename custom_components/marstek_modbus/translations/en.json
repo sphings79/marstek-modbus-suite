@@ -62,14 +62,16 @@
       },
       "polling": {
         "title": "Configure polling intervals",
-        "description": "Adjust polling frequency per category. Minimum: high {min_high} s, low {min_low} s.\n\n[Which readings are on the fast rate]({docs_url}) — everything else is on the slow one.",
+        "description": "Adjust polling frequency per group. Minimum: high {min_high} s, low {min_low} s, ultra-low {min_ultra} s.\n\n[Which readings are in which group]({docs_url})",
         "data": {
           "high": "High priority interval (s)",
-          "low": "Low priority interval (s)"
+          "low": "Low priority interval (s)",
+          "ultra": "Ultra-low interval (s)"
         },
         "data_description": {
           "high": "Fast-moving values such as power and SoC. Minimum for this model: {min_high} s — asking for less than a poll cycle takes does not poll faster, it queues.",
-          "low": "Slow-moving values such as energy counters and versions. Minimum for this model: {min_low} s. The coordinator ticks at the smaller of the two, so this one decides how often a full round starts."
+          "low": "Values that drift on their own: energy counters, temperatures, cell voltages. Minimum: {min_low} s. The coordinator ticks at the smaller of high and low, and a tick where both groups fall due pays for the whole round before the fast readings from it arrive.",
+          "ultra": "Values that only change when somebody changes them: firmware versions, schedules, IP and MAC, cycle counts, capacity. Minimum: {min_ultra} s."
         }
       },
       "connection": {

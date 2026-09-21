@@ -62,14 +62,16 @@
       },
       "polling": {
         "title": "Configureer polling-intervallen",
-        "description": "Pas de pollingfrequentie per categorie aan. Minimum: high {min_high} s, low {min_low} s.\n\n[Welke waarden op het snelle tempo staan]({docs_url}) — al het overige staat op het langzame.",
+        "description": "Pas de pollingfrequentie per groep aan. Minimum: high {min_high} s, low {min_low} s, ultra-low {min_ultra} s.\n\n[Welke waarden in welke groep zitten]({docs_url})",
         "data": {
           "high": "High-prioriteit interval (s)",
-          "low": "Low-prioriteit interval (s)"
+          "low": "Low-prioriteit interval (s)",
+          "ultra": "Ultra-low interval (s)"
         },
         "data_description": {
           "high": "Snel wisselende waarden zoals vermogen en SoC. Minimum voor dit model: {min_high} s — korter dan een pollcyclus duurt levert geen snellere polling op, alleen wachtrij.",
-          "low": "Traag wisselende waarden zoals energietellers en versies. Minimum voor dit model: {min_low} s. De coördinator tikt op de kleinste van de twee, dus deze bepaalt hoe vaak een volledige ronde start."
+          "low": "Waarden die vanzelf langzaam bewegen: energietellers, temperaturen, celspanningen. Minimum: {min_low} s. De coördinator tikt op de kleinste van high en low, en een tik waarin beide groepen vervallen betaalt eerst de hele ronde voordat de snelle waarden eruit binnenkomen.",
+          "ultra": "Waarden die alleen veranderen als iemand ze verandert: firmwareversies, schema's, IP en MAC, cyclustellers, capaciteit. Minimum: {min_ultra} s."
         }
       },
       "connection": {

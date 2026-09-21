@@ -62,14 +62,16 @@
       },
       "polling": {
         "title": "Polling-Intervalle konfigurieren",
-        "description": "Abfragehäufigkeit pro Kategorie anpassen. Minimum: High {min_high} s, Low {min_low} s.\n\n[Welche Werte im schnellen Takt liegen]({docs_url}) — alles Übrige liegt im langsamen.",
+        "description": "Abfragehäufigkeit pro Gruppe anpassen. Minimum: High {min_high} s, Low {min_low} s, Ultra-Low {min_ultra} s.\n\n[Welche Werte in welcher Gruppe liegen]({docs_url})",
         "data": {
           "high": "High-Priorität Intervall (s)",
-          "low": "Low-Priorität Intervall (s)"
+          "low": "Low-Priorität Intervall (s)",
+          "ultra": "Ultra-Low Intervall (s)"
         },
         "data_description": {
           "high": "Schnell wechselnde Werte wie Leistung und SoC. Minimum für dieses Modell: {min_high} s — kürzer als ein Abfragezyklus dauert wird nicht schneller gepollt, es staut sich nur.",
-          "low": "Selten wechselnde Werte wie Energiezähler und Versionen. Minimum für dieses Modell: {min_low} s. Der Koordinator taktet mit dem kleineren der beiden Werte, deshalb entscheidet dieser, wie oft eine komplette Runde beginnt."
+          "low": "Werte, die sich langsam von selbst bewegen: Energiezähler, Temperaturen, Zellspannungen. Minimum: {min_low} s. Der Koordinator taktet mit dem kleineren von High und Low, und ein Takt, in dem beide Gruppen fällig sind, zahlt erst die ganze Runde, bevor die schnellen Werte daraus ankommen.",
+          "ultra": "Werte, die sich nur ändern, wenn jemand sie ändert: Firmware-Versionen, Zeitpläne, IP und MAC, Zyklenzähler, Kapazität. Minimum: {min_ultra} s."
         }
       },
       "connection": {
