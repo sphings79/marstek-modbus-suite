@@ -28,7 +28,7 @@
     },
     "error": {
       "permission_denied": "Toegang geweigerd",
-      "connection_refused": "Verbinding geweigerd door het apparaat",
+      "connection_refused": "Het apparaat is bereikbaar, maar accepteert op deze poort geen verbinding. Een Venus biedt Modbus TCP alleen via de LAN-aansluiting aan, niet via wifi — zit er geen kabel in, dan is het gevonden adres het verkeerde. Anders houdt iets anders de enige verbinding bezet die het apparaat toestaat: een Modbus-proxy of een tweede integratie.",
       "timed_out": "Verbindingstijd verstreken",
       "invalid_host": "Ongeldig IP-adres of hostnaam",
       "invalid_unit_id": "Ongeldige Modbus Unit-ID (moet 1-255 zijn)",

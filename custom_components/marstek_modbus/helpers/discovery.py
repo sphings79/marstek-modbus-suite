@@ -45,6 +45,23 @@ class Beacon:
         """The MAC in the colon-separated form Home Assistant stores."""
         return ":".join(self.mac[i:i + 2] for i in range(0, 12, 2))
 
+    @property
+    def key(self) -> str:
+        """A stable id for this announcement: which device, and where from.
+
+        Both parts, because the MAC in a beacon belongs to the radio module and
+        stays the same whichever interface sends the packet - while only one of
+        a device's addresses serves Modbus. Measured on a Venus D: with a cable
+        in it announces itself from the wired address, without one from the
+        wireless address, and the handover is clean - 538 packets from the one
+        and 15 from the other across a five minute window, never both at once.
+        So two rows for one battery do not happen today. Keying on the MAC
+        alone would quietly keep whichever packet arrived first if a later
+        firmware ever changes that, and half the time that is the address with
+        no Modbus behind it.
+        """
+        return f"{self.mac}@{self.host}"
+
 
 def parse_beacon(data: bytes, host: str) -> Beacon | None:
     """Read one datagram, or None if it is not a Marstek announcement.
@@ -79,23 +96,23 @@ def parse_beacon(data: bytes, host: str) -> Beacon | None:
 
 
 class _BeaconProtocol(asyncio.DatagramProtocol):
-    """Collects announcements, keyed by MAC so a device counts once."""
+    """Collects announcements, keyed so a device at one address counts once."""
 
     def __init__(self) -> None:
         self.found: dict[str, Beacon] = {}
 
     def datagram_received(self, data: bytes, addr: tuple) -> None:
         beacon = parse_beacon(data, addr[0])
-        if beacon and beacon.mac not in self.found:
+        if beacon and beacon.key not in self.found:
             _LOGGER.debug(
                 "Beacon from %s: model %s, mac %s, module %s",
                 beacon.host, beacon.model, beacon.mac, beacon.module,
             )
-            self.found[beacon.mac] = beacon
+            self.found[beacon.key] = beacon
 
 
 async def async_listen(hass, seconds: float = 4.0) -> dict[str, Beacon]:
-    """Listen for announcements and return what answered, keyed by MAC.
+    """Listen for announcements and return what answered, keyed by Beacon.key.
 
     Four seconds against a one-second beat leaves room for a dropped packet or
     two. Returns empty rather than raising: the port may be held by something

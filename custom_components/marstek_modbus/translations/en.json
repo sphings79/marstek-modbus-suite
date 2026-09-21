@@ -28,7 +28,7 @@
     },
     "error": {
       "permission_denied": "Permission denied",
-      "connection_refused": "Connection refused",
+      "connection_refused": "The device is reachable but is not accepting a connection on this port. A Venus only serves Modbus TCP through its LAN socket, never over Wi-Fi — with no cable in, the discovered address is the wrong one. Otherwise something already holds the single connection the device allows: a Modbus proxy, or a second integration.",
       "timed_out": "Connection timed out",
       "invalid_host": "Invalid host or IP address",
       "invalid_unit_id": "Invalid Modbus Unit ID (must be 1–255)",

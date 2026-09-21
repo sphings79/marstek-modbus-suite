@@ -181,11 +181,11 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         options = [
             selector.SelectOptionDict(
-                value=mac,
+                value=key,
                 label=f"{DEVICE_VERSION_LABELS.get(BEACON_MODEL_VERSIONS.get(b.model, ''), b.model)}"
                       f" · {b.host} · {b.formatted_mac}",
             )
-            for mac, b in sorted(self._discovered.items(), key=lambda kv: kv[1].host)
+            for key, b in sorted(self._discovered.items(), key=lambda kv: kv[1].host)
         ]
         # The device rows are labelled with the addresses found a moment ago,
         # which makes them option dicts - and an option dict carries its own
@@ -719,8 +719,58 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         )
 
 
+async def async_is_connection_refused(host: str, port: int, timeout: float = 3.0) -> bool:
+    """Whether the host answers a TCP connect with an outright refusal.
+
+    Worth telling apart from a timeout, because on a Venus the two mean
+    different things. A timeout is the usual "wrong address, or nothing there".
+    A refusal is a device that is reachable and answering, but not serving
+    Modbus at that address - and there are only two ways for that to happen:
+
+    - It is the wrong interface. Measured on a Venus D: the Modbus server lives
+      on the wired side and never appears on the wireless one, not even after a
+      cold start with no cable in. The device still announces itself over
+      wireless, so discovery can hand out an address that refuses.
+    - The one connection the device accepts is already taken, by a Modbus
+      proxy or by a second integration polling the same battery.
+
+    The probe is cheap in exactly the case it is needed: a refusal comes back
+    at once and never occupies the socket. It runs only after a connection has
+    already failed, so a working setup never pays for it.
+    """
+    writer = None
+    try:
+        _, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port), timeout=timeout
+        )
+    except ConnectionRefusedError:
+        return True
+    except (asyncio.TimeoutError, OSError):
+        return False
+    finally:
+        if writer is not None:
+            writer.close()
+    return False
+
+
 async def async_test_modbus_connection(host: str, port: int, unit_id: int = 1):
-    """Test Modbus connection.
+    """Test the Modbus connection, saying why it failed when it can.
+
+    Returns an error key string, or None when the device answered.
+    """
+    error = await _async_test_modbus_connection(host, port, unit_id)
+
+    # A connection that did not come up is worth one more question: did the
+    # device refuse, or was there simply nothing to talk to? Asked only now,
+    # once the test client above has been closed, so a refusal is the device's
+    # answer rather than an echo of our own attempt at its one socket.
+    if error == "cannot_connect" and await async_is_connection_refused(host, port):
+        return "connection_refused"
+    return error
+
+
+async def _async_test_modbus_connection(host: str, port: int, unit_id: int = 1):
+    """Try to connect and read one register.
 
     Returns error key string or None if successful.
     """

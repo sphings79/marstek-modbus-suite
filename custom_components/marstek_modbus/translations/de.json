@@ -28,7 +28,7 @@
     },
     "error": {
       "permission_denied": "Zugriff verweigert",
-      "connection_refused": "Verbindung abgelehnt",
+      "connection_refused": "Das Gerät ist erreichbar, nimmt auf diesem Port aber keine Verbindung an. Beim Venus gibt es Modbus TCP nur über die LAN-Buchse, nicht über WLAN — steckt kein Kabel, ist die gefundene Adresse die falsche. Sonst hält bereits jemand die eine Verbindung, die das Gerät zulässt: ein Modbus-Proxy oder eine zweite Integration.",
       "timed_out": "Zeitüberschreitung der Verbindung",
       "invalid_host": "Ungültiger Host oder IP-Adresse",
       "invalid_unit_id": "Ungültige Modbus Unit-ID (muss 1-255 sein)",
