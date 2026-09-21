@@ -221,6 +221,9 @@ your setup.
 - Home Assistant **2025.9** or newer
 - HACS, for convenient installation
 
+No Modbus proxy is needed. If you run one anyway because a second client shares the battery,
+read [Modbus proxies stall on this firmware](#known-issues) first.
+
 ### Tested gateways
 
 | Gateway | Notes |
@@ -369,6 +372,28 @@ outbound connection beyond the one TCP socket to the address you configured.
 ---
 
 ## Known issues
+
+- **Modbus proxies stall on this firmware, and need a patched build**
+  You do not need a proxy for this integration — it talks to the battery directly and corrects
+  the firmware's malformed replies itself. You do need one if a second client shares the
+  battery, because the device accepts a single Modbus TCP session and refuses every further
+  connection while one is held.
+
+  The catch: a Venus answers a read of an unimplemented register with a nine byte exception
+  frame whose MBAP length field reads 4 where the protocol requires 3. A proxy is itself a
+  parser, so it waits for a tenth byte that never comes, then closes the connection after its
+  own timeout — measured here as no bytes at all reaching the client, with the real frames only
+  visible once the proxy was stopped. Since this integration deliberately probes register gaps
+  to learn which ones the device serves, that is not a rare event.
+
+  Until the fix is upstream, use the patched add-on:
+  [sphings79/ha-modbusproxy](https://github.com/sphings79/ha-modbusproxy). It builds
+  `modbus-proxy` from
+  [fix/exception-frame-mbap-length](https://github.com/sphings79/modbus-proxy/tree/fix/exception-frame-mbap-length),
+  which frames exception replies by the protocol rather than by the header.
+  Upstream review is open at
+  [tiagocoutinho/modbus-proxy#62](https://github.com/tiagocoutinho/modbus-proxy/pull/62) and
+  [Akulatraxas/ha-modbusproxy#43](https://github.com/Akulatraxas/ha-modbusproxy/pull/43).
 
 - **RS485 control mode and User Work Mode cancel each other out**
   Switching `RS485 control mode` on makes `User Work Mode` report `anti_feed` a few seconds later,
