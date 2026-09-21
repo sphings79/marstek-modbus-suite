@@ -232,7 +232,7 @@
           <span>${a.label??i.label(t)}</span>
           <b class=${a.tone??""}>${this.fmt.version(n.state)}</b>
         </div>
-      `;const r=a.raw?null:i.num(t),o=i.unit(t),c=r===null?n.state:a.duration?this.fmt.duration(r):`${this.fmt.num(r,s)}${o?` ${o}`:""}`;return l`
+      `;const r=a.raw?null:i.num(t),o=i.unit(t),c=r===null?n.state:`${this.fmt.num(r,s)}${o?` ${o}`:""}`;return l`
       <div class="kv">
         <span>${a.label??i.label(t)}</span>
         <b class=${a.tone??""}>${c}</b>
@@ -441,7 +441,6 @@
           <div class="label" style="margin-bottom:12px">${s("core.reserve")}</div>
           ${this.kv("usable_energy",2)} ${this.kv("energy_to_full",2)}
           ${this.kv("backup_reserve_energy",2)}
-          ${p&&!u?this.kv("runtime_to_full",1,{duration:!0}):d}
           ${this.kv("battery_cycle_count_calc",2)}
           ${this.kv("battery_cycle_count",0)} ${this.kv("remaining_cycles",0)}
           ${this.kv("battery_health",2)}

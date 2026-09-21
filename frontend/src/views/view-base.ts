@@ -32,7 +32,7 @@ export abstract class MkView extends LitElement {
   protected kv(
     key: string,
     digits = 1,
-    opts: { tone?: string; label?: string; raw?: boolean; version?: boolean; duration?: boolean } = {},
+    opts: { tone?: string; label?: string; raw?: boolean; version?: boolean } = {},
   ): TemplateResult | typeof nothing {
     const r = this.reader;
     if (!r.entityId(key)) return nothing;
@@ -51,13 +51,10 @@ export abstract class MkView extends LitElement {
 
     const numeric = opts.raw ? null : r.num(key);
     const unit = r.unit(key);
-    // A duration carries its own units, so the entity's "h" would read twice.
     const text =
       numeric === null
         ? raw.state
-        : opts.duration
-          ? this.fmt.duration(numeric)
-          : `${this.fmt.num(numeric, digits)}${unit ? ` ${unit}` : ""}`;
+        : `${this.fmt.num(numeric, digits)}${unit ? ` ${unit}` : ""}`;
 
     return html`
       <div class="kv">
@@ -78,7 +75,7 @@ export abstract class MkView extends LitElement {
   protected kvFirst(
     keys: string[],
     digits = 1,
-    opts: { tone?: string; label?: string; raw?: boolean; version?: boolean; duration?: boolean } = {},
+    opts: { tone?: string; label?: string; raw?: boolean; version?: boolean } = {},
   ): TemplateResult | typeof nothing {
     const key = keys.find((candidate) => this.reader.entityId(candidate));
     return key ? this.kv(key, digits, opts) : nothing;
