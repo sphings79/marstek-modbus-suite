@@ -237,7 +237,7 @@
         <span>${a.label??i.label(t)}</span>
         <b class=${a.tone??""}>${c}</b>
       </div>
-    `}kvFirst(t,s=1,a={}){const i=t.find(n=>this.reader.entityId(n));return i?this.kv(i,s,a):p}packElectrical(){const t=this.reader;if(t.entityId("battery_voltage")||!t.entityId("battery_1_voltage"))return[this.kv("battery_voltage",2),this.kv("battery_current",2)];const s=t.conductingPack(),a=s===null?this.t("common.standby"):this.t("common.pack_n",{pack:s});if(s===null){const i=this.t("common.unavailable");return[this.row(`${this.t("common.voltage")} · ${a}`,i),this.row(`${this.t("common.current")} · ${a}`,i)]}return[this.kv(`battery_${s}_voltage`,2,{label:`${this.t("common.voltage")} · ${a}`}),this.kv(`battery_${s}_current`,2,{label:`${this.t("common.current")} · ${a}`})]}row(t,s,a=""){return o`
+    `}kvFirst(t,s=1,a={}){const i=t.find(n=>this.reader.entityId(n));return i?this.kv(i,s,a):p}packElectrical(){const t=this.reader;if(!t.entityId("battery_1_voltage"))return[this.kv("battery_voltage",2),this.kv("battery_current",2)];const s=t.conductingPack(),a=s===null?this.t("common.standby"):this.t("common.pack_n",{pack:s});if(s===null){const i=this.t("common.unavailable");return[this.row(`${this.t("common.voltage")} · ${a}`,i),this.row(`${this.t("common.current")} · ${a}`,i)]}return[this.kv(`battery_${s}_voltage`,2,{label:`${this.t("common.voltage")} · ${a}`}),this.kv(`battery_${s}_current`,2,{label:`${this.t("common.current")} · ${a}`})]}row(t,s,a=""){return o`
       <div class="kv">
         <span>${t}</span>
         <b class=${a}>${s}</b>

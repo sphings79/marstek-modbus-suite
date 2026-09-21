@@ -93,7 +93,11 @@ export abstract class MkView extends LitElement {
    */
   protected packElectrical(): (TemplateResult | typeof nothing)[] {
     const r = this.reader;
-    if (r.entityId("battery_voltage") || !r.entityId("battery_1_voltage")) {
+    // The indexed pair decides, the way kvFirst used to order it. A D that was
+    // set up under an older version can still carry a battery_voltage entity
+    // from a register map that no longer has one; it sits at unavailable, and
+    // preferring it drops both rows instead of showing the pack.
+    if (!r.entityId("battery_1_voltage")) {
       return [this.kv("battery_voltage", 2), this.kv("battery_current", 2)];
     }
 
