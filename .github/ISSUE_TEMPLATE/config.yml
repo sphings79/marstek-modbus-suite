@@ -6,6 +6,11 @@ contact_links:
   - name: The battery disappears from the network every 30 minutes
     url: https://github.com/sphings79/marstek-modbus-suite/blob/main/FIRMWARE-DROPOUTS.md
     about: The device's own firmware resetting its network chip, not an integration bug. Mechanism and how to stop it.
+  - name: Timeouts or dropped connections when a Modbus proxy is in the path
+    url: https://github.com/sphings79/ha-modbusproxy
+    about: >-
+      A Venus frames its exception replies wrong, and a stock proxy waits for a byte that never
+      arrives. Not an integration bug — this build fixes it while the change is in upstream review.
   - name: Known issues
     url: https://github.com/sphings79/marstek-modbus-suite#known-issues
     about: RS485 control mode against User Work Mode, AI Optimized not reflected, and the rest already documented.
