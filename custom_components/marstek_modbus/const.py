@@ -107,6 +107,21 @@ MIN_SCAN_INTERVALS = {
     "E v1/v2": {"high": 3, "low": 10},
 }
 
+# Where the polling page lives, per language. hassfest refuses a URL inside a
+# translation string and asks for a placeholder instead, which is the better
+# arrangement anyway: the link then follows the language Home Assistant runs in
+# rather than being baked into one catalogue.
+DOCS_BASE_URL = "https://github.com/sphings79/marstek-modbus-suite/blob/main/docs"
+POLLING_DOC_BY_LANGUAGE = {"de": "polling-groups.de.md"}
+POLLING_DOC_DEFAULT = "polling-groups.md"
+
+
+def polling_doc_url(language):
+    """The polling page in the given language, falling back to English."""
+    code = str(language or "en").split("-")[0].lower()
+    return f"{DOCS_BASE_URL}/{POLLING_DOC_BY_LANGUAGE.get(code, POLLING_DOC_DEFAULT)}"
+
+
 # Used when the version is missing or unknown: the safe end of the range.
 DEFAULT_MIN_SCAN_INTERVALS = {"high": 5, "low": 12}
 

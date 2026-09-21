@@ -55,7 +55,7 @@
       },
       "polling": {
         "title": "Polling-Intervalle konfigurieren",
-        "description": "Abfragehäufigkeit pro Kategorie anpassen. Minimum: High {min_high} s, Low {min_low} s.\n\n[Welche Werte im schnellen Takt liegen](https://github.com/sphings79/marstek-modbus-suite/blob/main/docs/polling-groups.de.md) — alles Übrige liegt im langsamen.",
+        "description": "Abfragehäufigkeit pro Kategorie anpassen. Minimum: High {min_high} s, Low {min_low} s.\n\n[Welche Werte im schnellen Takt liegen]({docs_url}) — alles Übrige liegt im langsamen.",
         "data": {
           "high": "High-Priorität Intervall (s)",
           "low": "Low-Priorität Intervall (s)"

@@ -55,7 +55,7 @@
       },
       "polling": {
         "title": "Configure polling intervals",
-        "description": "Adjust polling frequency per category. Minimum: high {min_high} s, low {min_low} s.\n\n[Which readings are on the fast rate](https://github.com/sphings79/marstek-modbus-suite/blob/main/docs/polling-groups.md) — everything else is on the slow one.",
+        "description": "Adjust polling frequency per category. Minimum: high {min_high} s, low {min_low} s.\n\n[Which readings are on the fast rate]({docs_url}) — everything else is on the slow one.",
         "data": {
           "high": "High priority interval (s)",
           "low": "Low priority interval (s)"

@@ -27,6 +27,7 @@ from .const import (
     DEVICE_VERSION_LABELS,
     DOMAIN,
     min_scan_intervals,
+    polling_doc_url,
     MAX_PACK_COUNT,
     CONF_PACK_COUNT,
     PACK_COUNT_AUTO,
@@ -417,6 +418,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                 "lowest": str(lowest),
                 "min_high": str(floors["high"]),
                 "min_low": str(floors["low"]),
+                "docs_url": polling_doc_url(self.hass.config.language),
             },
             last_step=True,
         )
