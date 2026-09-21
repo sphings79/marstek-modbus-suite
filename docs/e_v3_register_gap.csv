@@ -1,0 +1,119 @@
+register,name_from_d_map,unit,type,scale,part_of,sram_e3,note
+30000,bat_sample_volt,V,u16,x1,,0x20014EB2,Struct +0x1e 'bat_sample_volt(0.1V)'
+30002,env_temp,°C,i16,x1,,0x20014EB4,Struct +0x20 'env_temp(0.1C)'. Alias 35000
+30003,radiator_temp,°C,i16,x1,,0x20014EB6,Struct +0x22 'radiator_temp(0.1C)'. Alias 35001/35002
+30004,grid_volt,V,u16,x1,,0x20014EA4,Struct +0x10 'grid_volt(0.1V)'. Alias 32200/32201
+30005,off_grid_volt,V,u16,x1,,0x20014EA8,Struct +0x14 'off_grid_volt(0.1V)'. Alias 32300/32301
+30007,off_grid_power,W,i16,x1,,0x20014EAE,Struct +0x1a 'off_grid_power(1W)'. Alias 32302. BLE-Payload 0x00 ('Backup Load' in VenusControl) ist eine direkte Kopie 
+30010,work_mode,,u8,x1,,0x20000144,"0x20000144 'work_mode' / +1 sleep_flag, +2 bat_mode (beide nicht serviert)"
+30020,mppt1_voltage,V,u16,x1,,0x20014F4C,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
+30021,mppt2_voltage,V,u16,x1,,0x20014F52,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
+30022,mppt3_voltage,V,u16,x1,,0x20014F58,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
+30023,mppt4_voltage,V,u16,x1,,0x20014F5E,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
+30024,mppt1_current,A,u16,x1,,0x20014F4E,"MPPT-Struct Feld +2 (aus Pointer-Stride abgeleitet). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1"
+30025,mppt2_current,A,u16,x1,,0x20014F54,"MPPT-Struct Feld +2. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow(0.1W)='"
+30026,mppt3_current,A,u16,x1,,0x20014F5A,"MPPT-Struct Feld +2. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow(0.1W)='"
+30027,mppt4_current,A,u16,x1,,0x20014F60,"MPPT-Struct Feld +2. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow(0.1W)='"
+30028,inv_bat_voltage,V,u16,x1,,0x20014F74,Inverter-Struct 0x20014F4C+0x30 'bat_vol_0.1V'. Live 533=53.3V
+30029,inv_bat_current,A,i16,x1,,0x20014F76,Inverter-Struct +0x32 'bat_cur_0.1A'. Live -1 (Idle)
+30030,config_word_2000018A,,u16,x1,,0x2000018A,Kern-Global 0x2000018A. Writer Modbus_StoreValue16 (CAN fc 0xfe) -> per CAN/Modbus gesetzter Konfigurationswert
+30031,inv_slot8_38,,u16,x1,,0x20014F7C,"Inverter-Struct 0x20014F4C+0x38, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht"
+30032,inv_slot8_3a,,u16,x1,,0x20014F7E,"Inverter-Struct 0x20014F4C+0x3a, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht"
+30033,inv_slot8_3c,,u16,x1,,0x20014F80,"Inverter-Struct 0x20014F4C+0x3c, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht"
+30034,inv_slot8_3e,,u16,x1,,0x20014F82,"Inverter-Struct 0x20014F4C+0x3e, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht"
+30035,inv_boundary_20014F8C,,i16,x1,,0x20014F84,"0x20014F8C, Grenze Inverter-Struct/BMS-Aggregat. Befuellt via Modbus_StorePairSlot (CAN fc 0xff, Slot 2)"
+30036,inv_base_voltage,V,u16,x1,,0x20014F78,Inverter-Struct +0x34 'base_vol_0.01V' (interne/PE-Referenz). Live 219=2.19V
+30037,mppt1_power,W,u16,x1,,0x20014F50,"MPPT-Struct Feld +4 / Alias 37017. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1V)=%d|Cur(0.1A)=%d"
+30038,mppt2_power,W,u16,x1,,0x20014F56,"MPPT-Struct Feld +4 / Alias 37018. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1V)=%d|Cur(0.1A)=%d"
+30039,mppt3_power,W,u16,x1,,0x20014F5C,"MPPT-Struct Feld +4 / Alias 37019. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1V)=%d|Cur(0.1A)=%d"
+30040,mppt4_power,W,u16,x1,,0x20014F62,"MPPT-Struct Feld +4 / Alias 37020. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1V)=%d|Cur(0.1A)=%d"
+30102,pack1_max_cell_voltage_mirror,V,u16,x1,,0x20014FBC,"identische Quelle wie 34005/37007 (Pack0-Struct +0x10), Rohwert mV"
+30103,pack1_min_cell_voltage_mirror,V,u16,x1,,0x20014FBE,"identische Quelle wie 34006/37008 (Pack0-Struct +0x12), Rohwert mV"
+30104,pack1_max_cell_temp,°C,i16,x10,,0x20014FC0,Pack1-Struct +0x14 (direkt nach min_cell_voltage). FW multipliziert x10 -> Anzeige 0.01 degC. Uebereinstimmend: alte Liv
+30105,pack1_min_cell_temp,°C,i16,x10,,0x20014FC2,"Pack1-Struct +0x16. FW multipliziert x10 -> Anzeige 0.01 degC. Uebereinstimmend: alte Live-Map 'cell_temp_hp_2', Read-Ha"
+30106,pack1_temp_3_mirror,°C,u16,x1,,0x20014FFA,"Alias 34017 (Pack1-Struct +0x4e), Live meist 0"
+30107,pack1_temp_1_mirror,°C,i16,x1,,0x20014FF6,"Alias 34011 (Pack1-Struct +0x4a), Live bestaetigt"
+30108,pack1_temp_2_mirror,°C,i16,x1,,0x20014FF8,"Alias 34012 (Pack1-Struct +0x4c), Live bestaetigt"
+30109,bms_factory_test,,u8,x1,,0x20014FA4,Alias 32113 (CAN factory_test)
+30110,config_setpoint_mirror,,u8,x1,,0x20014FA7,"Alias 32114 (0x20014FAF): vom Write-Handler beschriebener Config-Setpoint, kein Sensor"
+30201,ems_boot_ver,,u8,x1,,0x20000038,"KORREKTUR: 0x20000038 ist 'boot_ver' des EMS/Control (Bootloader), NICHT ems_sub_version. Beleg: Versions-Debug-Print 0x"
+30203,vns_boot_ver,,u16,x1,,0x20000160,"VNS (Micro-Inverter) Bootloader-Version. Block 0x2000015C+4, Writer Telemetry_Store_RegCB (CAN 0xCB). Inverter_Telemetry"
+30205,mppt_ver,,u16,x1,,0x20000188,"KORREKTUR: 0x20000188 ist die MPPT-Firmware-Version, NICHT bms_sub_version. Versions-Debug-Print 0x08036F6A liest 0x2000"
+30210,pack1_mos_status_mirror,,u8,x1,,0x20014FBA,"Alias 34004, Live 0..3 = 2 MOSFET-Flags"
+30211,config_byte_can54,,u8,x1,,0x20000165,0x20000165. Writer: Config_PostWriteCommit + Telemetry_Store_Reg54 (CAN-ID 0x54) -> per CAN setzbarer Konfigurationswert
+30212,selftest_status,,u8,x1,,0x20000138,"Kern-Global 0x20000138. Writer in v150 aufgeloest: FUN_08019364 @0x08019364, Start-Selbsttest, fuenf Schreibstellen, kei"
+30213,config_byte_canc1,,u8,x1,,0x20000164,0x20000164. Writer: Config_Counters_Reset + Telemetry_Store_RegC1 (CAN-ID 0xC1) -> per CAN setzbarer Konfigurationswert
+30214,bms_self_check,,u8,x1,,0x20014FA6,CAN Status-Byte pgn_1007 'self_check' (+0x20)
+32100,bms_battery_voltage,V,u16,x1,,0x20014F86,CAN-Aggregat-Struct 0x20014F8E+0x00 pgn_1801 'bat_volt(10mV)'. EINHEIT 10mV (nicht 0.1V). Live 5372=53.72V. Geht als Fak
+32101,bms_battery_current,A,i16,/10,,0x20014F88,"CAN +0x02 pgn_1801 'bat_curr(100mA)'. Loest dc_current-Raetsel: BMS-Packstrom 100mA, FW /10 / 0x9965 = Entladung. Lastte"
+32102,bat_sample_power,W,float32,x1,,0x20014EB0,KONFLIKT GELOEST: Quelle 0x20014EB8 ist i16 'bat_sample_power(1W)' (Debug-String). Die float32-Typangabe des Descriptors
+32103,bat_sample_power_w2,W,float32,x1,32102,,"Folgeregister 2/2 von 32102. Lasttest 2026-08-22: liest 0 in beiden Lastzustaenden (Folgeregister von 32102, das ebenfal"
+32104,bms_soc,%,u16,/10,,0x20014F8C,CAN +0x06 'bat_soc(0.1)'. FW teilt /10 (=soc_global)
+32106,bms_charge_current_limit,A,u16,x1,,0x20014F98,CAN +0x12 pgn_1803 'chrg_curr(100mA)'. Alias 35111
+32107,bms_discharge_current_limit,A,u16,x1,,0x20014F9A,CAN +0x14 pgn_1803 'dischrg_curr(100mA)'. Alias 35112
+32108,bms_battery_temp,°C,i16,x1,,0x20014F8A,CAN +0x04 pgn_1801 'bat_temp(0.1C)'. Alias 35010
+32109,bms_pack_count,,u8,x1,,0x20014F90,CAN +0x0a 'bat_total_nb' (Anzahl vorhandener Packs) Live bestaetigt 2026-09-10 (Direktlesung ueber Proxy): 7 bei sieben 
+32110,bms_online_mask,,u16,x1,,0x20014F91,"CAN +0x0b 'bat_online_mask' (u16 Bitmaske: welche Packs online) Live bestaetigt 2026-09-10: 127 = 0b1111111, alle sieben"
+32111,bms_work_pack_idx,,u8,x1,,0x20014F93,CAN +0x0d 'work_bat_idx' (aktiver Pack-Index). Lasttest 2026-08-22: stand auf 4; im Doppelscan bewegte sich ausschliessl
+32112,bms_lock_flag,,u8,x1,,0x20014FA5,CAN Status-Byte pgn_1804 'lock_flag' (+0x1f)
+32113,bms_factory_test,,u8,x1,,0x20014FA4,CAN Status-Byte pgn_1804 'factory_test' (+0x1e). Alias 30109
+32114,config_setpoint_20014FAF,,u8,x1,,0x20014FA7,"0x20014FAF wird vom Modbus-Write-Handler (0x08052BB0/0x08052BBC) BESCHRIEBEN -> Config-Setpoint, kein Sensor. Alias 3011"
+32201,grid_volt_dup,V,u16,x1,,0x20014EA4,identische Quelle wie 32200 -- kein eigener Messwert
+32202,grid_sample_power,W,i16,x1,,0x20014EAC,Alias 30006 (Struct +0x18) / elem_size 4 bei i16 bleibt Descriptor-Inkonsistenz
+32203,grid_sample_power_w2,W,i16,x1,32202,,Folgeregister 2/2 von 32202
+34000,pack1_bat_volt,V,u16,x1,,0x20014FAC,Pack-Struct Stride 0x60 / Alias 30100 | FW-BELEG 2026-08-16: BMS_Debug_PerPack_Detail_Print bestaetigt Feld 'Bat Volt' (
+34001,pack1_bat_curr,A,i16,x1,,0x20014FAE,Pack-Struct Stride 0x60 / Alias 30101 | FW-BELEG 2026-08-16: BMS_Debug_PerPack_Detail_Print bestaetigt Feld 'Bat Curr' (
+34004,pack1_mos_status,,u8,x1,,0x20014FBA,Pack1-Struct +0x0e (u8). BMS-FW 'Chg Mos/Dsg Mos' / BESTAETIGT durch Live-Scans (Wertebereich 0..3 = genau 2 Flags) | FW
+34005,pack1_max_cell_voltage,V,u16,x1,,0x20014FBC,Rohwert in mV / Alias 30102/37007 | FW-BELEG 2026-08-16: BMS_Debug_PerPack_Detail_Print bestaetigt Feld 'Max Cell' (BMS 
+34006,pack1_min_cell_voltage,V,u16,x1,,0x20014FBE,Rohwert in mV / Alias 30103/37008 | FW-BELEG 2026-08-16: BMS_Debug_PerPack_Detail_Print bestaetigt Feld 'Min Cell' (BMS 
+34007,pack1_protect1,,i16,x1,,0x20014FC4,"Pack+0x18. KORRIGIERT 2026-08-16: BMS CAN_TX_PerPack_10Msgs Frame 0x23 Byte0-1 = Protect1 (Schutz-Bitmaske 1), NICHT sta"
+34008,pack1_protect2,,u16,x1,,0x20014FC6,Pack+0x1a. KORRIGIERT 2026-08-16: Frame 0x23 Byte2-3 = Protect2 (Schutz-Bitmaske 2). War faelschlich protect1.
+34009,pack1_bms_reserved_5a,,u16,x1,,0x20014FC8,"Pack+0x1c. KORRIGIERT 2026-08-16: Frame 0x23 Byte4-5 = BMS-Struct-Feld @+0x5a (im BMS-Debug-Print NICHT benannt, Live ~0"
+34010,pack1_bms_version,,u16,x1,,0x20014FCA,Pack1-Struct +0x1e. BESTAETIGT durch Live-Scans (Werte 116/118/1177 = BMS-FW-Versionen) | FW-BELEG 2026-08-16: BMS_Debug
+34011,pack1_temp_1,°C,u16,x1,,0x20014FF6,Pack+0x4a. KORRIGIERT 2026-08-16: BMS Frame 0x41 Byte2-3 = ENV NTC (Umgebungstemperatur). Store-Handler CAN_Store_PerPac
+34012,pack1_temp_2,°C,u16,x1,,0x20014FF8,Pack+0x4c. KORRIGIERT 2026-08-16: BMS Frame 0x41 Byte4-5 = MOS NTC (MOSFET-Temperatur). Faktor 0.1 degC.
+34013,pack1_ntc_block,°C,u16,x1,,0x20014FEC,"Pack1-Struct +0x40, 4 Elemente -> 34013-34016. BESTAETIGT: BMS CAN-Gruppe 0x40 = 4 NTC / Live 11.6-36.1 degC"
+34014,pack1_ntc_block[2],°C,u16,x1,34013,,Folgeregister 2/4 von 34013
+34015,pack1_ntc_block[3],°C,u16,x1,34013,,Folgeregister 3/4 von 34013
+34016,pack1_ntc_block[4],°C,u16,x1,34013,,Folgeregister 4/4 von 34013
+34017,pack1_ntc_unused,°C,u16,x1,,0x20014FFA,Pack+0x4e. GEKLAERT 2026-08-16: BMS Frame 0x41 Byte6-7 werden auf 0 gesetzt -> Register ist konstruktionsbedingt IMMER 0
+35110,bms_charge_voltage_limit,V,u16,x1,,0x20014F96,CAN +0x10 pgn_1803 'chrg_volt(0.1V)'. Live 576=57.6V
+35111,bms_charge_current_limit,A,u16,x1,,0x20014F98,Alias 32106
+35112,bms_discharge_current_limit,A,u16,x1,,0x20014F9A,Alias 32107
+37000,modbus_slave_address,,u8,x1,,0x20000133,
+37001,status_block_offset8,,u16,x1,,0x2000014C,"Status-Block 0x20000144 +8. Writer Protocol_AA_SetDeviceParams (0x0802FC48), Leser Grid_Export_Power_Limiter -> Export-/"
+37002,max_charge_power,W,u16,x1,,0x2000014E,Status-Block 0x20000144 +4
+37003,max_discharge_power,W,u16,x1,,0x20000150,Status-Block 0x20000144 +6
+37005,pack1_soc_scaled,%,u16,/10,,0x20014FB0,"gleiche Quelle wie 34002, aber FW teilt hier durch 10"
+37006,pack1_max_cell_temp_mirror,°C,i16,x1,,0x20014FC0,"Alias 30104 (Pack1-Struct +0x14), hier ohne FW-x10. Alte Map: 'max_cell_temp_mirror'"
+37009,block_34007_34008,,u16,x1,,0x20014FC4,2 Elemente -> Register 37009-37010 (= 34007/34008)
+37010,block_34007_34008[2],,u16,x1,37009,,Folgeregister 2/2 von 37009
+37011,block_34009_34010,,u16,x1,,0x20014FC8,2 Elemente -> 37011-37012 / 37012 = bms_version
+37012,block_34009_34010[2],,u16,x1,37011,,Folgeregister 2/2 von 37011
+37013,error_code1,,u32,x1,,0x20014E9C,Alias 36100 (error_code1 HIGH-Word)
+37014,error_code1_w2,,u32,x1,37013,,Alias 36101 (error_code1 LOW-Word)
+37015,error_code2,,u32,x1,,0x20014EA0,Alias 36102 (error_code2 HIGH-Word)
+37016,error_code2_w2,,u32,x1,37015,,Alias 36103 (error_code2 LOW-Word)
+37017,mppt1_power,W,u16,x1,,0x20014F50,"identische Quelle wie 30037 (Inverter-Struct +0x0c). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1"
+37018,mppt2_power,W,u16,x1,,0x20014F56,"identische Quelle wie 30038 (Inverter-Struct +0x12). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1"
+37019,mppt3_power,W,u16,x1,,0x20014F5C,"identische Quelle wie 30039 (Inverter-Struct +0x18). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1"
+37020,mppt4_power,W,u16,x1,,0x20014F62,"identische Quelle wie 30040 (Inverter-Struct +0x1e). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1"
+37021,pv_year_capacity,,u32,x1,,0x20014F70,"Inverter-Struct +0x2c 'PV_Year_Cap_10Wh' (u32, Einheit 10Wh). Tages-/Monats-Cap bei +0x20/+0x28 sind keine Register | DE"
+37022,pv_year_capacity_w2,,u32,x1,37021,,Folgeregister 2/2 von 37021 | DEUTUNG WIDERLEGT 2026-08-22: Der Name 'PV_Year_Cap_10Wh' stammt aus einem Firmware-String
+37023,mppt_error,,u16,x1,,0x20014F46,Inverter-Struct +0x02 'Mppt_Error'
+37024,mppt_warning,,u16,x1,,0x20014F4A,Inverter-Struct +0x06 'Mppt_Warning'
+38000,can40_w1,,i16,x1,,0x20000168,"CAN-Frame ID 0x40, Wort 1/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38001,can40_w2,,u16,x1,,0x2000016A,"CAN-Frame ID 0x40, Wort 2/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38002,can40_w3,,i16,x1,,0x2000016C,"CAN-Frame ID 0x40, Wort 3/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38003,can40_w4,,u16,x1,,0x2000016E,"CAN-Frame ID 0x40, Wort 4/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38004,can41_w1,,u16,x1,,0x20000170,"CAN-Frame ID 0x41, Wort 1/3 -> Telemetry_Store_EnergyCounters, Ziel 0x20000170. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38005,can41_w2,,i16,x1,,0x20000172,"CAN-Frame ID 0x41, Wort 2/3 -> Telemetry_Store_EnergyCounters, Ziel 0x20000170. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38006,can41_w3,,u16,x1,,0x20000174,"CAN-Frame ID 0x41, Wort 3/3 -> Telemetry_Store_EnergyCounters, Ziel 0x20000170. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38007,can42_w1,,u16,x1,,0x20000176,"CAN-Frame ID 0x42, Wort 1/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000176. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38008,can42_w2,,u16,x1,,0x20000178,"CAN-Frame ID 0x42, Wort 2/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000176. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38009,can42_w3,,u16,x1,,0x2000017A,"CAN-Frame ID 0x42, Wort 3/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000176. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38010,can42_w4,,u16,x1,,0x2000017C,"CAN-Frame ID 0x42, Wort 4/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000176. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38011,can43_w1,,u16,x1,,0x2000017E,"CAN-Frame ID 0x43, Wort 1/4 -> Telemetry_Store_EnergyCounters, Ziel 0x2000017E. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38012,can43_w2,,u16,x1,,0x20000180,"CAN-Frame ID 0x43, Wort 2/4 -> Telemetry_Store_EnergyCounters, Ziel 0x2000017E. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38013,can43_w3,,u16,x1,,0x20000182,"CAN-Frame ID 0x43, Wort 3/4 -> Telemetry_Store_EnergyCounters, Ziel 0x2000017E. Frame-Nutzdaten 1:1 als 16-Bit-Register "
+38014,can43_w4,,u16,x1,,0x20000184,"CAN-Frame ID 0x43, Wort 4/4 -> Telemetry_Store_EnergyCounters, Ziel 0x2000017E. Frame-Nutzdaten 1:1 als 16-Bit-Register "
