@@ -1111,6 +1111,36 @@
       },
       "battery_power_bms": {
         "name": "Battery Power (BMS)"
+      },
+      "battery_mos_status": {
+        "name": "Battery MOS Status"
+      },
+      "battery_protection_1": {
+        "name": "Battery Protection 1"
+      },
+      "battery_protection_2": {
+        "name": "Battery Protection 2"
+      },
+      "battery_env_temperature": {
+        "name": "Battery Ambient Temperature"
+      },
+      "battery_mos_temperature": {
+        "name": "Battery MOSFET Temperature"
+      },
+      "battery_cell_temperature_1": {
+        "name": "Battery Cell NTC 1"
+      },
+      "battery_cell_temperature_2": {
+        "name": "Battery Cell NTC 2"
+      },
+      "battery_cell_temperature_3": {
+        "name": "Battery Cell NTC 3"
+      },
+      "battery_cell_temperature_4": {
+        "name": "Battery Cell NTC 4"
+      },
+      "bms_battery_soc": {
+        "name": "BMS Battery SoC"
       }
     },
     "binary_sensor": {

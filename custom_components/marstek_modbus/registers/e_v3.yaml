@@ -612,6 +612,174 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         scan_interval: high
         # Low word of error_code2, so bit N here is overall bit N.
+    # --- Registers the control firmware serves and this map did not carry ---
+    # Taken from d.yaml unchanged, including enabled_by_default: the descriptor
+    # tables of the two models agree entry for entry, so the D map decides what
+    # a register is and whether it is worth showing. Only the names change where
+    # the E3 has one battery instead of a stack.
+    work_mode:
+        register: 30010
+        data_type: uint16
+        icon: "mdi:cog-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+    ems_boot_version:
+        register: 30201
+        data_type: uint16
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: low
+        version_format: true
+    vns_boot_version:
+        register: 30203
+        data_type: uint16
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: low
+        version_format: true
+    selftest_status:
+        register: 30212
+        data_type: uint16
+        icon: "mdi:clipboard-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    bms_battery_voltage:
+        register: 32100
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: true
+        scan_interval: high
+    bms_battery_soc:
+        register: 32104
+        scale: 1
+        unit: "%"
+        device_class: battery
+        state_class: measurement
+        enabled_by_default: true
+        data_type: uint16
+        precision: 1
+        scan_interval: high
+    bms_pack_count:
+        register: 32109
+        data_type: uint16
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: low
+    bms_online_mask:
+        register: 32110
+        data_type: uint16
+        icon: "mdi:format-list-checks"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: low
+    bms_active_pack_index:
+        register: 32111
+        data_type: uint16
+        icon: "mdi:battery-sync"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+    battery_mos_status:
+        register: 34004
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+    battery_protection_1:
+        register: 34007
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+    battery_protection_2:
+        register: 34008
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+    battery_env_temperature:
+        register: 34011
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: true
+        scan_interval: low
+    battery_mos_temperature:
+        register: 34012
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: true
+        scan_interval: low
+    battery_cell_temperature_1:
+        register: 34013
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: true
+        scan_interval: low
+    battery_cell_temperature_2:
+        register: 34014
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: true
+        scan_interval: low
+    battery_cell_temperature_3:
+        register: 34015
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: true
+        scan_interval: low
+    battery_cell_temperature_4:
+        register: 34016
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: true
+        scan_interval: low
+    bms_charge_voltage_limit:
+        register: 35110
+        scale: 0.1
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -1178,6 +1346,301 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         # an operating mode rather than a fault. Not confirmed on hardware.
         bit_descriptions:
             0: Alternate limit set active (low confidence)
+
+# Served by the firmware, meaning not established - same list as the Venus D.
+# Off by default; they exist so a scan has something to compare against.
+DEV_UNKNOWN_SENSOR_DEFINITIONS:
+  dev_30030:
+    register: 30030
+    name: "DEV 30030 (config_word_2000018A?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30031:
+    register: 30031
+    name: "DEV 30031 (inv_slot8_38?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30032:
+    register: 30032
+    name: "DEV 30032 (inv_slot8_3a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30033:
+    register: 30033
+    name: "DEV 30033 (inv_slot8_3c?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30034:
+    register: 30034
+    name: "DEV 30034 (inv_slot8_3e?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30035:
+    register: 30035
+    name: "DEV 30035 (inv_boundary_20014F8C?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30036:
+    register: 30036
+    name: "DEV 30036 (inv_base_voltage?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30211:
+    register: 30211
+    name: "DEV 30211 (config_byte_can54?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30213:
+    register: 30213
+    name: "DEV 30213 (config_byte_canc1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30214:
+    register: 30214
+    name: "DEV 30214 (bms_self_check?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_32112:
+    register: 32112
+    name: "DEV 32112 (bms_lock_flag?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34009:
+    register: 34009
+    name: "DEV 34009 (pack1_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37001:
+    register: 37001
+    name: "DEV 37001 (status_block_offset8?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38000:
+    register: 38000
+    name: "DEV 38000 (can40_w1?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38001:
+    register: 38001
+    name: "DEV 38001 (can40_w2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38002:
+    register: 38002
+    name: "DEV 38002 (can40_w3?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38003:
+    register: 38003
+    name: "DEV 38003 (can40_w4?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38004:
+    register: 38004
+    name: "DEV 38004 (can41_w1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38005:
+    register: 38005
+    name: "DEV 38005 (can41_w2?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38006:
+    register: 38006
+    name: "DEV 38006 (can41_w3?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38007:
+    register: 38007
+    name: "DEV 38007 (can42_w1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38008:
+    register: 38008
+    name: "DEV 38008 (can42_w2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38009:
+    register: 38009
+    name: "DEV 38009 (can42_w3?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38010:
+    register: 38010
+    name: "DEV 38010 (can42_w4?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38011:
+    register: 38011
+    name: "DEV 38011 (can43_w1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38012:
+    register: 38012
+    name: "DEV 38012 (can43_w2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38013:
+    register: 38013
+    name: "DEV 38013 (can43_w3?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38014:
+    register: 38014
+    name: "DEV 38014 (can43_w4?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+
+# A second view of a value that already has an entity, kept for the same reason
+# as on the Venus D: it is how a duplicate gets confirmed rather than assumed.
+DEV_DUPLICATE_SENSOR_DEFINITIONS:
+  dev_30102:
+    register: 30102
+    name: "DEV 30102 (pack1_max_cell_voltage_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30103:
+    register: 30103
+    name: "DEV 30103 (pack1_min_cell_voltage_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30104:
+    register: 30104
+    name: "DEV 30104 (pack1_max_cell_temp?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30105:
+    register: 30105
+    name: "DEV 30105 (pack1_min_cell_temp?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30106:
+    register: 30106
+    name: "DEV 30106 (pack1_temp_3_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30109:
+    register: 30109
+    name: "DEV 30109 (bms_factory_test?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30110:
+    register: 30110
+    name: "DEV 30110 (config_setpoint_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30210:
+    register: 30210
+    name: "DEV 30210 (pack1_mos_status_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_32113:
+    register: 32113
+    name: "DEV 32113 (bms_factory_test?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_32114:
+    register: 32114
+    name: "DEV 32114 (config_setpoint_20014FAF?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37006:
+    register: 37006
+    name: "DEV 37006 (pack1_max_cell_temp_mirror?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37009:
+    register: 37009
+    name: "DEV 37009 (block_34007_34008?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37010:
+    register: 37010
+    name: "DEV 37010 (block_34007_34008[2]?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
 
 VERSION_SENSOR_DEFINITIONS:
     firmware_version:

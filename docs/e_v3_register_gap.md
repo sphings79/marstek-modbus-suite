@@ -1,7 +1,7 @@
 # Completing the Venus E3 register map
 
-Working notes for the `e3-register-map` branch. Nothing here is implemented yet — this is the
-scope, the source, and the decisions that have to hold while filling `registers/e_v3.yaml`.
+Working notes for the `e3-register-map` branch. **Done** — 60 of the 65 are in `registers/e_v3.yaml`
+and the other five are accounted for below. Kept as the record of what was decided and why.
 
 ## Why this is safe to do from the firmware
 
@@ -144,9 +144,57 @@ Two checks:
    The E3 is the more conservative of the four here: a.yaml and d.yaml have the two IP entities on
    by default. Worth aligning, in the other direction.
 
-   One oddity found in passing, unrelated to this branch: `e_v12.yaml` maps `ble_mac_address` at
-   **30402**, which on the D is the gateway IP. Either the E v1.2 map differs there or that entry
-   is wrong — it needs checking against an E v1.2 before anyone trusts it.
+   `e_v12.yaml` is not comparable here and was left alone: the Venus E v1.2 runs a different
+   firmware with a different register set, so a number matching the D map means nothing.
+
+## What went in
+
+60 entries, copied from `d.yaml` unchanged — including `enabled_by_default`, because the two
+descriptor tables agree entry for entry and the D map is the one that has been exercised. Verified
+afterwards: zero differences in section, data type, scale, unit, device class, state class,
+precision, category, scan interval, count and icon.
+
+| Section | Count |
+|---|---|
+| `SENSOR_DEFINITIONS` | 19 |
+| `DEV_UNKNOWN_SENSOR_DEFINITIONS` | 28 |
+| `DEV_DUPLICATE_SENSOR_DEFINITIONS` | 13 |
+
+Renamed, because this model has one battery rather than a stack:
+
+| Register | d.yaml | e_v3.yaml |
+|---|---|---|
+| 32104 | `battery_soc` | `bms_battery_soc` — the name was taken, see below |
+| 34004 | `battery_1_mos_status` | `battery_mos_status` |
+| 34007 / 34008 | `battery_1_protection_1` / `_2` | `battery_protection_1` / `_2` |
+| 34011 / 34012 | `battery_1_env_temperature` / `_mos_temperature` | without the index |
+| 34013–34016 | `battery_1_cell_temperature_1`…`_4` | without the index |
+
+`32104` is the BMS aggregate SoC and `34002` is the battery's own. On the Venus D they are
+`battery_soc` and `battery_soc_1`; this map already used `battery_soc` for `34002`, so the
+aggregate took the `bms_` prefix its siblings already use (`bms_battery_voltage`, `bms_pack_count`).
+
+### Five that did not go in
+
+They read a value this map already serves under a different register number — the same SRAM word,
+two descriptor entries. Adding them would have produced a second entity for the same reading:
+
+| Register | d.yaml calls it | already here as |
+|---|---|---|
+| 34000 | `battery_1_voltage` | `battery_voltage` (30100) |
+| 34001 | `battery_1_current` | `battery_current` (30101) |
+| 34005 | `battery_1_max_cell_voltage` | `max_cell_voltage` (37007) |
+| 34006 | `battery_1_min_cell_voltage` | `min_cell_voltage` (37008) |
+| 34010 | `battery_1_bms_version` | `bms_version` (30204) |
+
+Worth noting that the two maps picked different sides of each pair: d.yaml takes the `34xxx`
+register, e_v3.yaml the mirror. Both read the same memory, so nothing is wrong either way, but if
+the maps are ever aligned this is where they differ.
+
+### Still open
+
+The 16 cell voltages are still `battery_1_cell_N_voltage` while everything around them has lost the
+index. Renaming them breaks existing entity ids, so it wants its own commit and a migration note.
 
 ## Known traps
 
