@@ -10,7 +10,21 @@ DEFAULT_PORT = 502
 DEFAULT_MESSAGE_WAIT_MS = 80  # Default wait time for Modbus messages in milliseconds
 CONF_MESSAGE_WAIT_MS = "message_wait_milliseconds"
 DEFAULT_UNIT_ID = 1  # Default Modbus Unit ID (unit ID)
-DEFAULT_TIMEOUT = 3  # Default Modbus request timeout in seconds
+# How long one Modbus request may take before it is given up on.
+#
+# Three seconds was the obvious number until the battery was watched for a
+# whole night. A Venus D on EMS v150 stops answering for about four seconds
+# every five minutes: 138 of those in eleven hours, mean 4.05 s, longest
+# 4.46 s, measured at a Modbus proxy between Home Assistant and the battery,
+# so it is the device and not the link. Every single one of them expired a
+# three second request, and the integration rebuilt the connection each time
+# for a battery that was about to answer.
+#
+# Six covers the longest stall seen with room over it, including the little
+# extra a second request waits when it is queued behind the stalled one
+# (4.53 s worst case). The price is paid only when a battery is really gone,
+# and it is three seconds of patience.
+DEFAULT_TIMEOUT = 6  # Default Modbus request timeout in seconds
 
 # How many unrequested registers a block read may span to avoid a second
 # request. A request costs about the same whatever it carries, so reading a
