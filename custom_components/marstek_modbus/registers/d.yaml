@@ -1513,7 +1513,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     ac_offgrid_power:
         register: 32302
         scale: 1

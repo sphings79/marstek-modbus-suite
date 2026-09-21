@@ -382,7 +382,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 1
-        scan_interval: high
+        scan_interval: low
     ac_offgrid_current:
         register: 32301
         scale: 0.01
