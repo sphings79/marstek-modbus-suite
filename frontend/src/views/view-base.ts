@@ -67,12 +67,10 @@ export abstract class MkView extends LitElement {
   /**
    * The first of these keys the device actually has, as a `kv` row.
    *
-   * Some readings live under two names depending on the model. The multi-pack
-   * Venus D and A carry the battery's terminal voltage, current and BMS version
-   * only as pack 1's entities, because the firmware serves 34000/34001/34010
-   * and 30100/30101/30204 from the same words and a second entity per word
-   * would say the same thing twice. The single-pack E models map those
-   * addresses as battery_voltage, battery_current and bms_version instead.
+   * A reading can live under two names depending on the model: the multi-pack
+   * Venus D and A carry the BMS version only as pack 1's entity, where the
+   * single-pack E models map 30204 as bms_version. Voltage and current look
+   * like the same case and are not - see `packElectrical`.
    */
   protected kvFirst(
     keys: string[],
@@ -81,6 +79,46 @@ export abstract class MkView extends LitElement {
   ): TemplateResult | typeof nothing {
     const key = keys.find((candidate) => this.reader.entityId(candidate));
     return key ? this.kv(key, digits, opts) : nothing;
+  }
+
+  /**
+   * Terminal voltage and current of the pack that is actually working.
+   *
+   * The multi-pack Venus D and A serve these per pack, and only the
+   * conducting one carries a reading: pack 1's current register sits at 0
+   * while another pack does the work. Pinning the pair to pack 1 is how a
+   * 45 A discharge came to be shown as 0 A, so the rows follow the pack the
+   * device has switched in and say which one that is. The single-pack E
+   * models map one unindexed pair and keep it unlabelled.
+   */
+  protected packElectrical(): (TemplateResult | typeof nothing)[] {
+    const r = this.reader;
+    if (r.entityId("battery_voltage") || !r.entityId("battery_1_voltage")) {
+      return [this.kv("battery_voltage", 2), this.kv("battery_current", 2)];
+    }
+
+    const pack = r.conductingPack();
+    const where =
+      pack === null
+        ? this.t("common.standby")
+        : this.t("common.pack_n", { pack });
+
+    if (pack === null) {
+      const dash = this.t("common.unavailable");
+      return [
+        this.row(`${this.t("common.voltage")} · ${where}`, dash),
+        this.row(`${this.t("common.current")} · ${where}`, dash),
+      ];
+    }
+
+    return [
+      this.kv(`battery_${pack}_voltage`, 2, {
+        label: `${this.t("common.voltage")} · ${where}`,
+      }),
+      this.kv(`battery_${pack}_current`, 2, {
+        label: `${this.t("common.current")} · ${where}`,
+      }),
+    ];
   }
 
   /** A row with a value the view worked out itself. */

@@ -1,6 +1,7 @@
 import { html, css, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
 import { MkView } from "./view-base";
+import { MOS_CONDUCTING } from "../entities";
 import { baseStyles } from "../styles";
 import type { PackRange } from "../components/mk-pack-matrix";
 import "../components/mk-pack-matrix";
@@ -22,7 +23,6 @@ import "../components/mk-stat";
  * mos_status values seen in the field. 3 means the pack's MOSFETs are closed
  * and it is the one working; 2 is the brief handover state; 0 is disconnected.
  */
-const MOS_CONDUCTING = 3;
 const MOS_KNOWN = [0, 2, 3];
 
 @customElement("mk-view-cells")
@@ -141,7 +141,7 @@ export class MkViewCells extends MkView {
         <mk-stat
           label=${t("cells.temp_span")}
           value=${f.num(this.tempSpan(), 1)}
-          unit="K"
+          unit="°C"
           foot=${`${f.num(r.num("min_cell_temperature"), 1)} – ${f.num(
             r.num("max_cell_temperature"),
             1,

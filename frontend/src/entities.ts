@@ -52,6 +52,9 @@ export function findDevices(hass: HomeAssistant): MarstekDevice[] {
  * unavailable, so a view can decide what to show instead of rendering the
  * string "unavailable" as if it were a measurement.
  */
+/** MOSFET status of a pack whose contactors are closed and conducting. */
+export const MOS_CONDUCTING = 3;
+
 export class DeviceReader {
   constructor(
     private readonly hass: HomeAssistant,
@@ -229,6 +232,22 @@ export class DeviceReader {
       if (this.device.byKey[`battery_1_cell_${cell}_voltage`]) highest = cell;
     }
     return highest;
+  }
+
+  /**
+   * The pack that is carrying the current, or null when none of them is.
+   *
+   * The multi-pack models close one pack's MOSFETs at a time and leave the
+   * rest open, so only that pack's voltage and current registers mean
+   * anything - d.yaml records pack 2 at -45.9 A while pack 1's register sat
+   * at 0. The first conducting pack wins: during the handover two of them
+   * report 2 rather than 3, and 3 on two packs at once has not been seen.
+   */
+  conductingPack(): number | null {
+    for (let pack = 1; pack <= this.packCount(); pack++) {
+      if (this.num(`battery_${pack}_mos_status`) === MOS_CONDUCTING) return pack;
+    }
+    return null;
   }
 
   packCount(): number {

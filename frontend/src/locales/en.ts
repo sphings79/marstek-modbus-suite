@@ -20,13 +20,17 @@ export const en: Record<string, string> = {
   "control.power_hint":
     "These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.",
   "control.limits": "Limits",
+  "control.limits_hint":
+    "After the device restarts these three often read 0. The limit set earlier still applies and does not have to be written again.",
   "control.mode": "Mode",
+  "control.mode_hint":
+    "Has no effect while the device is being controlled over Modbus.",
   "control.polling": "Polling",
   "control.polling_hint":
     "Stops this battery being read at all and closes the connection, for a device switched off over the winter. Paused entities either keep their last reading or go unavailable, whichever you pick here. Readings are not restored after a Home Assistant restart.",
-  "control.backup_hint": "Keeps a reserve for the off-grid output.",
+  "control.backup_hint": "Switches the backup socket on and off.",
   "control.rs485_hint":
-    "Switching this off hands control back to the device, and this page stops having any effect.",
+    "Has to be on before the device takes Modbus control at all — from this page, from an automation, or from the integration. Switched off, the device regulates itself again.",
   "control.overwritten":
     "Something else changed {names} right after this panel did. An external controller is writing the same registers.",
   "control.schedules": "Schedules",
@@ -43,8 +47,6 @@ export const en: Record<string, string> = {
   "control.reset": "Restart device",
   "control.reset_confirm": "Really restart",
   "control.cancel": "Cancel",
-  "control.reset_hint":
-    "Reconnects after a few seconds. A factory reset is deliberately not offered here — it is in the entity list.",
 
   "control.opt.manual": "Manual",
   "control.opt.anti_feed": "Anti-feed",
@@ -52,7 +54,7 @@ export const en: Record<string, string> = {
   "control.opt.standby": "Standby",
   "control.opt.charge": "Charge",
   "control.opt.discharge": "Discharge",
-  "control.opt.active": "Polling",
+  "control.opt.active": "On",
   "control.opt.paused_unavailable": "Paused · entities unavailable",
   "control.opt.paused_frozen": "Paused · entities frozen",
 
@@ -76,6 +78,10 @@ export const en: Record<string, string> = {
   "status.wifi": "WIFI",
 
   "common.pack": "PACK",
+  "common.pack_n": "pack {pack}",
+  "common.standby": "standby",
+  "common.voltage": "Voltage",
+  "common.current": "Current",
   "common.device": "Device",
 
   // ---- overview ----
@@ -84,8 +90,8 @@ export const en: Record<string, string> = {
   "core.stored": "Stored",
   "core.capacity": "Capacity",
   "core.stored_of_total": "Stored / total",
-  "core.usable": "Usable",
-  "core.to_full": "Room to full",
+  "core.usable": "Usable energy",
+  "core.to_full": "Energy to full",
   "core.runtime": "Runtime",
   "core.to_empty": "Until empty",
   "core.until_full": "Until full",
@@ -98,7 +104,7 @@ export const en: Record<string, string> = {
   "core.today_charged": "Charged today",
   "core.today_discharged": "Discharged today",
   "core.cell_delta": "Largest cell delta",
-  "core.internal_temp": "Internal temperature",
+  "core.internal_temp": "Device temperature",
   "core.mppt_total": "MPPT total",
   "core.in_pack": "in pack {pack}",
   "core.no_delta": "no per-pack readings",
@@ -153,7 +159,7 @@ export const en: Record<string, string> = {
   "packs.none": "This battery reports no per-pack state of charge.",
   "packs.table_title": "Every pack in detail",
   "packs.table_legend":
-    "Highlighted rows sit {points} points or further from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
+    "Highlighted rows sit {points} % or further from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
   "packs.conducting": "conducting now",
   "packs.col_soc": "SOC",
   "packs.col_energy": "kWh",

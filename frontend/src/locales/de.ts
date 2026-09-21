@@ -12,13 +12,17 @@ export const de: Record<string, string> = {
   "control.power_hint":
     "Diese beiden setzen den Betriebspunkt direkt. Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager — schreibt dieselben Register und gewinnt innerhalb von Sekunden.",
   "control.limits": "Grenzwerte",
+  "control.limits_hint":
+    "Nach einem Neustart des Geräts melden diese drei oft 0. Die zuvor gesetzte Grenze gilt trotzdem weiter und muss nicht neu geschrieben werden.",
   "control.mode": "Modus",
+  "control.mode_hint":
+    "Ohne Wirkung, solange das Gerät über Modbus gesteuert wird.",
   "control.polling": "Abfrage",
   "control.polling_hint":
     "Hält die Abfrage dieses Speichers komplett an und schließt die Verbindung — gedacht für ein Gerät, das über den Winter ausgeschaltet ist. Pausierte Entitäten behalten entweder ihren letzten Wert oder werden nicht verfügbar, je nach Auswahl. Nach einem Neustart von Home Assistant sind die Werte weg.",
-  "control.backup_hint": "Hält eine Reserve für den Notstromausgang zurück.",
+  "control.backup_hint": "Schaltet die Notstromsteckdose ein und aus.",
   "control.rs485_hint":
-    "Ausgeschaltet gibt die Steuerung an das Gerät zurück — diese Seite bleibt dann wirkungslos.",
+    "Muss eingeschaltet sein, damit sich das Gerät überhaupt per Modbus steuern lässt — von dieser Seite, von einer Automation oder von der Integration. Ausgeschaltet regelt das Gerät wieder selbst.",
   "control.overwritten":
     "Etwas anderes hat {names} direkt nach diesem Panel geändert. Eine externe Regelung schreibt dieselben Register.",
   "control.schedules": "Zeitpläne",
@@ -35,8 +39,6 @@ export const de: Record<string, string> = {
   "control.reset": "Gerät neu starten",
   "control.reset_confirm": "Wirklich neu starten",
   "control.cancel": "Abbrechen",
-  "control.reset_hint":
-    "Verbindet sich nach einigen Sekunden wieder. Ein Werksreset wird hier bewusst nicht angeboten — er steht in der Entitätsliste.",
 
   "control.opt.manual": "Manuell",
   "control.opt.anti_feed": "Nulleinspeisung",
@@ -44,7 +46,7 @@ export const de: Record<string, string> = {
   "control.opt.standby": "Bereit",
   "control.opt.charge": "Laden",
   "control.opt.discharge": "Entladen",
-  "control.opt.active": "Abfrage",
+  "control.opt.active": "Eingeschaltet",
   "control.opt.paused_unavailable": "Pausiert · Entitäten nicht verfügbar",
   "control.opt.paused_frozen": "Pausiert · Entitäten eingefroren",
 
@@ -68,6 +70,10 @@ export const de: Record<string, string> = {
   "status.wifi": "WLAN",
 
   "common.pack": "PACK",
+  "common.pack_n": "Pack {pack}",
+  "common.standby": "Standby",
+  "common.voltage": "Spannung",
+  "common.current": "Strom",
   "common.device": "Gerät",
 
   // ---- Übersicht ----
@@ -76,8 +82,8 @@ export const de: Record<string, string> = {
   "core.stored": "Gespeichert",
   "core.capacity": "Kapazität",
   "core.stored_of_total": "Gespeichert / gesamt",
-  "core.usable": "Nutzbar",
-  "core.to_full": "Freie Kapazität",
+  "core.usable": "Nutzbare Energie",
+  "core.to_full": "Energie bis voll",
   "core.runtime": "Laufzeit",
   "core.to_empty": "Bis leer",
   "core.until_full": "Bis voll",
@@ -90,7 +96,7 @@ export const de: Record<string, string> = {
   "core.today_charged": "Heute geladen",
   "core.today_discharged": "Heute entladen",
   "core.cell_delta": "Größtes Zelldelta",
-  "core.internal_temp": "Innentemperatur",
+  "core.internal_temp": "Gerätetemperatur",
   "core.mppt_total": "MPPT gesamt",
   "core.in_pack": "in Pack {pack}",
   "core.no_delta": "keine Werte je Pack",
@@ -145,7 +151,7 @@ export const de: Record<string, string> = {
   "packs.none": "Dieser Speicher meldet keinen Ladezustand je Pack.",
   "packs.table_title": "Alle Packs im Detail",
   "packs.table_legend":
-    "Hervorgehobene Zeilen liegen {points} Punkte oder weiter vom mittleren Pack entfernt. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
+    "Hervorgehobene Zeilen liegen {points} % oder weiter vom mittleren Pack entfernt. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
   "packs.conducting": "arbeitet gerade",
   "packs.col_soc": "SoC",
   "packs.col_energy": "kWh",

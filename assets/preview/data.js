@@ -16,7 +16,9 @@ export const VALUES = {
   stored_energy: ["10.93", "kWh"], usable_energy: ["8.78", "kWh"],
   energy_to_full: ["6.99", "kWh"], backup_reserve_energy: ["0.72", "kWh"],
   battery_power: ["-771", "W"],
-  ac_power: ["715", "W"], battery_voltage: ["52.9", "V"], battery_current: ["-14.6", "A"],
+  // No unindexed battery_voltage/battery_current: this is a Venus D, which
+  // serves those per pack. They are generated with the packs below.
+  ac_power: ["715", "W"],
   ac_voltage: ["239.1", "V"], ac_frequency: ["50", "Hz"], conversion_efficiency: ["92.7", "%"],
   runtime_to_empty: ["13.5", "h"], runtime_to_full: ["0.0", "h"],
   battery_cycle_count_calc: ["5.66", ""], battery_cycle_count: ["6", ""],

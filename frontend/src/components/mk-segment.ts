@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { baseStyles } from "../styles";
 
@@ -15,6 +15,8 @@ export interface SegmentOption {
 @customElement("mk-segment")
 export class MkSegment extends LitElement {
   @property({ type: String }) label = "";
+  /** Sits between the caption and the bar, so it reads as this one's. */
+  @property({ type: String }) hint = "";
   @property({ attribute: false }) options: SegmentOption[] = [];
   @property({ type: String }) value: string | null = null;
   @property({ type: Boolean }) disabled = false;
@@ -31,6 +33,14 @@ export class MkSegment extends LitElement {
       .label {
         display: block;
         margin-bottom: 7px;
+      }
+      .hint {
+        display: block;
+        font-family: var(--mk-mono);
+        font-size: 9.5px;
+        color: var(--mk-dim);
+        line-height: 1.5;
+        margin: -3px 0 7px;
       }
       .bar {
         display: flex;
@@ -89,6 +99,7 @@ export class MkSegment extends LitElement {
     const shown = this.pending ?? this.value;
     return html`
       <span class="label">${this.label}</span>
+      ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
       <div class="bar" role="group" aria-label=${this.label}>
         ${this.options.map(
           (o) => html`

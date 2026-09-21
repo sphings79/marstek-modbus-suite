@@ -132,13 +132,14 @@ export class MkViewControl extends MkView {
     `;
   }
 
-  private segment(key: string) {
+  private segment(key: string, hintKey = "") {
     const r = this.reader;
     if (!r.entityId(key)) return nothing;
     const options = r.attr<string[]>(key, "options", []);
     return html`
       <mk-segment
         label=${r.label(key)}
+        hint=${hintKey ? this.t(hintKey) : ""}
         .value=${r.rawState(key)?.state ?? null}
         .options=${options.map((value) => ({
           value,
@@ -218,11 +219,13 @@ export class MkViewControl extends MkView {
         <div class="panel stack">
           <div class="head"><div class="label">${t("control.limits")}</div></div>
           ${LIMIT_KEYS.map((k) => this.slider(k))} ${this.slider("charge_to_soc")}
+          <div class="note">${t("control.limits_hint")}</div>
         </div>
 
         <div class="panel stack">
           <div class="head"><div class="label">${t("control.mode")}</div></div>
-          ${this.segment("user_work_mode")} ${this.segment("force_mode")}
+          ${this.segment("user_work_mode", "control.mode_hint")}
+          ${this.segment("force_mode")}
           <div>
             ${this.toggle("backup_function", "control.backup_hint")}
             ${this.toggle("rs485_control_mode", "control.rs485_hint")}
@@ -298,7 +301,6 @@ export class MkViewControl extends MkView {
                           ${t("control.reset")}
                         </button>
                       `}
-                  <span class="note" style="margin:0">${t("control.reset_hint")}</span>
                 </div>
               </div>
             </div>

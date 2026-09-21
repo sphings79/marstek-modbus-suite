@@ -41,7 +41,10 @@ export function cellDeltaFlag(delta: number | null): string {
  * apart. That is the design working, not a fault, and flagging it would train
  * the reader to ignore both the tile and the table.
  */
-export const SPREAD_WARN_PP = 12;
-export const SPREAD_CRIT_PP = 20;
-/** Bar scale, so an ordinary working spread does not sit at the end of it. */
-export const SPREAD_SCALE_PP = 25;
+export const SPREAD_WARN_PP = 19;
+export const SPREAD_CRIT_PP = 25;
+/**
+ * Bar scale. Above the critical threshold rather than on it, so a spread that
+ * is genuinely running away still has room to grow visibly.
+ */
+export const SPREAD_SCALE_PP = 30;
