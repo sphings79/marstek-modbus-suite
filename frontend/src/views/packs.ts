@@ -184,7 +184,7 @@ export class MkViewPacks extends MkView {
                 have: cycles.length,
                 total: this.packs.length,
               })
-            : ""}
+            : t("packs.cycles_basis")}
         ></mk-stat>
       </div>
 
