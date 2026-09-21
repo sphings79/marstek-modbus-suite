@@ -29,11 +29,13 @@ served by the device        410 registers
 already in e_v3.yaml         88
 packs 2-7, dropped          204     (34100-34633)
 PV and MPPT, dropped         21
-left to map                  97
+not carried by d.yaml        32     see "What d.yaml does with each of them"
+left to map                  65
 ```
 
-`e_v3_register_gap.csv` lists those 97 with the name, type, scale and unit the Venus D map gives
-them. Every one of them is already named there, so this is mapping work, not analysis.
+`e_v3_register_gap.csv` lists those 65 with the name, type, scale and unit the Venus D map gives
+them, plus what d.yaml does with each. Every one of them is already named there, so this is
+mapping work, not analysis.
 
 ### PV is out
 
@@ -77,16 +79,12 @@ in its own commit.
 
 | Range | Count | What it is | Suggested default |
 |---|---|---|---|
-| 30000–30214 | 32 | inverter telemetry, versions, self-check, mirrors of BMS values | on, except the mirrors |
-| 32100–32203 | 17 | BMS aggregate (voltage, current, SoC, current limits, pack count) | on |
-| 34000–34017 | 16 | the single battery, see above | on |
-| 35110–35112 | 3 | charge voltage limit, charge/discharge current limit | on |
-| 37000–37016 | 14 | alias block; most duplicate registers that already exist | off |
-| 38000–38014 | 15 | raw CAN frames 0x40–0x43, undecoded | off |
-
-One thing left to settle while mapping: **the aliases in 37xxx.** 37013 and 37015 are the two error
-words again under a second number. Mapping them creates a second entity for the same value, which
-is worth carrying only where the primary register is not served — and on this model it always is.
+| 30010–30214 | 22 | work mode, inverter struct, versions, self-check, BMS mirrors | mixed, see the CSV |
+| 32100–32114 | 8 | BMS aggregate | on |
+| 34000–34016 | 15 | the single battery, see above | on |
+| 35110 | 1 | charge voltage limit | on |
+| 37001–37010 | 4 | alias block | off |
+| 38000–38014 | 15 | raw CAN frames 0x40–0x43, undecoded | off (all `DEV_UNKNOWN`) |
 
 ## What d.yaml does with each of them
 
@@ -99,48 +97,56 @@ unless there is a reason it should not — the register is the same register.
 | `SENSOR` | 24 | ordinary entity in d.yaml | the same kind of entity |
 | `DEV_UNKNOWN` | 28 | `dev_xxxxx` — served, meaning not established | `DEV_UNKNOWN_SENSOR_DEFINITIONS` |
 | `DEV_DUPLICATE` | 13 | `dev_xxxxx` — a second view of a value that already has an entity | `DEV_DUPLICATE_SENSOR_DEFINITIONS` |
-| `DUPLICATE_UNMAPPED` | 16 | **not in d.yaml at all**, because the same SRAM source is mapped under another register number | open, see below |
-| `NOT_IN_D_YAML` | 16 | neither mapped nor a duplicate of anything mapped | open, see below |
 
-### The 16 that duplicate a mapped register
+### Two classes are out
 
-d.yaml leaves these out entirely rather than marking them as duplicates. Same SRAM source, second
-register number:
+Thirty-two registers have no answer in d.yaml and are not in the CSV:
 
-| Register | Name | already served as |
-|---|---|---|
-| 30002 / 30003 | `env_temp` / `radiator_temp` | `internal_temperature` (35000), `internal_mos1_temperature` (35001) |
-| 30004 | `grid_volt` | `ac_voltage` (32200) |
-| 30005 / 30007 | `off_grid_volt` / `off_grid_power` | `ac_offgrid_voltage` (32300), `ac_offgrid_power` (32302) |
-| 30107 / 30108 | pack 1 temperature mirrors | `battery_1_env_temperature` (34011), `battery_1_mos_temperature` (34012) |
-| 32102 | `bat_sample_power` | `dc_sample_power` (30001) |
-| 32108 | `bms_battery_temp` | `max_cell_temperature` (35010) |
-| 32201 / 32202 | `grid_volt_dup` / `grid_sample_power` | `ac_voltage` (32200), `ac_power` (30006) |
-| 34017 | `pack1_ntc_unused` | `dev_30106` (30106) |
-| 37005 | `pack1_soc_scaled` | `battery_soc_1` (34002) |
-| 37011 | `block_34009_34010` | `dev_34009` (34009) |
-| 37013 / 37015 | `error_code1` / `error_code2` | `fault_status` (36100), `fault_status_2` (36102) |
+- **16 duplicate a register that is already mapped** under another number, and d.yaml leaves them
+  out entirely rather than marking them: `30002` `30003` `30004` `30005` `30007` `30107` `30108`
+  `32102` `32108` `32201` `32202` `34017` `37005` `37011` `37013` `37015`.
+- **16 are absent from d.yaml for no visible reason**: `30000` `30028` `30029` `32101` `32103`
+  `32106` `32107` `32203` `35111` `35112` `37000` `37002` `37003` `37012` `37014` `37016`.
 
-Adding them as `DEV_DUPLICATE` would make the E3 map carry entities the D map deliberately does
-not. Leaving them out keeps the two consistent. **Decision needed** — the safe default is to leave
-them out and note them here.
+Both groups stay out. Carrying them would give the E3 entities the D does not have, and the second
+group is untested ground — a register nobody has looked at is not something to point an integration
+at on a hunch.
 
-### The 16 that d.yaml simply does not have
+Worth keeping in mind for later: `32106`/`32107` and `35111`/`35112` are the same two SRAM words
+under two numbers each, the BMS charge and discharge current limits, and `35110` (charge *voltage*
+limit) is mapped. That looks like a gap in the D map rather than a decision, and it should be
+settled there first.
 
-`30000` `30028` `30029` `32101` `32103` `32106` `32107` `32203` `35111` `35112` `37000` `37002`
-`37003` `37012` `37014` `37016`
+## Nothing here touches the WiFi credential buffer
 
-Worth separating:
+Checked, because an untested register is exactly where that would hide.
 
-- `32106`/`32107` and `35111`/`35112` are **two number pairs on the same SRAM** (`0x20014FA0`,
-  `0x20014FA2`) — the BMS charge and discharge current limits. d.yaml maps neither, which looks
-  like a gap in the D map rather than a decision. `35110` (charge voltage limit) is already in this
-  list as a regular sensor, so its two siblings belong with it.
-- `32101` is the register `Read_Serializer` corrupts, see below. It should stay out.
-- `32103`, `32203`, `37012`, `37014`, `37016` are second words of u32 values whose first word is
-  handled elsewhere — no entity of their own.
-- `37000`, `37002`, `37003` mirror the Modbus address and the two power limits read-only; the
-  writable registers (`41100`, `44002`, `44003`) are already mapped.
+The credential buffer is registers **41500–41515**, 32 bytes at SRAM `0x20014DC2` on the D. It is
+readable *and* writable without authentication, and whether a configured device keeps real
+credentials there is still open — see `security/WLAN_Credentials_ueber_Modbus_41500.md` in the
+firmware analysis project. It is reached through the write handler's read branch, **not** through
+the descriptor table, and it is not mapped in any of the four register files.
+
+Two checks:
+
+1. **No read register comes near it.** Across all 246 descriptor entries of all three v150 control
+   images, the closest are the energy counters `33000`–`33010`, which end 22 bytes below the buffer
+   on the E3 (`0x20014D94`–`0x20014DAB`). Nothing overlaps, on any model.
+2. **What e_v3.yaml already maps of the network block** is identifiers, not secrets:
+
+   | Entity | Register | Default |
+   |---|---|---|
+   | `device_name` | 31000, 10 registers | on |
+   | `ble_mac_address` | 30304, 6 registers | on |
+   | `device_ip` | 30400, 2 registers | **off** |
+   | `gateway_ip` | 30402, 2 registers | **off** |
+
+   The E3 is the more conservative of the four here: a.yaml and d.yaml have the two IP entities on
+   by default. Worth aligning, in the other direction.
+
+   One oddity found in passing, unrelated to this branch: `e_v12.yaml` maps `ble_mac_address` at
+   **30402**, which on the D is the gateway IP. Either the E v1.2 map differs there or that entry
+   is wrong — it needs checking against an E v1.2 before anyone trusts it.
 
 ## Known traps
 

@@ -1,13 +1,5 @@
 register,name_from_d_map,unit,type,scale,part_of,sram_e3,note,d_yaml_section,d_yaml_key
-30000,bat_sample_volt,V,u16,x1,,0x20014EB2,Struct +0x1e 'bat_sample_volt(0.1V)',NOT_IN_D_YAML,
-30002,env_temp,°C,i16,x1,,0x20014EB4,Struct +0x20 'env_temp(0.1C)'. Alias 35000,DUPLICATE_UNMAPPED,internal_temperature (35000)
-30003,radiator_temp,°C,i16,x1,,0x20014EB6,Struct +0x22 'radiator_temp(0.1C)'. Alias 35001/35002,DUPLICATE_UNMAPPED,internal_mos1_temperature (35001)
-30004,grid_volt,V,u16,x1,,0x20014EA4,Struct +0x10 'grid_volt(0.1V)'. Alias 32200/32201,DUPLICATE_UNMAPPED,ac_voltage (32200)
-30005,off_grid_volt,V,u16,x1,,0x20014EA8,Struct +0x14 'off_grid_volt(0.1V)'. Alias 32300/32301,DUPLICATE_UNMAPPED,ac_offgrid_voltage (32300)
-30007,off_grid_power,W,i16,x1,,0x20014EAE,Struct +0x1a 'off_grid_power(1W)'. Alias 32302. BLE-Payload 0x00 ('Backup Load' in VenusControl) ist eine direkte Kopie ,DUPLICATE_UNMAPPED,ac_offgrid_power (32302)
 30010,work_mode,,u8,x1,,0x20000144,"0x20000144 'work_mode' / +1 sleep_flag, +2 bat_mode (beide nicht serviert)",SENSOR,work_mode
-30028,inv_bat_voltage,V,u16,x1,,0x20014F74,Inverter-Struct 0x20014F4C+0x30 'bat_vol_0.1V'. Live 533=53.3V,NOT_IN_D_YAML,
-30029,inv_bat_current,A,i16,x1,,0x20014F76,Inverter-Struct +0x32 'bat_cur_0.1A'. Live -1 (Idle),NOT_IN_D_YAML,
 30030,config_word_2000018A,,u16,x1,,0x2000018A,Kern-Global 0x2000018A. Writer Modbus_StoreValue16 (CAN fc 0xfe) -> per CAN/Modbus gesetzter Konfigurationswert,DEV_UNKNOWN,dev_30030
 30031,inv_slot8_38,,u16,x1,,0x20014F7C,"Inverter-Struct 0x20014F4C+0x38, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht",DEV_UNKNOWN,dev_30031
 30032,inv_slot8_3a,,u16,x1,,0x20014F7E,"Inverter-Struct 0x20014F4C+0x3a, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht",DEV_UNKNOWN,dev_30032
@@ -20,8 +12,6 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note,d_yaml_section,d_y
 30104,pack1_max_cell_temp,°C,i16,x10,,0x20014FC0,Pack1-Struct +0x14 (direkt nach min_cell_voltage). FW multipliziert x10 -> Anzeige 0.01 degC. Uebereinstimmend: alte Liv,DEV_DUPLICATE,dev_30104
 30105,pack1_min_cell_temp,°C,i16,x10,,0x20014FC2,"Pack1-Struct +0x16. FW multipliziert x10 -> Anzeige 0.01 degC. Uebereinstimmend: alte Live-Map 'cell_temp_hp_2', Read-Ha",DEV_DUPLICATE,dev_30105
 30106,pack1_temp_3_mirror,°C,u16,x1,,0x20014FFA,"Alias 34017 (Pack1-Struct +0x4e), Live meist 0",DEV_DUPLICATE,dev_30106
-30107,pack1_temp_1_mirror,°C,i16,x1,,0x20014FF6,"Alias 34011 (Pack1-Struct +0x4a), Live bestaetigt",DUPLICATE_UNMAPPED,battery_1_env_temperature (34011)
-30108,pack1_temp_2_mirror,°C,i16,x1,,0x20014FF8,"Alias 34012 (Pack1-Struct +0x4c), Live bestaetigt",DUPLICATE_UNMAPPED,battery_1_mos_temperature (34012)
 30109,bms_factory_test,,u8,x1,,0x20014FA4,Alias 32113 (CAN factory_test),DEV_DUPLICATE,dev_30109
 30110,config_setpoint_mirror,,u8,x1,,0x20014FA7,"Alias 32114 (0x20014FAF): vom Write-Handler beschriebener Config-Setpoint, kein Sensor",DEV_DUPLICATE,dev_30110
 30201,ems_boot_ver,,u8,x1,,0x20000038,"KORREKTUR: 0x20000038 ist 'boot_ver' des EMS/Control (Bootloader), NICHT ems_sub_version. Beleg: Versions-Debug-Print 0x",SENSOR,ems_boot_version
@@ -32,22 +22,13 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note,d_yaml_section,d_y
 30213,config_byte_canc1,,u8,x1,,0x20000164,0x20000164. Writer: Config_Counters_Reset + Telemetry_Store_RegC1 (CAN-ID 0xC1) -> per CAN setzbarer Konfigurationswert,DEV_UNKNOWN,dev_30213
 30214,bms_self_check,,u8,x1,,0x20014FA6,CAN Status-Byte pgn_1007 'self_check' (+0x20),DEV_UNKNOWN,dev_30214
 32100,bms_battery_voltage,V,u16,x1,,0x20014F86,CAN-Aggregat-Struct 0x20014F8E+0x00 pgn_1801 'bat_volt(10mV)'. EINHEIT 10mV (nicht 0.1V). Live 5372=53.72V. Geht als Fak,SENSOR,bms_battery_voltage
-32101,bms_battery_current,A,i16,/10,,0x20014F88,"CAN +0x02 pgn_1801 'bat_curr(100mA)'. Loest dc_current-Raetsel: BMS-Packstrom 100mA, FW /10 / 0x9965 = Entladung. Lastte",NOT_IN_D_YAML,
-32102,bat_sample_power,W,float32,x1,,0x20014EB0,KONFLIKT GELOEST: Quelle 0x20014EB8 ist i16 'bat_sample_power(1W)' (Debug-String). Die float32-Typangabe des Descriptors,DUPLICATE_UNMAPPED,dc_sample_power (30001)
-32103,bat_sample_power_w2,W,float32,x1,32102,,"Folgeregister 2/2 von 32102. Lasttest 2026-08-22: liest 0 in beiden Lastzustaenden (Folgeregister von 32102, das ebenfal",NOT_IN_D_YAML,
 32104,bms_soc,%,u16,/10,,0x20014F8C,CAN +0x06 'bat_soc(0.1)'. FW teilt /10 (=soc_global),SENSOR,battery_soc
-32106,bms_charge_current_limit,A,u16,x1,,0x20014F98,CAN +0x12 pgn_1803 'chrg_curr(100mA)'. Alias 35111,NOT_IN_D_YAML,
-32107,bms_discharge_current_limit,A,u16,x1,,0x20014F9A,CAN +0x14 pgn_1803 'dischrg_curr(100mA)'. Alias 35112,NOT_IN_D_YAML,
-32108,bms_battery_temp,°C,i16,x1,,0x20014F8A,CAN +0x04 pgn_1801 'bat_temp(0.1C)'. Alias 35010,DUPLICATE_UNMAPPED,max_cell_temperature (35010)
 32109,bms_pack_count,,u8,x1,,0x20014F90,CAN +0x0a 'bat_total_nb' (Anzahl vorhandener Packs) Live bestaetigt 2026-09-10 (Direktlesung ueber Proxy): 7 bei sieben ,SENSOR,bms_pack_count
 32110,bms_online_mask,,u16,x1,,0x20014F91,"CAN +0x0b 'bat_online_mask' (u16 Bitmaske: welche Packs online) Live bestaetigt 2026-09-10: 127 = 0b1111111, alle sieben",SENSOR,bms_online_mask
 32111,bms_work_pack_idx,,u8,x1,,0x20014F93,CAN +0x0d 'work_bat_idx' (aktiver Pack-Index). Lasttest 2026-08-22: stand auf 4; im Doppelscan bewegte sich ausschliessl,SENSOR,bms_active_pack_index
 32112,bms_lock_flag,,u8,x1,,0x20014FA5,CAN Status-Byte pgn_1804 'lock_flag' (+0x1f),DEV_UNKNOWN,dev_32112
 32113,bms_factory_test,,u8,x1,,0x20014FA4,CAN Status-Byte pgn_1804 'factory_test' (+0x1e). Alias 30109,DEV_DUPLICATE,dev_32113
 32114,config_setpoint_20014FAF,,u8,x1,,0x20014FA7,"0x20014FAF wird vom Modbus-Write-Handler (0x08052BB0/0x08052BBC) BESCHRIEBEN -> Config-Setpoint, kein Sensor. Alias 3011",DEV_DUPLICATE,dev_32114
-32201,grid_volt_dup,V,u16,x1,,0x20014EA4,identische Quelle wie 32200 -- kein eigener Messwert,DUPLICATE_UNMAPPED,ac_voltage (32200)
-32202,grid_sample_power,W,i16,x1,,0x20014EAC,Alias 30006 (Struct +0x18) / elem_size 4 bei i16 bleibt Descriptor-Inkonsistenz,DUPLICATE_UNMAPPED,ac_power (30006)
-32203,grid_sample_power_w2,W,i16,x1,32202,,Folgeregister 2/2 von 32202,NOT_IN_D_YAML,
 34000,pack1_bat_volt,V,u16,x1,,0x20014FAC,Pack-Struct Stride 0x60 / Alias 30100 | FW-BELEG 2026-08-16: BMS_Debug_PerPack_Detail_Print bestaetigt Feld 'Bat Volt' (,SENSOR,battery_1_voltage
 34001,pack1_bat_curr,A,i16,x1,,0x20014FAE,Pack-Struct Stride 0x60 / Alias 30101 | FW-BELEG 2026-08-16: BMS_Debug_PerPack_Detail_Print bestaetigt Feld 'Bat Curr' (,SENSOR,battery_1_current
 34004,pack1_mos_status,,u8,x1,,0x20014FBA,Pack1-Struct +0x0e (u8). BMS-FW 'Chg Mos/Dsg Mos' / BESTAETIGT durch Live-Scans (Wertebereich 0..3 = genau 2 Flags) | FW,SENSOR,battery_1_mos_status
@@ -63,24 +44,11 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note,d_yaml_section,d_y
 34014,pack1_ntc_block[2],°C,u16,x1,34013,,Folgeregister 2/4 von 34013,SENSOR,battery_1_cell_temperature_2
 34015,pack1_ntc_block[3],°C,u16,x1,34013,,Folgeregister 3/4 von 34013,SENSOR,battery_1_cell_temperature_3
 34016,pack1_ntc_block[4],°C,u16,x1,34013,,Folgeregister 4/4 von 34013,SENSOR,battery_1_cell_temperature_4
-34017,pack1_ntc_unused,°C,u16,x1,,0x20014FFA,Pack+0x4e. GEKLAERT 2026-08-16: BMS Frame 0x41 Byte6-7 werden auf 0 gesetzt -> Register ist konstruktionsbedingt IMMER 0,DUPLICATE_UNMAPPED,dev_30106 (30106)
 35110,bms_charge_voltage_limit,V,u16,x1,,0x20014F96,CAN +0x10 pgn_1803 'chrg_volt(0.1V)'. Live 576=57.6V,SENSOR,bms_charge_voltage_limit
-35111,bms_charge_current_limit,A,u16,x1,,0x20014F98,Alias 32106,NOT_IN_D_YAML,
-35112,bms_discharge_current_limit,A,u16,x1,,0x20014F9A,Alias 32107,NOT_IN_D_YAML,
-37000,modbus_slave_address,,u8,x1,,0x20000133,,NOT_IN_D_YAML,
 37001,status_block_offset8,,u16,x1,,0x2000014C,"Status-Block 0x20000144 +8. Writer Protocol_AA_SetDeviceParams (0x0802FC48), Leser Grid_Export_Power_Limiter -> Export-/",DEV_UNKNOWN,dev_37001
-37002,max_charge_power,W,u16,x1,,0x2000014E,Status-Block 0x20000144 +4,NOT_IN_D_YAML,
-37003,max_discharge_power,W,u16,x1,,0x20000150,Status-Block 0x20000144 +6,NOT_IN_D_YAML,
-37005,pack1_soc_scaled,%,u16,/10,,0x20014FB0,"gleiche Quelle wie 34002, aber FW teilt hier durch 10",DUPLICATE_UNMAPPED,battery_soc_1 (34002)
 37006,pack1_max_cell_temp_mirror,°C,i16,x1,,0x20014FC0,"Alias 30104 (Pack1-Struct +0x14), hier ohne FW-x10. Alte Map: 'max_cell_temp_mirror'",DEV_DUPLICATE,dev_37006
 37009,block_34007_34008,,u16,x1,,0x20014FC4,2 Elemente -> Register 37009-37010 (= 34007/34008),DEV_DUPLICATE,dev_37009
 37010,block_34007_34008[2],,u16,x1,37009,,Folgeregister 2/2 von 37009,DEV_DUPLICATE,dev_37010
-37011,block_34009_34010,,u16,x1,,0x20014FC8,2 Elemente -> 37011-37012 / 37012 = bms_version,DUPLICATE_UNMAPPED,dev_34009 (34009)
-37012,block_34009_34010[2],,u16,x1,37011,,Folgeregister 2/2 von 37011,NOT_IN_D_YAML,
-37013,error_code1,,u32,x1,,0x20014E9C,Alias 36100 (error_code1 HIGH-Word),DUPLICATE_UNMAPPED,fault_status (36100)
-37014,error_code1_w2,,u32,x1,37013,,Alias 36101 (error_code1 LOW-Word),NOT_IN_D_YAML,
-37015,error_code2,,u32,x1,,0x20014EA0,Alias 36102 (error_code2 HIGH-Word),DUPLICATE_UNMAPPED,fault_status_2 (36102)
-37016,error_code2_w2,,u32,x1,37015,,Alias 36103 (error_code2 LOW-Word),NOT_IN_D_YAML,
 38000,can40_w1,,i16,x1,,0x20000168,"CAN-Frame ID 0x40, Wort 1/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register ",DEV_UNKNOWN,dev_38000
 38001,can40_w2,,u16,x1,,0x2000016A,"CAN-Frame ID 0x40, Wort 2/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register ",DEV_UNKNOWN,dev_38001
 38002,can40_w3,,i16,x1,,0x2000016C,"CAN-Frame ID 0x40, Wort 3/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register ",DEV_UNKNOWN,dev_38002
