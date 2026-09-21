@@ -1,6 +1,13 @@
 {
   "config": {
     "step": {
+      "pick": {
+        "title": "Gefundene Geräte",
+        "description": "{count} Gerät(e) haben sich im Netzwerk gemeldet. Nach der Auswahl ist jedes Feld noch änderbar — wer seine Batterie über einen Modbus-Proxy erreicht, trägt dort dessen Adresse ein.",
+        "data": {
+          "device_version": "Gerät"
+        }
+      },
       "user": {
         "title": "Mit Marstek Modbus Suite verbinden",
         "description": "Modbus TCP Verbindungsdetails eingeben",

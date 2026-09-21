@@ -1,6 +1,13 @@
 {
   "config": {
     "step": {
+      "pick": {
+        "title": "Gevonden apparaten",
+        "description": "{count} apparaat/apparaten hebben zich op het netwerk gemeld. Elk veld blijft na de keuze aanpasbaar — wie zijn batterij via een Modbus-proxy bereikt, vult daar dat adres in.",
+        "data": {
+          "device_version": "Apparaat"
+        }
+      },
       "user": {
         "title": "Verbind met Marstek Modbus Suite",
         "description": "Voer de Modbus TCP-verbindingsgegevens in",

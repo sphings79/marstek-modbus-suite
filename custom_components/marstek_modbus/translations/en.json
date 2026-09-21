@@ -1,6 +1,13 @@
 {
   "config": {
     "step": {
+      "pick": {
+        "title": "Discovered devices",
+        "description": "{count} device(s) announced themselves on the network. Every field stays editable after choosing — if you reach your battery through a Modbus proxy, put its address in instead.",
+        "data": {
+          "device_version": "Device"
+        }
+      },
       "user": {
         "title": "Connect to Marstek Modbus Suite",
         "description": "Enter the Modbus TCP connection details",

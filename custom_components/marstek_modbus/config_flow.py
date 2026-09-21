@@ -7,13 +7,16 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.helpers import selector
+from homeassistant.helpers.device_registry import format_mac
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import slugify
 
 from .const import (
+    BEACON_MODEL_VERSIONS,
     CONF_DEV_REGISTERS_DUPLICATE,
     CONF_DEV_REGISTERS_LEGACY,
     CONF_DEV_REGISTERS_UNKNOWN,
+    discovery_manual_label,
     CONF_DISCHARGE_FLOOR,
     DEFAULT_DISCHARGE_FLOOR,
     CONF_MESSAGE_WAIT_MS,
@@ -34,6 +37,7 @@ from .const import (
     PACK_COUNT_VERSIONS,
     SUPPORTED_VERSIONS,
 )
+from .helpers.discovery import async_listen
 from .helpers.modbus_client import MarstekModbusClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -128,17 +132,89 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    MANUAL = "manual"
+
     def __init__(self):
         """Initialise the flow with no connection details gathered yet."""
         self._connection: dict | None = None
+        # None means "not listened yet", {} means "listened, nothing answered".
+        self._discovered: dict | None = None
+        self._prefill: dict = {}
+        self._beacon_mac: str | None = None
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step where the user inputs connection details.
+        """Offer what announced itself on the network, then ask for the details.
 
-        Validates user input and attempts connection to the Modbus device. The
-        naming of the device happens in a second step, once the connection is
-        known to work.
+        A Venus broadcasts its model, MAC and address once a second, so the
+        first thing this does is listen. Whatever answers is offered as a
+        choice; picking one fills the form in and leaves every field editable,
+        which is what somebody reaching their battery through a Modbus proxy
+        needs - the beacon names the battery's own address, not the proxy's.
+
+        Listening happens once per flow. Coming back to this step after a bad
+        password or an unreachable host should not cost another four seconds.
         """
+        if user_input is None and self._discovered is None:
+            self._discovered = await async_listen(self.hass)
+            if self._discovered:
+                return await self.async_step_pick()
+
+        return await self._async_connection_form(user_input)
+
+    async def async_step_pick(self, user_input=None):
+        """Let the user choose one of the devices that announced itself."""
+        if user_input is not None:
+            choice = user_input[CONF_DEVICE_VERSION]
+            if choice != self.MANUAL:
+                beacon = self._discovered.get(choice)
+                if beacon:
+                    self._prefill = {
+                        CONF_HOST: beacon.host,
+                        CONF_PORT: DEFAULT_PORT,
+                        CONF_UNIT_ID: DEFAULT_UNIT_ID,
+                    }
+                    version = BEACON_MODEL_VERSIONS.get(beacon.model)
+                    if version:
+                        self._prefill[CONF_DEVICE_VERSION] = version
+                    self._beacon_mac = beacon.formatted_mac
+            return await self._async_connection_form(None)
+
+        options = [
+            selector.SelectOptionDict(
+                value=mac,
+                label=f"{DEVICE_VERSION_LABELS.get(BEACON_MODEL_VERSIONS.get(b.model, ''), b.model)}"
+                      f" · {b.host} · {b.formatted_mac}",
+            )
+            for mac, b in sorted(self._discovered.items(), key=lambda kv: kv[1].host)
+        ]
+        # The device rows are labelled with the addresses found a moment ago,
+        # which makes them option dicts - and an option dict carries its own
+        # label rather than looking one up, so the way out needs one too.
+        options.append(
+            selector.SelectOptionDict(
+                value=self.MANUAL,
+                label=discovery_manual_label(self.hass.config.language),
+            )
+        )
+
+        return self.async_show_form(
+            step_id="pick",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_DEVICE_VERSION, default=options[0]["value"]):
+                        selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=options,
+                                mode=selector.SelectSelectorMode.LIST,
+                            )
+                        )
+                }
+            ),
+            description_placeholders={"count": str(len(self._discovered))},
+        )
+
+    async def _async_connection_form(self, user_input=None):
+        """The connection details, whether they were discovered or typed."""
         errors = {}
 
         # Extend base schema with device_version for initial config
@@ -203,7 +279,7 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=self.add_suggested_values_to_schema(
-                user_schema, user_input or {}
+                user_schema, user_input or self._prefill
             ),
             errors=errors,
         )
@@ -239,6 +315,13 @@ class MarstekConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ):
                 errors["base"] = "name_exists"
             else:
+                # An entry that came from a beacon carries the MAC, so the same
+                # battery cannot be set up twice even after its address changes.
+                # Entries made before this existed keep no unique id: giving
+                # them one would be a migration, and there is nothing to gain.
+                if self._beacon_mac:
+                    await self.async_set_unique_id(format_mac(self._beacon_mac))
+                    self._abort_if_unique_id_configured()
                 return self.async_create_entry(title=name, data=connection)
 
         return self.async_show_form(
@@ -507,6 +590,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_DEV_REGISTERS_UNKNOWN,
+    discovery_manual_label,
                         default=current[CONF_DEV_REGISTERS_UNKNOWN],
                     ): bool,
                     vol.Optional(

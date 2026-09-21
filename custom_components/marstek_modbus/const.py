@@ -130,6 +130,39 @@ def min_scan_intervals(version):
     """The floors for one device version, falling back to the cautious pair."""
     return MIN_SCAN_INTERVALS.get(str(version or "").strip(), DEFAULT_MIN_SCAN_INTERVALS)
 
+# The way out of the discovery list, in the languages the integration ships.
+#
+# It sits here rather than in the translation catalogues because the list it
+# belongs to is built at runtime: the device rows are labelled with addresses
+# found a moment ago, which makes them SelectOptionDicts, and an option dict
+# carries its own label instead of looking one up. Home Assistant will not
+# translate one entry of such a list on its own.
+DISCOVERY_MANUAL_LABELS = {
+    "de": "Keines davon, Daten selbst eingeben",
+    "nl": "Geen van deze, gegevens zelf invoeren",
+}
+DISCOVERY_MANUAL_LABEL = "None of these, enter the details myself"
+
+
+def discovery_manual_label(language):
+    """The escape-hatch label for one language, falling back to English."""
+    code = str(language or "en").split("-")[0].lower()
+    return DISCOVERY_MANUAL_LABELS.get(code, DISCOVERY_MANUAL_LABEL)
+
+
+# What the model code in a discovery beacon means, mapped to SUPPORTED_VERSIONS.
+#
+# The code is the same string register 31000 reports - VNSD-0 on a Venus D. Only
+# the three models whose firmware is in hand are listed; a device announcing
+# anything else is still offered, it just arrives with no version preselected
+# rather than with a guess.
+BEACON_MODEL_VERSIONS = {
+    "VNSD-0": "D",
+    "VNSA-0": "A",
+    "VNSE3-0": "E v3",
+}
+
+
 # Device names offered as the default during setup, keyed by SUPPORTED_VERSIONS.
 # The name becomes the config entry title, and the title is what the device and
 # every entity id is named after, so it is worth getting right at setup time -
