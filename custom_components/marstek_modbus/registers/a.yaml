@@ -321,7 +321,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_2_voltage:
         register: 34019
         scale: 0.001
@@ -331,7 +331,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_3_voltage:
         register: 34020
         scale: 0.001
@@ -341,7 +341,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_4_voltage:
         register: 34021
         scale: 0.001
@@ -351,7 +351,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_5_voltage:
         register: 34022
         scale: 0.001
@@ -361,7 +361,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_6_voltage:
         register: 34023
         scale: 0.001
@@ -371,7 +371,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_7_voltage:
         register: 34024
         scale: 0.001
@@ -381,7 +381,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_8_voltage:
         register: 34025
         scale: 0.001
@@ -391,7 +391,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_9_voltage:
         register: 34026
         scale: 0.001
@@ -401,7 +401,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_10_voltage:
         register: 34027
         scale: 0.001
@@ -411,7 +411,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_11_voltage:
         register: 34028
         scale: 0.001
@@ -421,7 +421,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_12_voltage:
         register: 34029
         scale: 0.001
@@ -431,7 +431,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_1_cell_13_voltage:
         register: 34030
         scale: 0.001
@@ -441,7 +441,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_1_voltage:
         register: 34118
         scale: 0.001
@@ -451,7 +451,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_2_voltage:
         register: 34119
         scale: 0.001
@@ -461,7 +461,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_3_voltage:
         register: 34120
         scale: 0.001
@@ -471,7 +471,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_4_voltage:
         register: 34121
         scale: 0.001
@@ -481,7 +481,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_5_voltage:
         register: 34122
         scale: 0.001
@@ -491,7 +491,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_6_voltage:
         register: 34123
         scale: 0.001
@@ -501,7 +501,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_7_voltage:
         register: 34124
         scale: 0.001
@@ -511,7 +511,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_8_voltage:
         register: 34125
         scale: 0.001
@@ -521,7 +521,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_9_voltage:
         register: 34126
         scale: 0.001
@@ -531,7 +531,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_10_voltage:
         register: 34127
         scale: 0.001
@@ -541,7 +541,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_11_voltage:
         register: 34128
         scale: 0.001
@@ -551,7 +551,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_12_voltage:
         register: 34129
         scale: 0.001
@@ -561,7 +561,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_2_cell_13_voltage:
         register: 34130
         scale: 0.001
@@ -571,7 +571,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_1_voltage:
         register: 34218
         scale: 0.001
@@ -581,7 +581,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_2_voltage:
         register: 34219
         scale: 0.001
@@ -591,7 +591,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_3_voltage:
         register: 34220
         scale: 0.001
@@ -601,7 +601,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_4_voltage:
         register: 34221
         scale: 0.001
@@ -611,7 +611,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_5_voltage:
         register: 34222
         scale: 0.001
@@ -621,7 +621,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_6_voltage:
         register: 34223
         scale: 0.001
@@ -631,7 +631,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_7_voltage:
         register: 34224
         scale: 0.001
@@ -641,7 +641,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_8_voltage:
         register: 34225
         scale: 0.001
@@ -651,7 +651,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_9_voltage:
         register: 34226
         scale: 0.001
@@ -661,7 +661,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_10_voltage:
         register: 34227
         scale: 0.001
@@ -671,7 +671,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_11_voltage:
         register: 34228
         scale: 0.001
@@ -681,7 +681,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_12_voltage:
         register: 34229
         scale: 0.001
@@ -691,7 +691,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_3_cell_13_voltage:
         register: 34230
         scale: 0.001
@@ -701,7 +701,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_1_voltage:
         register: 34318
         scale: 0.001
@@ -711,7 +711,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_2_voltage:
         register: 34319
         scale: 0.001
@@ -721,7 +721,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_3_voltage:
         register: 34320
         scale: 0.001
@@ -731,7 +731,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_4_voltage:
         register: 34321
         scale: 0.001
@@ -741,7 +741,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_5_voltage:
         register: 34322
         scale: 0.001
@@ -751,7 +751,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_6_voltage:
         register: 34323
         scale: 0.001
@@ -761,7 +761,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_7_voltage:
         register: 34324
         scale: 0.001
@@ -771,7 +771,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_8_voltage:
         register: 34325
         scale: 0.001
@@ -781,7 +781,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_9_voltage:
         register: 34326
         scale: 0.001
@@ -791,7 +791,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_10_voltage:
         register: 34327
         scale: 0.001
@@ -801,7 +801,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_11_voltage:
         register: 34328
         scale: 0.001
@@ -811,7 +811,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_12_voltage:
         register: 34329
         scale: 0.001
@@ -821,7 +821,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_4_cell_13_voltage:
         register: 34330
         scale: 0.001
@@ -831,7 +831,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_1_voltage:
         register: 34418
         scale: 0.001
@@ -841,7 +841,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_2_voltage:
         register: 34419
         scale: 0.001
@@ -851,7 +851,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_3_voltage:
         register: 34420
         scale: 0.001
@@ -861,7 +861,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_4_voltage:
         register: 34421
         scale: 0.001
@@ -871,7 +871,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_5_voltage:
         register: 34422
         scale: 0.001
@@ -881,7 +881,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_6_voltage:
         register: 34423
         scale: 0.001
@@ -891,7 +891,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_7_voltage:
         register: 34424
         scale: 0.001
@@ -901,7 +901,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_8_voltage:
         register: 34425
         scale: 0.001
@@ -911,7 +911,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_9_voltage:
         register: 34426
         scale: 0.001
@@ -921,7 +921,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_10_voltage:
         register: 34427
         scale: 0.001
@@ -931,7 +931,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_11_voltage:
         register: 34428
         scale: 0.001
@@ -941,7 +941,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_12_voltage:
         register: 34429
         scale: 0.001
@@ -951,7 +951,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_5_cell_13_voltage:
         register: 34430
         scale: 0.001
@@ -961,7 +961,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_1_voltage:
         register: 34518
         scale: 0.001
@@ -971,7 +971,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_1_voltage:
         register: 34618
         scale: 0.001
@@ -981,7 +981,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_2_voltage:
         register: 34519
         scale: 0.001
@@ -991,7 +991,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_2_voltage:
         register: 34619
         scale: 0.001
@@ -1001,7 +1001,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_3_voltage:
         register: 34520
         scale: 0.001
@@ -1011,7 +1011,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_3_voltage:
         register: 34620
         scale: 0.001
@@ -1021,7 +1021,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_4_voltage:
         register: 34521
         scale: 0.001
@@ -1031,7 +1031,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_4_voltage:
         register: 34621
         scale: 0.001
@@ -1041,7 +1041,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_5_voltage:
         register: 34522
         scale: 0.001
@@ -1051,7 +1051,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_5_voltage:
         register: 34622
         scale: 0.001
@@ -1061,7 +1061,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_6_voltage:
         register: 34523
         scale: 0.001
@@ -1071,7 +1071,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_6_voltage:
         register: 34623
         scale: 0.001
@@ -1081,7 +1081,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_7_voltage:
         register: 34524
         scale: 0.001
@@ -1091,7 +1091,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_7_voltage:
         register: 34624
         scale: 0.001
@@ -1101,7 +1101,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_8_voltage:
         register: 34525
         scale: 0.001
@@ -1111,7 +1111,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_8_voltage:
         register: 34625
         scale: 0.001
@@ -1121,7 +1121,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_9_voltage:
         register: 34526
         scale: 0.001
@@ -1131,7 +1131,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_9_voltage:
         register: 34626
         scale: 0.001
@@ -1141,7 +1141,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_10_voltage:
         register: 34527
         scale: 0.001
@@ -1151,7 +1151,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_10_voltage:
         register: 34627
         scale: 0.001
@@ -1161,7 +1161,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_11_voltage:
         register: 34528
         scale: 0.001
@@ -1171,7 +1171,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_11_voltage:
         register: 34628
         scale: 0.001
@@ -1181,7 +1181,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_12_voltage:
         register: 34529
         scale: 0.001
@@ -1191,7 +1191,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_12_voltage:
         register: 34629
         scale: 0.001
@@ -1201,7 +1201,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_6_cell_13_voltage:
         register: 34530
         scale: 0.001
@@ -1211,7 +1211,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     battery_7_cell_13_voltage:
         register: 34630
         scale: 0.001
@@ -1221,7 +1221,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         precision: 3
-        scan_interval: high
+        scan_interval: low
     alarm_status:
         register: 36000
         data_type: uint16
@@ -2569,7 +2569,7 @@ BINARY_SENSOR_DEFINITIONS:
         device_class: connectivity
         icon: "mdi:check-network-outline"
         enabled_by_default: false
-        scan_interval: high
+        scan_interval: low
     cloud_status:
         register: 30302
         data_type: uint16
@@ -2577,7 +2577,7 @@ BINARY_SENSOR_DEFINITIONS:
         device_class: connectivity
         icon: "mdi:cloud-outline"
         enabled_by_default: false
-        scan_interval: high
+        scan_interval: low
 
 SELECT_DEFINITIONS:
     # Taken from the Venus D map, verified there on firmware v150 - not yet

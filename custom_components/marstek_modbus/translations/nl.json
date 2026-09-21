@@ -55,7 +55,7 @@
       },
       "polling": {
         "title": "Configureer polling-intervallen",
-        "description": "Pas de pollingfrequentie per categorie aan. Minimum: high {min_high} s, low {min_low} s.",
+        "description": "Pas de pollingfrequentie per categorie aan. Minimum: high {min_high} s, low {min_low} s.\n\n[Welke waarden op het snelle tempo staan](https://github.com/sphings79/marstek-modbus-suite/blob/main/docs/polling-groups.md) — al het overige staat op het langzame.",
         "data": {
           "high": "High-prioriteit interval (s)",
           "low": "Low-prioriteit interval (s)"

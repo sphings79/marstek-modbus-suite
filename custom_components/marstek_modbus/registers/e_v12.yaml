@@ -431,7 +431,7 @@ BINARY_SENSOR_DEFINITIONS:
         device_class: connectivity
         icon: "mdi:check-network-outline"
         enabled_by_default: false
-        scan_interval: high
+        scan_interval: low
     cloud_status:
         register: 30302
         data_type: uint16
@@ -439,7 +439,7 @@ BINARY_SENSOR_DEFINITIONS:
         device_class: connectivity
         icon: "mdi:cloud-outline"
         enabled_by_default: false
-        scan_interval: high
+        scan_interval: low
     discharge_limit_mode:
         register: 41010
         data_type: uint16
