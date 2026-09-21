@@ -71,6 +71,32 @@ export class Formatter {
     return /^\d{4}$/.test(value) ? `${value.slice(0, 3)}.${value.slice(3)}` : value;
   }
 
+  /**
+   * A span of hours as hours and minutes.
+   *
+   * The runtime sensors report fractional hours, and "8,8 h" asks the reader
+   * to do the conversion in their head every time. Minutes are what the
+   * question was in - how long until it is empty - so the answer is given in
+   * them.
+   *
+   * The unit words are the same in every language the panel ships, so they sit
+   * here rather than in the catalogues. Whole hours drop the minutes, and
+   * anything under an hour drops the hours, so a value never carries a part
+   * that reads as zero.
+   */
+  duration(hours: number | null | undefined): string {
+    if (hours === null || hours === undefined || !Number.isFinite(hours)) return DASH;
+
+    const total = Math.round(Math.abs(hours) * 60);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    const sign = hours < 0 ? "−" : "";
+
+    if (h === 0) return `${sign}${this.formatter(0).format(m)} min`;
+    if (m === 0) return `${sign}${this.formatter(0).format(h)} h`;
+    return `${sign}${this.formatter(0).format(h)} h ${this.formatter(0).format(m)} min`;
+  }
+
   /** Millivolts from a volt reading, which is how cell deltas are read. */
   millivolts(value: number | null | undefined): string {
     if (value === null || value === undefined || !Number.isFinite(value)) return DASH;

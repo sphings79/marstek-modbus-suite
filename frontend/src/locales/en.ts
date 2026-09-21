@@ -75,7 +75,6 @@ export const en: Record<string, string> = {
   "status.modbus_offline_hint":
     "The battery is not answering. Every value below is the last one read before the link dropped.",
   "status.modbus_degraded": "The link answers, but registers timed out in the last poll.",
-  "status.wifi": "WIFI",
 
   "common.pack": "PACK",
   "common.pack_n": "pack {pack}",
@@ -144,13 +143,13 @@ export const en: Record<string, string> = {
   "packs.from_n_packs": "from {count} packs",
   "packs.spread": "Spread",
   "packs.stored_total": "Stored energy",
-  "packs.summed": "packs add up to {value} kWh",
+  "packs.of_max": "of {value} kWh possible",
   "packs.per_pack": "Per pack",
   "packs.nominal": "nominal, capacity ÷ packs",
-  "packs.cycles_mean": "Cycles, mean per pack",
+  "packs.cycles_mean": "Cycles, mean across packs",
   "packs.cycles_partial": "{have} of {total} packs report",
   "packs.fill_title": "State of charge per pack",
-  "packs.fill_axis": "column height = SOC · figure inside = kWh",
+  "packs.fill_axis": "column height = SOC",
   "packs.fill_legend":
     "The dashed line marks the discharge floor at {floor} %. Energy per pack is worked out from its SOC and the nominal pack size; the battery reports no energy figure of its own per pack.",
   "packs.fill_legend_backup": "The dotted line at {backup} % is as far as the backup socket discharges during an outage.",

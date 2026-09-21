@@ -117,7 +117,7 @@ export class MkViewSystem extends MkView {
 
         <div class="panel">
           <div class="head"><div class="label">${t("system.connection")}</div></div>
-          ${this.kv("wifi_signal_strength", 0)} ${this.kv("bluetooth_status", 0, { raw: true })}
+          ${this.kv("bluetooth_status", 0, { raw: true })}
           ${this.kv("device_ip_address", 0, { raw: true })} ${this.kv("gateway_ip_address", 0, { raw: true })}
           ${this.kv("ble_mac_address", 0, { raw: true })}
         </div>

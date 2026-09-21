@@ -596,7 +596,6 @@ export class MarstekPanel extends LitElement {
   private statusBar(reader: DeviceReader) {
     const devices = this.devices;
     const selected = this.device?.deviceId;
-    const wifi = reader.num("wifi_signal_strength");
     const link = this.link(reader);
     // Every register keeps its last value through a dropout, so with the link
     // down the rest of this bar is history, not status. Say so instead of
@@ -626,12 +625,6 @@ export class MarstekPanel extends LitElement {
           <i class="led ${link.led}"></i>
           ${link.label}
         </span>
-        ${wifi === null
-          ? nothing
-          : html`<span>
-              <i class="led ${live ? "on" : ""}"></i>${this.t("status.wifi")}
-              ${this.formatter.num(wifi, 0)} dBm
-            </span>`}
         ${live && reader.inverterState()
           ? html`<span>${reader.inverterState()}</span>`
           : nothing}

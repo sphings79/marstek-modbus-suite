@@ -67,7 +67,6 @@ export const de: Record<string, string> = {
   "status.modbus_offline_hint":
     "Die Batterie antwortet nicht. Alle Werte darunter sind die zuletzt gelesenen, bevor die Verbindung abriss.",
   "status.modbus_degraded": "Die Verbindung antwortet, aber im letzten Abruf liefen Register in einen Timeout.",
-  "status.wifi": "WLAN",
 
   "common.pack": "PACK",
   "common.pack_n": "Pack {pack}",
@@ -136,13 +135,13 @@ export const de: Record<string, string> = {
   "packs.from_n_packs": "aus {count} Packs",
   "packs.spread": "Spreizung",
   "packs.stored_total": "Gespeicherte Energie",
-  "packs.summed": "Packs ergeben {value} kWh",
+  "packs.of_max": "von max. möglichen {value} kWh",
   "packs.per_pack": "Je Pack",
   "packs.nominal": "nominal, Kapazität ÷ Packs",
-  "packs.cycles_mean": "Zyklen, Mittel je Pack",
+  "packs.cycles_mean": "Zyklen, Mittel über alle Packs",
   "packs.cycles_partial": "{have} von {total} Packs melden",
   "packs.fill_title": "Ladezustand je Pack",
-  "packs.fill_axis": "Säulenhöhe = SoC · Zahl darin = kWh",
+  "packs.fill_axis": "Säulenhöhe = SoC",
   "packs.fill_legend":
     "Die gestrichelte Linie markiert die Entladegrenze bei {floor} %. Die kWh je Pack sind aus SoC und nominaler Packgröße gerechnet — das Gerät meldet keinen eigenen Energiewert pro Pack.",
   "packs.fill_legend_backup": "Die gepunktete Linie bei {backup} % ist die Grenze, bis zu der die Notstromsteckdose bei einem Ausfall entlädt.",

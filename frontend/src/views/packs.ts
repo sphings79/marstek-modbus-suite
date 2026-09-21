@@ -131,10 +131,6 @@ export class MkViewPacks extends MkView {
     const socs = fills.map((p) => p.soc).filter((v): v is number => v !== null);
     const mean = socs.length ? socs.reduce((a, b) => a + b, 0) / socs.length : null;
     const spread = socs.length ? Math.max(...socs) - Math.min(...socs) : null;
-    const summed = fills.reduce(
-      (sum, p) => (p.energy === null ? sum : sum + p.energy),
-      0,
-    );
     const cycles = this.packs
       .map((i) => r.num(`battery_${i}_cycle_count`))
       .filter((v): v is number => v !== null);
@@ -165,9 +161,11 @@ export class MkViewPacks extends MkView {
           label=${t("packs.stored_total")}
           value=${f.num(r.num("stored_energy"), 2)}
           unit="kWh"
-          foot=${summed
-            ? t("packs.summed", { value: f.num(summed, 2) })
-            : ""}
+          foot=${r.num("battery_total_energy") === null
+            ? ""
+            : t("packs.of_max", {
+                value: f.num(r.num("battery_total_energy"), 2),
+              })}
         ></mk-stat>
         <mk-stat
           label=${t("packs.per_pack")}
