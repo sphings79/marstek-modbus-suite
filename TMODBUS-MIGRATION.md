@@ -2,12 +2,15 @@
 
 **Deutsch: [TMODBUS-MIGRATION.de.md](TMODBUS-MIGRATION.de.md)**
 
-This is a measurement write-up, not a recommendation. It exists because the
-question "should this integration move from pymodbus to Home Assistant's
-`modbus-connection`?" kept getting answered from opinion, including twice by us,
-in opposite directions. Below is what three probe runs against a Marstek Venus D
-actually showed, what the difference between the two client libraries is in the
-one case where it matters, and what a migration would involve.
+This is a measurement write-up. It exists because the question "should this
+integration move from pymodbus to tmodbus?" kept getting answered from opinion,
+including twice by us, in opposite directions. Below is what three probe runs
+against a Marstek Venus D actually showed, and what the difference between the
+two client libraries is in the one case where it matters.
+
+The decision has since been made: the integration runs on tmodbus. What is here
+is the reasoning behind that, not the weighing up that came before it — the
+section that planned a migration out went when the migration happened.
 
 Anyone maintaining a Modbus integration for a device that pauses under load
 should be able to decide from this whether the same reasoning applies to them.
@@ -188,18 +191,19 @@ keeps waiting for its own id and gets it.
 pymodbus retries on the same socket and reuses the transaction id, so a late
 reply is indistinguishable from the answer it is waiting for until the id check
 fails — at which point the wrong request has already failed. This integration's
-own client carries the workaround and the reason in a comment:
+own client carried the workaround and the reason in a comment:
 
 > pymodbus retries a request internally before it gives up, each attempt against
 > the full timeout […] it re-sends on the same socket, keeps the transaction id,
 > and a late response then fails the id check anyway.
 
-which is why it runs pymodbus with `retries=0` and does its own retry ladder,
-reconnecting between attempts. That is a brake on the symptom, not a fix.
+which is why it ran pymodbus with `retries=0` and did its own retry ladder,
+reconnecting between attempts. That was a brake on the symptom, not a fix.
 
-`modbus-connection` also maps both backends onto one neutral exception hierarchy,
-so a caller can tell a timeout from a corrupt frame from a reply to the wrong
-exchange:
+`modbus-connection` — the abstraction considered as the way there at the time;
+what was built in the end talks to tmodbus directly — also maps both backends
+onto one neutral exception hierarchy, so a caller can tell a timeout from a
+corrupt frame from a reply to the wrong exchange:
 
 ```
 ModbusError
@@ -214,58 +218,6 @@ arrive as `ModbusTimeoutError`; with tmodbus they do not. On this device that
 distinction never fired: across all three runs, zero `ModbusDesyncError` and zero
 `ModbusProtocolError`. **The diagnostic argument for migrating did not survive
 contact with the data. The late-reply argument did.**
-
-## What migrating looks like
-
-`modbus-connection` is an abstraction over pymodbus or tmodbus, not a
-reimplementation. Home Assistant core's own `modbus` integration already pulls
-`modbus-connection[tmodbus]` alongside pymodbus, so on a current installation the
-dependency is likely present already. It needs Python 3.12 or newer.
-
-For this integration's client — 990 lines built around `AsyncModbusTcpClient` —
-the split came out as follows.
-
-**Replaced by the library**
-
-| ours | theirs |
-|---|---|
-| a lock serialising requests, against transaction-id collisions | requests on one connection are serialised |
-| `message_wait_ms`, measured from the end of the previous request | `unit.set_message_spacing()`, same semantics |
-| timeout normalisation and guarding | `unit.require_timeout()` |
-| a settle delay before a reconnect | `unit.require_connect_delay()` |
-| detecting and recycling a half-open socket | `connection.disconnect()`; the next request rebuilds |
-| `int32` / `uint32` / float / string / IPv4 decoding | `modbus_connection.decode` |
-| `retries=0` plus reflection over `client.ctx.retries` to price a call | gone; neither backend retries, and there is no knob |
-
-**Still ours**
-
-* the retry ladder, with a reconnect between attempts. `modbus-connection` turns
-  per-request retries off in both backends and exposes no setting, so the policy
-  belongs to the caller. The Huawei library does the same thing with `tenacity`.
-* the connect backoff, 1 s doubling to 30 s, which stops a device in reset from
-  being hammered. Not in the library.
-* the guard timeout each caller wraps around a read — simpler now, because a call
-  is one attempt against one timeout instead of a ladder priced by reflection.
-
-**Changed shape**
-
-The error model inverts. Today the code checks `result.isError()` and the length
-of `result.registers`; afterwards every failure is an exception. The bodies of the
-read and write methods get rewritten rather than edited.
-
-**Worth knowing before you start**
-
-`huawei_solar`'s maintainer — who wrote tmodbus, and whose library Home Assistant
-core now ships — has declined to migrate his own integration for now. His reason
-is specific: Huawei uses vendor function code `0x41` for its login handshake and
-optimizer file transfer, and `ModbusUnit` deliberately offers no raw-PDU seam, so
-a migration has to reach around the abstraction. An integration that speaks only
-standard function codes does not hit that. This one uses FC03, FC06 and FC16 and
-nothing else.
-
-The library is also young. First releases were July 2026, it is at 4.12.1 as of
-writing with 38 releases behind it, and there are already deprecations in the
-API. Pin the version.
 
 ## Where this does not generalise
 
@@ -297,8 +249,9 @@ and this one pauses every eighty-five seconds by design — the late-reply handl
 decides whether a pause costs you one failed read or two, and whether you are
 allowed to keep a short timeout at all.
 
-We are migrating. Not because the diagnosis got better, it did not, but because a
-three-second timeout is only safe on a backend that throws late replies away.
+So the migration happened. Not because the diagnosis got better, it did not, but
+because a three-second timeout is only safe on a backend that throws late replies
+away.
 
 ---
 

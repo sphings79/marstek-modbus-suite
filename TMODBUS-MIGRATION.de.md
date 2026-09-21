@@ -2,12 +2,16 @@
 
 **English: [TMODBUS-MIGRATION.md](TMODBUS-MIGRATION.md)**
 
-Das hier ist eine Messauswertung, keine Empfehlung. Es gibt sie, weil die Frage
-„soll diese Integration von pymodbus auf Home Assistants `modbus-connection`
-wechseln?" immer wieder aus dem Bauch beantwortet wurde — von uns selbst zweimal,
-und beide Male anders. Unten steht, was drei Probe-Läufe gegen einen Marstek
-Venus D tatsächlich gezeigt haben, worin sich die beiden Client-Bibliotheken in
-dem einen Fall unterscheiden, in dem es zählt, und was ein Umbau bedeuten würde.
+Das hier ist eine Messauswertung. Es gibt sie, weil die Frage „soll diese
+Integration von pymodbus auf tmodbus wechseln?" immer wieder aus dem Bauch
+beantwortet wurde — von uns selbst zweimal, und beide Male anders. Unten steht,
+was drei Probe-Läufe gegen einen Marstek Venus D tatsächlich gezeigt haben und
+worin sich die beiden Client-Bibliotheken in dem einen Fall unterscheiden, in
+dem es zählt.
+
+Die Entscheidung ist inzwischen gefallen: die Integration läuft auf tmodbus.
+Was hier steht, ist die Begründung dafür, nicht mehr die Abwägung davor — der
+Abschnitt, der einen Umbau vorausgeplant hat, ist mit dem Umbau weggefallen.
 
 Wer eine Modbus-Integration für ein Gerät betreut, das unter Last pausiert,
 sollte daraus entscheiden können, ob dieselbe Überlegung auch für ihn gilt.
@@ -196,18 +200,20 @@ laufende Anfrage wartet unbeirrt auf ihre eigene ID und bekommt sie.
 pymodbus wiederholt auf demselben Socket und verwendet die Transaction-ID erneut.
 Eine späte Antwort ist damit von der erwarteten nicht zu unterscheiden, bis der
 ID-Check fehlschlägt — und dann ist die falsche Anfrage bereits gescheitert. Der
-Client dieser Integration trägt die Notlösung und ihre Begründung als Kommentar:
+Client dieser Integration trug die Notlösung und ihre Begründung als Kommentar:
 
 > pymodbus retries a request internally before it gives up, each attempt against
 > the full timeout […] it re-sends on the same socket, keeps the transaction id,
 > and a late response then fails the id check anyway.
 
-Deshalb läuft pymodbus dort mit `retries=0` und einer eigenen Retry-Leiter, die
-zwischen den Versuchen neu verbindet. Das bremst das Symptom, es behebt es nicht.
+Deshalb lief pymodbus dort mit `retries=0` und einer eigenen Retry-Leiter, die
+zwischen den Versuchen neu verbindet. Das bremste das Symptom, es behob es nicht.
 
-`modbus-connection` bildet außerdem beide Backends auf eine gemeinsame
-Fehlerhierarchie ab, sodass ein Aufrufer einen Timeout von einem kaputten Frame
-von einer Antwort auf den falschen Austausch unterscheiden kann:
+`modbus-connection` — die Abstraktion, die damals als Weg dorthin betrachtet
+wurde; gebaut wurde am Ende direkt gegen tmodbus — bildet außerdem beide
+Backends auf eine gemeinsame Fehlerhierarchie ab, sodass ein Aufrufer einen
+Timeout von einem kaputten Frame von einer Antwort auf den falschen Austausch
+unterscheiden kann:
 
 ```
 ModbusError
@@ -223,62 +229,6 @@ diesem Gerät hat diese Unterscheidung allerdings nie gegriffen: über alle drei
 Läufe null `ModbusDesyncError` und null `ModbusProtocolError`. **Das
 diagnostische Argument für den Umbau hat den Kontakt mit den Daten nicht
 überlebt. Das Argument der späten Antworten schon.**
-
-## Wie ein Umbau aussieht
-
-`modbus-connection` ist eine Abstraktion über pymodbus oder tmodbus, keine
-Neuimplementierung. Die `modbus`-Integration von Home Assistant Core zieht
-`modbus-connection[tmodbus]` bereits neben pymodbus, auf einer aktuellen
-Installation ist die Abhängigkeit also wahrscheinlich schon da. Sie braucht
-Python 3.12 oder neuer.
-
-Für den Client dieser Integration — 990 Zeilen um `AsyncModbusTcpClient` herum —
-sieht die Aufteilung so aus.
-
-**Von der Bibliothek übernommen**
-
-| unseres | ihres |
-|---|---|
-| ein Lock, das Anfragen serialisiert, gegen Transaction-ID-Kollisionen | Anfragen auf einer Verbindung sind serialisiert |
-| `message_wait_ms`, gemessen ab Ende der Vorgängeranfrage | `unit.set_message_spacing()`, gleiche Semantik |
-| Normalisieren und Absichern des Timeouts | `unit.require_timeout()` |
-| eine Wartezeit vor dem Reconnect | `unit.require_connect_delay()` |
-| Half-open-Sockets erkennen und recyceln | `connection.disconnect()`; die nächste Anfrage baut neu auf |
-| Dekodieren von `int32` / `uint32` / Float / String / IPv4 | `modbus_connection.decode` |
-| `retries=0` plus Reflection über `client.ctx.retries`, um eine Anfrage zu kalkulieren | entfällt; kein Backend wiederholt, und es gibt keinen Schalter |
-
-**Bleibt unseres**
-
-* die Retry-Leiter mit Reconnect zwischen den Versuchen. `modbus-connection`
-  schaltet Wiederholungen in beiden Backends ab und bietet keinen Schalter dafür
-  — die Strategie gehört dem Aufrufer. Die Huawei-Bibliothek macht dasselbe mit
-  `tenacity`.
-* der Connect-Backoff, 1 s verdoppelnd bis 30 s, damit ein Gerät im Reset nicht
-  bombardiert wird. Nicht in der Bibliothek.
-* das Guard-Timeout, das jeder Aufrufer um einen Read legt — jetzt einfacher,
-  weil eine Anfrage ein Versuch gegen ein Timeout ist statt einer Leiter, die per
-  Reflection kalkuliert wird.
-
-**Ändert seine Form**
-
-Das Fehlermodell dreht sich um. Heute prüft der Code `result.isError()` und die
-Länge von `result.registers`; danach ist jeder Fehlschlag eine Exception. Die
-Rümpfe der Lese- und Schreibmethoden schreibt man neu, statt sie zu bearbeiten.
-
-**Was man vorher wissen sollte**
-
-Der Maintainer von `huawei_solar` — der tmodbus geschrieben hat und dessen
-Bibliothek Home Assistant Core inzwischen mitliefert — lehnt den Umbau seiner
-eigenen Integration vorerst ab. Sein Grund ist speziell: Huawei nutzt den
-herstellereigenen Funktionscode `0x41` für Login-Handshake und
-Optimizer-Dateiübertragung, und `ModbusUnit` bietet bewusst keinen Raw-PDU-Zugang
-— ein Umbau muss also um die Abstraktion herumgreifen. Eine Integration, die nur
-Standard-Funktionscodes spricht, trifft das nicht. Diese hier benutzt FC03, FC06
-und FC16 und sonst nichts.
-
-Die Bibliothek ist außerdem jung. Erste Releases im Juli 2026, Stand jetzt 4.12.1
-mit 38 Releases dahinter, und es gibt bereits Deprecations in der API. Version
-festnageln.
 
 ## Wo das nicht verallgemeinerbar ist
 
@@ -312,9 +262,9 @@ Sekunden — entscheidet der Umgang mit der späten Antwort, ob eine Pause einen
 fehlgeschlagenen Read kostet oder zwei, und ob man überhaupt ein kurzes Timeout
 fahren darf.
 
-Wir bauen um. Nicht weil die Diagnose besser geworden wäre, das ist sie nicht,
-sondern weil ein Drei-Sekunden-Timeout nur auf einem Backend sicher ist, das
-späte Antworten wegwirft.
+Deshalb wurde umgebaut. Nicht weil die Diagnose besser geworden wäre, das ist
+sie nicht, sondern weil ein Drei-Sekunden-Timeout nur auf einem Backend sicher
+ist, das späte Antworten wegwirft.
 
 ---
 
