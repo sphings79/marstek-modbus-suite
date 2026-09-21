@@ -6,14 +6,6 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note
 30005,off_grid_volt,V,u16,x1,,0x20014EA8,Struct +0x14 'off_grid_volt(0.1V)'. Alias 32300/32301
 30007,off_grid_power,W,i16,x1,,0x20014EAE,Struct +0x1a 'off_grid_power(1W)'. Alias 32302. BLE-Payload 0x00 ('Backup Load' in VenusControl) ist eine direkte Kopie 
 30010,work_mode,,u8,x1,,0x20000144,"0x20000144 'work_mode' / +1 sleep_flag, +2 bat_mode (beide nicht serviert)"
-30020,mppt1_voltage,V,u16,x1,,0x20014F4C,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
-30021,mppt2_voltage,V,u16,x1,,0x20014F52,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
-30022,mppt3_voltage,V,u16,x1,,0x20014F58,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
-30023,mppt4_voltage,V,u16,x1,,0x20014F5E,"MPPT-Struct Stride 6, Feld +0. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow"
-30024,mppt1_current,A,u16,x1,,0x20014F4E,"MPPT-Struct Feld +2 (aus Pointer-Stride abgeleitet). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1"
-30025,mppt2_current,A,u16,x1,,0x20014F54,"MPPT-Struct Feld +2. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow(0.1W)='"
-30026,mppt3_current,A,u16,x1,,0x20014F5A,"MPPT-Struct Feld +2. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow(0.1W)='"
-30027,mppt4_current,A,u16,x1,,0x20014F60,"MPPT-Struct Feld +2. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1V)=%d|Cur(0.1A)=%d|Pow(0.1W)='"
 30028,inv_bat_voltage,V,u16,x1,,0x20014F74,Inverter-Struct 0x20014F4C+0x30 'bat_vol_0.1V'. Live 533=53.3V
 30029,inv_bat_current,A,i16,x1,,0x20014F76,Inverter-Struct +0x32 'bat_cur_0.1A'. Live -1 (Idle)
 30030,config_word_2000018A,,u16,x1,,0x2000018A,Kern-Global 0x2000018A. Writer Modbus_StoreValue16 (CAN fc 0xfe) -> per CAN/Modbus gesetzter Konfigurationswert
@@ -23,10 +15,6 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note
 30034,inv_slot8_3e,,u16,x1,,0x20014F82,"Inverter-Struct 0x20014F4C+0x3e, befuellt via Modbus_StoreRegisterSlot (CAN fc 0x03, Slot 8). Von MPPT_Debug_Print nicht"
 30035,inv_boundary_20014F8C,,i16,x1,,0x20014F84,"0x20014F8C, Grenze Inverter-Struct/BMS-Aggregat. Befuellt via Modbus_StorePairSlot (CAN fc 0xff, Slot 2)"
 30036,inv_base_voltage,V,u16,x1,,0x20014F78,Inverter-Struct +0x34 'base_vol_0.01V' (interne/PE-Referenz). Live 219=2.19V
-30037,mppt1_power,W,u16,x1,,0x20014F50,"MPPT-Struct Feld +4 / Alias 37017. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1V)=%d|Cur(0.1A)=%d"
-30038,mppt2_power,W,u16,x1,,0x20014F56,"MPPT-Struct Feld +4 / Alias 37018. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1V)=%d|Cur(0.1A)=%d"
-30039,mppt3_power,W,u16,x1,,0x20014F5C,"MPPT-Struct Feld +4 / Alias 37019. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1V)=%d|Cur(0.1A)=%d"
-30040,mppt4_power,W,u16,x1,,0x20014F62,"MPPT-Struct Feld +4 / Alias 37020. Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1V)=%d|Cur(0.1A)=%d"
 30102,pack1_max_cell_voltage_mirror,V,u16,x1,,0x20014FBC,"identische Quelle wie 34005/37007 (Pack0-Struct +0x10), Rohwert mV"
 30103,pack1_min_cell_voltage_mirror,V,u16,x1,,0x20014FBE,"identische Quelle wie 34006/37008 (Pack0-Struct +0x12), Rohwert mV"
 30104,pack1_max_cell_temp,°C,i16,x10,,0x20014FC0,Pack1-Struct +0x14 (direkt nach min_cell_voltage). FW multipliziert x10 -> Anzeige 0.01 degC. Uebereinstimmend: alte Liv
@@ -38,7 +26,6 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note
 30110,config_setpoint_mirror,,u8,x1,,0x20014FA7,"Alias 32114 (0x20014FAF): vom Write-Handler beschriebener Config-Setpoint, kein Sensor"
 30201,ems_boot_ver,,u8,x1,,0x20000038,"KORREKTUR: 0x20000038 ist 'boot_ver' des EMS/Control (Bootloader), NICHT ems_sub_version. Beleg: Versions-Debug-Print 0x"
 30203,vns_boot_ver,,u16,x1,,0x20000160,"VNS (Micro-Inverter) Bootloader-Version. Block 0x2000015C+4, Writer Telemetry_Store_RegCB (CAN 0xCB). Inverter_Telemetry"
-30205,mppt_ver,,u16,x1,,0x20000188,"KORREKTUR: 0x20000188 ist die MPPT-Firmware-Version, NICHT bms_sub_version. Versions-Debug-Print 0x08036F6A liest 0x2000"
 30210,pack1_mos_status_mirror,,u8,x1,,0x20014FBA,"Alias 34004, Live 0..3 = 2 MOSFET-Flags"
 30211,config_byte_can54,,u8,x1,,0x20000165,0x20000165. Writer: Config_PostWriteCommit + Telemetry_Store_Reg54 (CAN-ID 0x54) -> per CAN setzbarer Konfigurationswert
 30212,selftest_status,,u8,x1,,0x20000138,"Kern-Global 0x20000138. Writer in v150 aufgeloest: FUN_08019364 @0x08019364, Start-Selbsttest, fuenf Schreibstellen, kei"
@@ -94,14 +81,6 @@ register,name_from_d_map,unit,type,scale,part_of,sram_e3,note
 37014,error_code1_w2,,u32,x1,37013,,Alias 36101 (error_code1 LOW-Word)
 37015,error_code2,,u32,x1,,0x20014EA0,Alias 36102 (error_code2 HIGH-Word)
 37016,error_code2_w2,,u32,x1,37015,,Alias 36103 (error_code2 LOW-Word)
-37017,mppt1_power,W,u16,x1,,0x20014F50,"identische Quelle wie 30037 (Inverter-Struct +0x0c). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV1_Vol(0.1"
-37018,mppt2_power,W,u16,x1,,0x20014F56,"identische Quelle wie 30038 (Inverter-Struct +0x12). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV2_Vol(0.1"
-37019,mppt3_power,W,u16,x1,,0x20014F5C,"identische Quelle wie 30039 (Inverter-Struct +0x18). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV3_Vol(0.1"
-37020,mppt4_power,W,u16,x1,,0x20014F62,"identische Quelle wie 30040 (Inverter-Struct +0x1e). Firmware-benannt: MPPT_Debug_Print @0x08036884, String 'PV4_Vol(0.1"
-37021,pv_year_capacity,,u32,x1,,0x20014F70,"Inverter-Struct +0x2c 'PV_Year_Cap_10Wh' (u32, Einheit 10Wh). Tages-/Monats-Cap bei +0x20/+0x28 sind keine Register | DE"
-37022,pv_year_capacity_w2,,u32,x1,37021,,Folgeregister 2/2 von 37021 | DEUTUNG WIDERLEGT 2026-08-22: Der Name 'PV_Year_Cap_10Wh' stammt aus einem Firmware-String
-37023,mppt_error,,u16,x1,,0x20014F46,Inverter-Struct +0x02 'Mppt_Error'
-37024,mppt_warning,,u16,x1,,0x20014F4A,Inverter-Struct +0x06 'Mppt_Warning'
 38000,can40_w1,,i16,x1,,0x20000168,"CAN-Frame ID 0x40, Wort 1/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "
 38001,can40_w2,,u16,x1,,0x2000016A,"CAN-Frame ID 0x40, Wort 2/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "
 38002,can40_w3,,i16,x1,,0x2000016C,"CAN-Frame ID 0x40, Wort 3/4 -> Telemetry_Store_EnergyCounters, Ziel 0x20000168. Frame-Nutzdaten 1:1 als 16-Bit-Register "

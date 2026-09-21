@@ -28,11 +28,26 @@ differ per model. See `registers/a.yaml` and `registers/e_v3.yaml` for how that 
 served by the device        410 registers
 already in e_v3.yaml         88
 packs 2-7, dropped          204     (34100-34633)
-left to map                 118
+PV and MPPT, dropped         21
+left to map                  97
 ```
 
-`e_v3_register_gap.csv` lists those 118 with the name, type, scale and unit the Venus D map gives
+`e_v3_register_gap.csv` lists those 97 with the name, type, scale and unit the Venus D map gives
 them. Every one of them is already named there, so this is mapping work, not analysis.
+
+### PV is out
+
+The E3 has no PV inputs. The firmware carries the full PV path on every model - the control image
+knows `MPPT_Debug_Print`, the OTA path for the MPPT stage and the whole string set - but that says
+nothing about what is soldered on. Dropped accordingly: `30020`-`30027` and `30037`-`30040` (the
+four channels' voltage, current and power), `30205` (`mppt_ver`, which reads 0 without a stage),
+`37017`-`37022` (the power aliases and the yearly PV energy counter) and `37023`/`37024`
+(`mppt_error` / `mppt_warning`).
+
+The last two are worth a note: they were what a Venus A user's report first pointed at, and on that
+device they read non-zero while `mppt_version` sat at 0. That turned out to be a misread rather
+than a signal - see the commit that reworked the fault texts. Either way there is nothing behind
+them on a model without a PV stage.
 
 ### Packs are out
 
@@ -62,21 +77,16 @@ in its own commit.
 
 | Range | Count | What it is | Suggested default |
 |---|---|---|---|
-| 30000–30214 | 45 | inverter telemetry, versions, self-check, mirrors of BMS values | on, except the mirrors |
+| 30000–30214 | 32 | inverter telemetry, versions, self-check, mirrors of BMS values | on, except the mirrors |
 | 32100–32203 | 17 | BMS aggregate (voltage, current, SoC, current limits, pack count) | on |
 | 34000–34017 | 16 | the single battery, see above | on |
 | 35110–35112 | 3 | charge voltage limit, charge/discharge current limit | on |
-| 37000–37024 | 22 | alias block; most duplicate registers that already exist | off |
+| 37000–37016 | 14 | alias block; most duplicate registers that already exist | off |
 | 38000–38014 | 15 | raw CAN frames 0x40–0x43, undecoded | off |
 
-Two things to settle while mapping:
-
-1. **MPPT (30020–30040, 37017–37024).** The firmware carries the full PV path on every model, and
-   the E3 control image is no exception, but that says nothing about the hardware. Unless an E3 is
-   known to have PV inputs, these belong in with `enabled_by_default: false`.
-2. **Aliases (37xxx).** 37013/37015 are the error words again, 37017–37020 the MPPT powers. Mapping
-   them creates a second entity for the same value. Worth carrying only where the primary register
-   is not served, which on this model is nowhere.
+One thing left to settle while mapping: **the aliases in 37xxx.** 37013 and 37015 are the two error
+words again under a second number. Mapping them creates a second entity for the same value, which
+is worth carrying only where the primary register is not served — and on this model it always is.
 
 ## Known traps
 
@@ -92,6 +102,7 @@ Two things to settle while mapping:
 ## Verification
 
 None of this can be confirmed without an E3. Before merging, a scan of the new registers against a
-real device should show plausible values, and the ones expected to read zero — packs, MPPT — should
-actually read zero rather than an exception. The file header still says the map is only partially
-validated on hardware; that stays true until then.
+real device should show plausible values. The registers left out here are worth one scan of their
+own: packs 2–7 and the PV block are expected to answer with zero rather than an exception, and if
+they do not, the reasoning above needs revisiting. The file header still says the map is only
+partially validated on hardware; that stays true until then.
