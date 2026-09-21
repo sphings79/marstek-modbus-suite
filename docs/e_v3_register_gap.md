@@ -121,11 +121,11 @@ settled there first.
 
 Checked, because an untested register is exactly where that would hide.
 
-The credential buffer is registers **41500–41515**, 32 bytes at SRAM `0x20014DC2` on the D. It is
-readable *and* writable without authentication, and whether a configured device keeps real
-credentials there is still open — see `security/WLAN_Credentials_ueber_Modbus_41500.md` in the
-firmware analysis project. It is reached through the write handler's read branch, **not** through
-the descriptor table, and it is not mapped in any of the four register files.
+The credential buffer is registers **41500–41515**, and d.yaml already records why it stays out:
+the value would otherwise end up in the database, in backups and possibly in logs. It sits in the
+write range, not in the descriptor table, so it is not something a read map reaches by accident —
+and it is not mapped in any of the four register files. The analysis behind it is in the firmware
+project under `security/`, which is not published.
 
 Two checks:
 
