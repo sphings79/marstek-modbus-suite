@@ -484,6 +484,9 @@
       "battery_power": {
         "name": "Batterieleistung"
       },
+      "dc_sample_power": {
+        "name": "DC-Messstelle Leistung"
+      },
       "internal_temperature": {
         "name": "Innentemperatur"
       },
@@ -508,8 +511,14 @@
       "total_charging_energy": {
         "name": "Gesamte Ladeenergie"
       },
+      "total_ac_input_energy": {
+        "name": "AC-Bezug gesamt"
+      },
       "total_discharging_energy": {
         "name": "Gesamte Entladeenergie"
+      },
+      "total_ac_output_energy": {
+        "name": "AC-Abgabe gesamt"
       },
       "battery_cycle_count": {
         "name": "Vollzyklen (BMS)"
@@ -541,14 +550,26 @@
       "total_daily_charging_energy": {
         "name": "Tägliche Ladeenergie"
       },
+      "total_daily_ac_input_energy": {
+        "name": "AC-Bezug heute"
+      },
       "total_daily_discharging_energy": {
         "name": "Tägliche Entladeenergie"
+      },
+      "total_daily_ac_output_energy": {
+        "name": "AC-Abgabe heute"
       },
       "total_monthly_charging_energy": {
         "name": "Monatliche Ladeenergie"
       },
+      "total_monthly_ac_input_energy": {
+        "name": "AC-Bezug diesen Monat"
+      },
       "total_monthly_discharging_energy": {
         "name": "Monatliche Entladeenergie"
+      },
+      "total_monthly_ac_output_energy": {
+        "name": "AC-Abgabe diesen Monat"
       },
       "max_cell_temperature": {
         "name": "Maximale Zellentemperatur"
@@ -1206,6 +1227,14 @@
           "thursday": "Donnerstag",
           "friday": "Freitag",
           "saturday": "Samstag"
+        }
+      },
+      "modbus_device_polling": {
+        "name": "Modbus-Abfrage des Geräts",
+        "state": {
+          "active": "Aktiv",
+          "paused_unavailable": "Pausiert, Entitäten nicht verfügbar",
+          "paused_frozen": "Pausiert, Entitäten eingefroren"
         }
       }
     },

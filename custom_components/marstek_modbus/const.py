@@ -10,7 +10,45 @@ DEFAULT_PORT = 502
 DEFAULT_MESSAGE_WAIT_MS = 80  # Default wait time for Modbus messages in milliseconds
 CONF_MESSAGE_WAIT_MS = "message_wait_milliseconds"
 DEFAULT_UNIT_ID = 1  # Default Modbus Unit ID (unit ID)
-DEFAULT_TIMEOUT = 3  # Default Modbus request timeout in seconds
+# How long one Modbus request may take before it is given up on.
+#
+# Three seconds was the obvious number until the battery was watched for a
+# whole night. A Venus D on EMS v150 stops answering for about four seconds
+# every five minutes: 138 of those in eleven hours, mean 4.05 s, longest
+# 4.46 s, measured at a Modbus proxy between Home Assistant and the battery,
+# so it is the device and not the link. Every single one of them expired a
+# three second request, and the integration rebuilt the connection each time
+# for a battery that was about to answer.
+#
+# Six covers the longest stall seen with room over it, including the little
+# extra a second request waits when it is queued behind the stalled one
+# (4.53 s worst case). The price is paid only when a battery is really gone,
+# and it is three seconds of patience.
+DEFAULT_TIMEOUT = 6  # Default Modbus request timeout in seconds
+
+# How many unrequested registers a block read may span to avoid a second
+# request. A request costs about the same whatever it carries, so reading a
+# couple of registers nobody asked for beats a second round trip.
+#
+# Two is the value that has been run rather than only measured: seventeen
+# hours on a Venus D with every register of the map enabled, and the gap
+# memory below stayed empty the whole time - not one bridged block refused.
+#
+# Wider bridging saves more requests on paper and now costs little when it
+# guesses wrong, because a refusal comes back in about 150 ms since the
+# exception frames became readable, and is learned once per firmware. It has
+# not been run for a day on a real battery, which is the only reason this
+# still says two.
+DEFAULT_MAX_READ_GAP = 2
+
+# Gaps the device refused to bridge, remembered per firmware so a map that
+# changes with an update is re-learned rather than carried forward.
+CONF_BAD_GAPS = "bad_gaps"
+CONF_BAD_GAPS_FIRMWARE = "bad_gaps_firmware"
+
+# The register whose value keys that memory: ems_version, the Control app
+# build. A different firmware may serve a different set of registers.
+GAP_MEMORY_FIRMWARE_KEY = "ems_version"
 
 # General scan intervals (in seconds)
 DEFAULT_SCAN_INTERVALS = {
@@ -96,3 +134,25 @@ CONF_DEV_REGISTERS_LEGACY = "dev_registers"
 RS485_CONTROL_MODE_KEY = "rs485_control_mode"
 ISSUE_RS485_CONTROL_MODE_RESET = "rs485_control_mode_reset"
 
+
+# Polling mode, set per config entry from the select entity of the same name.
+# Not a register: it says what this integration does, not what the device is,
+# which is why it exists on every model and survives the device being off.
+#
+# The two paused modes differ only in what the read-only entities do. Frozen
+# keeps the last reading, which leaves statistics unbroken but carries a value
+# from before the pause as though it were measured now. Unavailable tears a hole
+# in the history and claims nothing. Both stop the polling and close the socket;
+# neither survives a restart of Home Assistant, which keeps no readings to
+# freeze.
+CONF_POLLING_MODE = "polling_mode"
+POLLING_MODE_KEY = "modbus_device_polling"
+POLLING_MODE_ACTIVE = "active"
+POLLING_MODE_PAUSED_UNAVAILABLE = "paused_unavailable"
+POLLING_MODE_PAUSED_FROZEN = "paused_frozen"
+POLLING_MODES = [
+    POLLING_MODE_ACTIVE,
+    POLLING_MODE_PAUSED_UNAVAILABLE,
+    POLLING_MODE_PAUSED_FROZEN,
+]
+DEFAULT_POLLING_MODE = POLLING_MODE_ACTIVE

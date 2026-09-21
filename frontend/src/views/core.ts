@@ -167,7 +167,7 @@ export class MkViewCore extends MkView {
                 ? t("core.discharging_to_house")
                 : t("core.charging_from_grid")
               : t("core.at_rest")}
-            ${r.str("inverter_state") ? ` · ${r.str("inverter_state")}` : ""}
+            ${r.inverterState() ? ` · ${r.inverterState()}` : ""}
           </div>
         </div>
 
@@ -184,12 +184,12 @@ export class MkViewCore extends MkView {
       <div class="grid tiles">
         <mk-stat
           label=${t("core.today_charged")}
-          value=${f.num(r.num("total_daily_charging_energy"), 2)}
+          value=${f.num(r.num(r.firstKey(["total_daily_ac_input_energy", "total_daily_charging_energy"]) ?? ""), 2)}
           unit="kWh"
         ></mk-stat>
         <mk-stat
           label=${t("core.today_discharged")}
-          value=${f.num(r.num("total_daily_discharging_energy"), 2)}
+          value=${f.num(r.num(r.firstKey(["total_daily_ac_output_energy", "total_daily_discharging_energy"]) ?? ""), 2)}
           unit="kWh"
           tone="magenta"
         ></mk-stat>

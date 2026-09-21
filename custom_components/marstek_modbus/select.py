@@ -14,7 +14,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceEntryType
 
-from .const import DOMAIN, MANUFACTURER, MODEL
+from .const import (DOMAIN, MANUFACTURER, MODEL, POLLING_MODE_KEY,
+                    POLLING_MODES)
 from .coordinator import MarstekCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,6 +74,11 @@ async def async_setup_entry(
         # and is awaited — a full poll of every register inside the platform
         # setup. The values arrive with the coordinator's first refresh anyway.
         async_add_entities(entities)
+
+    # Added separately, and unconditionally: this one describes the integration
+    # rather than the device, so it exists on every model and has to be there
+    # even when no register was ever read.
+    async_add_entities([MarstekPollingModeSelect(coordinator)])
 
 
 class MarstekSelect(CoordinatorEntity, SelectEntity):
@@ -147,9 +153,11 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
     def available(self) -> bool:
         """
         Return True if the coordinator has successfully fetched data.
-        Used by Home Assistant to determine entity availability.
+
+        A paused entry offers no controls: writing would reopen the connection
+        and wake the battery the pause was meant to leave alone.
         """
-        return self.coordinator.last_update_success
+        return self.coordinator.controls_available and self.coordinator.last_update_success
 
     @property
     def options(self) -> list[str]:
@@ -214,6 +222,56 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         Return device information for Home Assistant's device registry.
         Includes identifiers, name, manufacturer, model, and entry type.
         """
+        return {
+            "identifiers": {(DOMAIN, self.coordinator.config_entry.entry_id)},
+            "name": self.coordinator.config_entry.title,
+            "manufacturer": MANUFACTURER,
+            "model": MODEL,
+            "entry_type": DeviceEntryType.SERVICE,
+        }
+
+
+class MarstekPollingModeSelect(SelectEntity):
+    """Whether this entry polls its battery, and what happens while it does not.
+
+    Deliberately not a CoordinatorEntity. Everything else here reports what a
+    register said; this reports what the user asked for, and it has to keep
+    working when there is nothing on the other end of the wire - otherwise a
+    battery switched off for the winter could never be switched back on from
+    Home Assistant.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = POLLING_MODE_KEY
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:sync"
+
+    def __init__(self, coordinator: MarstekCoordinator) -> None:
+        """Initialize the polling mode entity."""
+        self.coordinator = coordinator
+        self._attr_unique_id = (
+            f"{coordinator.config_entry.entry_id}_{POLLING_MODE_KEY}"
+        )
+        self._attr_options = list(POLLING_MODES)
+
+    @property
+    def available(self) -> bool:
+        """Always. It is the way back out of a pause."""
+        return True
+
+    @property
+    def current_option(self) -> str:
+        """Return the mode this entry is in."""
+        return self.coordinator.polling_mode
+
+    async def async_select_option(self, option: str) -> None:
+        """Pause or resume polling, and remember the choice."""
+        await self.coordinator.async_set_polling_mode(option)
+        self.async_write_ha_state()
+
+    @property
+    def device_info(self) -> dict:
+        """Return device information for Home Assistant's device registry."""
         return {
             "identifiers": {(DOMAIN, self.coordinator.config_entry.entry_id)},
             "name": self.coordinator.config_entry.title,

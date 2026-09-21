@@ -20,7 +20,11 @@ from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
                     CONF_PACK_COUNT, PACK_COUNT_AUTO, MAX_PACK_COUNT,
                     PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
-                    RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET)
+                    RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET,
+                    CONF_POLLING_MODE, DEFAULT_POLLING_MODE, POLLING_MODES,
+                    POLLING_MODE_ACTIVE, POLLING_MODE_PAUSED_UNAVAILABLE,
+                    DEFAULT_MAX_READ_GAP, CONF_BAD_GAPS, CONF_BAD_GAPS_FIRMWARE,
+                    GAP_MEMORY_FIRMWARE_KEY)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -122,6 +126,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.BITFIELD_TEXT_SENSOR_DEFINITIONS = []
         self.GRID_POWER_SENSOR_DEFINITIONS = []
         self.BMS_POWER_SENSOR_DEFINITIONS = []
+        self.BATTERY_POWER_SENSOR_DEFINITIONS = []
+        self.MIRROR_SENSOR_DEFINITIONS = []
+        self.PACK_AGGREGATE_SENSOR_DEFINITIONS = []
         self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
         self.DEV_DUPLICATE_SENSOR_DEFINITIONS = []
 
@@ -155,6 +162,24 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._max_consecutive_failures = 5
         self._connection_suspended = False
         self._suspension_reset_time = None
+
+        # What the user asked this entry to do: poll, or stand down until they
+        # say otherwise. Read before the first connection attempt, because a
+        # battery that is switched off for the season must still load.
+        self.polling_mode = self._read_polling_mode(entry.options)
+
+        # True once the device counts as gone rather than glitching. A full
+        # cycle at a switched-off battery costs one timeout per register and
+        # says nothing a single read would not, so while this is set the cycle
+        # is replaced by one probe register - and the log stays quiet until the
+        # state changes, instead of repeating itself for as long as the battery
+        # is off.
+        self._link_offline = False
+        self._last_probe_at = None
+        # Fixed, not derived from the poll interval: one request a minute is
+        # nothing, and it keeps the battery back within a minute of being
+        # switched on.
+        self._offline_probe_interval = 60
         
         self._consecutive_timeout_cycles = 0
         self._max_consecutive_timeout_cycles = 3
@@ -172,6 +197,28 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # into one reconnect per register.
         self._half_open_reconnects = 0
         self._last_half_open_reconnect_at = None
+        # Gap bridging. A block read may span a few registers nobody asked for
+        # rather than pay for a second request, because a request costs the
+        # same whatever it carries - measured at a median of 126 ms on a Venus
+        # D whether it fetched one register or forty.
+        #
+        # Which gaps a device tolerates is a property of that device, so it is
+        # learned rather than assumed. A gap the device refuses is remembered;
+        # a gap that has worked once is protected from ever being blamed, so
+        # that a passing stall cannot cost a saving permanently. The two are
+        # told apart by what came back: a Modbus exception is the device
+        # refusing these registers, a timeout is the device being busy.
+        self._max_read_gap = DEFAULT_MAX_READ_GAP
+        self._bad_gaps: set[tuple[int, int]] = set()
+        self._good_gaps: set[tuple[int, int]] = set()
+        self._gap_memory_firmware = (self.config_entry.options or {}).get(CONF_BAD_GAPS_FIRMWARE)
+        for pair in (self.config_entry.options or {}).get(CONF_BAD_GAPS) or []:
+            try:
+                left, right = pair
+                self._bad_gaps.add((int(left), int(right)))
+            except (TypeError, ValueError):
+                _LOGGER.debug("Ignoring malformed remembered gap %r", pair)
+
         # Last value seen in register 42000, to spot the device dropping out of
         # RS485 control mode on its own. None until the register is first read.
         self._last_rs485_control_mode = None
@@ -363,6 +410,160 @@ class MarstekCoordinator(DataUpdateCoordinator):
         _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
         return False
 
+    @staticmethod
+    def _read_polling_mode(options) -> str:
+        """Return the stored polling mode, falling back to polling."""
+        mode = (options or {}).get(CONF_POLLING_MODE, DEFAULT_POLLING_MODE)
+        return mode if mode in POLLING_MODES else DEFAULT_POLLING_MODE
+
+    @property
+    def polling_paused(self) -> bool:
+        """True while the user has this entry standing down."""
+        return self.polling_mode != POLLING_MODE_ACTIVE
+
+    @property
+    def readings_available(self) -> bool:
+        """False when a pause is meant to take the readings away with it."""
+        return self.polling_mode != POLLING_MODE_PAUSED_UNAVAILABLE
+
+    @property
+    def controls_available(self) -> bool:
+        """False while paused, in either mode.
+
+        A write would reconnect and wake the device, which is the one thing a
+        pause is for. The readings can stand still and stay readable; a control
+        that looks usable but must not be used cannot.
+        """
+        return not self.polling_paused
+
+    async def async_set_polling_mode(self, mode: str) -> None:
+        """Switch between polling and standing down, and remember which.
+
+        Stored on the config entry rather than held in memory, so a battery
+        switched off in October is still switched off after a restart in
+        January.
+        """
+        if mode not in POLLING_MODES:
+            _LOGGER.warning("Ignoring unknown polling mode %r", mode)
+            return
+
+        was_paused = self.polling_paused
+        self.polling_mode = mode
+
+        options = dict(self.config_entry.options or {})
+        options[CONF_POLLING_MODE] = mode
+        # No reload: nothing here changes what the entities are, only what the
+        # coordinator does with them, and a reload would drop every reading the
+        # frozen mode exists to keep.
+        self.hass.config_entries.async_update_entry(self.config_entry, options=options)
+
+        if self.polling_paused:
+            if not was_paused:
+                _LOGGER.info(
+                    "Polling paused for %s:%d - closing the connection until it is resumed",
+                    self.host,
+                    self.port,
+                )
+            # Before the close, not after: a cycle still in flight would
+            # otherwise find the socket gone and rebuild it, and nothing would
+            # close it again until the mode is next touched.
+            self.client.hold_closed = True
+            await self.client.async_close_idle()
+            # Tell the entities, so availability follows the mode immediately
+            # instead of at the next tick that will not come.
+            self.async_update_listeners()
+            return
+
+        _LOGGER.info("Polling resumed for %s:%d", self.host, self.port)
+        # Start from a clean slate: the failure counts and the offline state all
+        # describe a device nobody was talking to.
+        self._link_offline = False
+        self._connection_suspended = False
+        self._suspension_reset_time = None
+        self._consecutive_failures = 0
+        self._consecutive_timeout_cycles = 0
+        self._register_failures.clear()
+        self._last_probe_at = None
+        self.client.hold_closed = False
+        try:
+            await self.client.async_connect()
+        except Exception as exc:  # noqa: BLE001 - the refresh reports it again
+            _LOGGER.debug("Connect on resume failed, the refresh will retry: %s", exc)
+        await self.async_request_refresh()
+
+    def _probe_definition(self) -> dict | None:
+        """The single register used to test whether a dead link is back.
+
+        Any cheap register the firmware always answers will do; the state of
+        charge is in every map. Nothing is done with the value - the point is
+        whether an answer arrives at all.
+        """
+        for key in ("battery_soc", "inverter_state"):
+            for definition in self._all_definitions:
+                if (
+                    definition.get("key") == key
+                    and self._definition_register_count(definition) == 1
+                ):
+                    return definition
+
+        # A map naming neither: the first single-register read serves as well.
+        for definition in self._all_definitions:
+            if self._definition_register_count(definition) == 1:
+                return definition
+        return None
+
+    async def _async_probe_link(self, now) -> bool:
+        """Read the probe register and report whether the device answered."""
+        definition = self._probe_definition()
+        if definition is None:
+            return False
+
+        self._last_probe_at = now
+        self._suspension_reset_time = now + timedelta(
+            seconds=self._offline_probe_interval
+        )
+        # Neither counted nor reported: a probe that fails while the battery is
+        # off is the expected outcome, and saying so once a minute for as long
+        # as it stays off is the noise this whole state exists to avoid.
+        value = await self.async_read_value(
+            definition, definition["key"], track_failure=False, quiet=True
+        )
+        return value is not None
+
+    def _link_recovered(self) -> None:
+        """Leave the offline state and let the next cycle read everything.
+
+        Clearing the per-register failure counts is the point of this. They
+        stretch a register's effective interval to as much as an hour, and they
+        only reset on a successful read of that same register - so a battery
+        switched back on would otherwise trickle its sensors in over the rest of
+        that hour rather than filling the panel at once.
+        """
+        self._link_offline = False
+        self._connection_suspended = False
+        self._suspension_reset_time = None
+        self._consecutive_failures = 0
+        self._consecutive_timeout_cycles = 0
+        self._register_failures.clear()
+        _LOGGER.info("Modbus link to %s:%d is back", self.host, self.port)
+
+    def _link_lost(self, now) -> None:
+        """Enter the offline state, once, with one message to show for it."""
+        self._link_offline = True
+        self._connection_suspended = True
+        self._last_probe_at = now
+        self._suspension_reset_time = now + timedelta(
+            seconds=self._offline_probe_interval
+        )
+        _LOGGER.warning(
+            "No answer from %s:%d after %d cycles - treating the device as offline "
+            "and probing one register every %ds until it answers again",
+            self.host,
+            self.port,
+            self._consecutive_failures,
+            self._offline_probe_interval,
+        )
+
     def _is_absent_pack(self, definition: dict) -> bool:
         """Return True for a register belonging to a pack that is not installed.
 
@@ -502,7 +703,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         return f"{ISSUE_RS485_CONTROL_MODE_RESET}_{self.config_entry.entry_id}"
 
     def _build_contiguous_read_groups(self, sensors: list[dict]) -> list[list[dict]]:
-        """Group sensor definitions into gapless register blocks.
+        """Group sensor definitions into register blocks.
 
         A definition joins the current block when it starts no further along
         than one register past the block's end. Two definitions may therefore
@@ -515,6 +716,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         Values are decoded per definition from its own offset into the block,
         so an overlap costs nothing at decode time.
+
+        A definition may also join across a small gap. A request costs about
+        the same whatever it carries, so reading a handful of registers nobody
+        asked for is cheaper than a second round trip - but only where the
+        device tolerates it, which `_bad_gaps` records and `_max_read_gap`
+        bounds. Both are per device, never assumed.
         """
         if not sensors:
             return []
@@ -537,7 +744,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
             # `ordered` is sorted by register, so the block can only grow to the
             # right - but an overlapping definition may end short of one already
             # in the block, which must not pull the block's end back.
-            if current_end is not None and register <= current_end + 1 and sensor_end - current_group[0]["register"] < 125:
+            gap = register - current_end - 1 if current_end is not None else 0
+            bridgeable = gap <= 0 or (
+                gap <= self._max_read_gap and not self._gap_is_refused(current_end, register)
+            )
+            if (
+                current_end is not None
+                and bridgeable
+                and sensor_end - current_group[0]["register"] < 125
+            ):
                 current_group.append(sensor)
                 current_end = max(current_end, sensor_end)
                 continue
@@ -550,6 +765,102 @@ class MarstekCoordinator(DataUpdateCoordinator):
             groups.append(current_group)
 
         return groups
+
+    def _gap_is_refused(self, left: int, right: int) -> bool:
+        """Has the device refused a block that spanned this gap?
+
+        Containment rather than equality, because a refusal is recorded for the
+        registers that were actually asked for in that cycle, and a later cycle
+        may ask for a different subset and so describe the same dead ground
+        with a narrower pair. A recorded refusal therefore rules out every gap
+        inside it. That errs towards splitting a block that might have worked -
+        the cost is one request - while a gap already served is protected by
+        `_good_gaps` and never recorded in the first place.
+        """
+        return any(bad_left <= left and right <= bad_right for bad_left, bad_right in self._bad_gaps)
+
+    @staticmethod
+    def _bridged_gaps(group: list[dict]) -> list[tuple[int, int]]:
+        """Return the gaps a block spans, as (last needed, next needed) pairs.
+
+        Recomputed from the group rather than carried alongside it, so there is
+        one description of a block and not two that can drift apart.
+        """
+        gaps: list[tuple[int, int]] = []
+        end: int | None = None
+        for sensor in sorted(group, key=lambda definition: definition["register"]):
+            register = sensor["register"]
+            if end is not None and register > end + 1:
+                gaps.append((end, register))
+            span = register + MarstekCoordinator._definition_register_count(sensor) - 1
+            end = span if end is None else max(end, span)
+        return gaps
+
+    def _note_gaps_survived(self, group: list[dict]) -> None:
+        """Record that this block's gaps are ones the device serves."""
+        for gap in self._bridged_gaps(group):
+            if gap not in self._good_gaps:
+                self._good_gaps.add(gap)
+                _LOGGER.debug("Gap %d -> %d is served by the device", *gap)
+
+    def _note_gaps_refused(self, group: list[dict]) -> None:
+        """Record that the device refused a block, and stop bridging its gaps.
+
+        Only ever called for a refusal, never for a timeout. A gap that has
+        been served before is left alone: a device can decline a request it
+        served a minute ago for reasons that have nothing to do with which
+        registers it covers, and losing a saving permanently over one of those
+        is the failure mode this guards against.
+        """
+        learned = False
+        for gap in self._bridged_gaps(group):
+            if gap in self._good_gaps or gap in self._bad_gaps:
+                continue
+            self._bad_gaps.add(gap)
+            learned = True
+            _LOGGER.info(
+                "Device refused a block spanning %d -> %d; reading those separately from now on",
+                *gap,
+            )
+        if learned:
+            self._persist_gap_memory()
+
+    def _persist_gap_memory(self) -> None:
+        """Store the refused gaps on the config entry, keyed by firmware."""
+        options = dict(self.config_entry.options or {})
+        options[CONF_BAD_GAPS] = sorted([left, right] for left, right in self._bad_gaps)
+        if self._gap_memory_firmware is not None:
+            options[CONF_BAD_GAPS_FIRMWARE] = self._gap_memory_firmware
+        # No reload: this changes how the registers are fetched, not which
+        # entities exist, and a reload here would throw away every reading.
+        self.hass.config_entries.async_update_entry(self.config_entry, options=options)
+
+    def _sync_gap_memory_with_firmware(self) -> None:
+        """Drop what was learned under a different firmware.
+
+        Which registers a device serves can change with its firmware, so a
+        memory learned under one build says nothing about the next. Cheap to
+        re-learn - a refusal costs one request - and wrong to carry forward.
+        """
+        firmware = None
+        if isinstance(self.data, dict):
+            firmware = self.data.get(GAP_MEMORY_FIRMWARE_KEY)
+        if firmware is None:
+            return
+        firmware = str(firmware)
+        if firmware == self._gap_memory_firmware:
+            return
+        if self._gap_memory_firmware is not None and (self._bad_gaps or self._good_gaps):
+            _LOGGER.info(
+                "Firmware changed from %s to %s, forgetting %d learned gap(s)",
+                self._gap_memory_firmware,
+                firmware,
+                len(self._bad_gaps),
+            )
+            self._bad_gaps.clear()
+            self._good_gaps.clear()
+        self._gap_memory_firmware = firmware
+        self._persist_gap_memory()
 
     @staticmethod
     def _definitions_by_key(definitions: list[dict]) -> dict[str, dict]:
@@ -683,7 +994,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         """Return True when Modbus communication is considered healthy."""
         from homeassistant.util.dt import utcnow
 
-        if self._connection_suspended or self._last_successful_read is None:
+        if self.polling_paused or self._connection_suspended or self._last_successful_read is None:
             return False
 
         age_seconds = (utcnow() - self._last_successful_read).total_seconds()
@@ -705,7 +1016,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
     def get_connection_health_attributes(self) -> dict:
         """Return diagnostic state attributes for the Modbus connection entity."""
         stats = self._last_cycle_stats or {}
-        health = "offline"
+        # Paused outranks offline: the device may well be answering, nobody is
+        # asking. Saying "offline" there would send people looking for a fault.
+        health = "paused" if self.polling_paused else "offline"
         if self.is_connection_healthy():
             health = "degraded" if self.is_connection_degraded() else "ok"
 
@@ -728,6 +1041,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             "consecutive_failures": self._consecutive_failures,
             "consecutive_timeout_cycles": self._consecutive_timeout_cycles,
             "connection_suspended": self._connection_suspended,
+            "polling_mode": self.polling_mode,
             "stale_after_seconds": self.get_connection_health_threshold_seconds(),
         }
 
@@ -792,6 +1106,13 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.BMS_POWER_SENSOR_DEFINITIONS = data.get(
                 "BMS_POWER_SENSOR_DEFINITIONS", []
             )
+            self.BATTERY_POWER_SENSOR_DEFINITIONS = data.get(
+                "BATTERY_POWER_SENSOR_DEFINITIONS", []
+            )
+            self.MIRROR_SENSOR_DEFINITIONS = data.get("MIRROR_SENSOR_DEFINITIONS", [])
+            self.PACK_AGGREGATE_SENSOR_DEFINITIONS = data.get(
+                "PACK_AGGREGATE_SENSOR_DEFINITIONS", []
+            )
             # DEV-Register: je Gruppe nur laden, wenn die zugehoerige Option
             # gesetzt ist. Beide sind experimentell und standardmaessig aus.
             if self.dev_unknown_enabled:
@@ -829,13 +1150,19 @@ class MarstekCoordinator(DataUpdateCoordinator):
             # Keep empty definitions as fallback; platforms will see no entities
             self._all_definitions = []
 
-    async def async_read_value(self, sensor: dict, key: str, track_failure: bool = True):
+    async def async_read_value(
+        self, sensor: dict, key: str, track_failure: bool = True, quiet: bool = False
+    ):
         """Helper to read a single sensor value from Modbus with logging and type checking.
 
         Args:
             sensor: sensor definition dict
             key: the sensor key
             track_failure: if False, timeouts will not count towards timeout metrics
+            quiet: the caller already knows the device is not answering, so a
+                failed read is the expected outcome rather than news. Everything
+                this read would report, here and inside the client, goes to
+                debug instead. Every other caller keeps its levels.
         """
         entity_type = self._entity_types.get(key, get_entity_type(sensor))
 
@@ -843,11 +1170,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
         scale = self._scales.get(key, sensor.get("scale", 1))
         unit = sensor.get("unit", "N/A")
 
+        def report(level: int, message: str, *args) -> None:
+            _LOGGER.log(logging.DEBUG if quiet else level, message, *args)
+
         # Guard: ensure client exists
         if not hasattr(self, "client") or self.client is None:
-            _LOGGER.error("Modbus client is not available when reading %s '%s'", entity_type, key)
+            report(logging.ERROR, "Modbus client is not available when reading %s '%s'", entity_type, key)
             return None
 
+        self.client.quiet = quiet
         try:
             # Backstop against a wedged coroutine. The client is expected to give
             # up first, on its own timeout, and to retry on a fresh socket.
@@ -874,7 +1205,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     unit,
                 )
                 return value
-            _LOGGER.warning(
+            report(
+                logging.WARNING,
                 "Invalid value for %s '%s': %r (type %s)",
                 entity_type,
                 key,
@@ -888,20 +1220,27 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 self._timeouts_in_cycle = getattr(self, "_timeouts_in_cycle", 0) + 1
             from homeassistant.util.dt import utcnow
             self._last_failed_read = utcnow()
-            _LOGGER.warning(
+            report(
+                logging.WARNING,
                 "Timeout reading %s '%s' at register %d from %s:%d - connection may be slow or incorrect",
                 entity_type, key, sensor["register"], self.client.host, self.client.port
             )
-            await self._async_recover_half_open(
-                f"{entity_type} '{key}' at register {sensor['register']}"
-            )
+            # Nothing to recover at a device that is known to be away: the socket
+            # is not half open, the other end is gone.
+            if not quiet:
+                await self._async_recover_half_open(
+                    f"{entity_type} '{key}' at register {sensor['register']}"
+                )
             return None
         except Exception as e:
-            _LOGGER.error(
+            report(
+                logging.ERROR,
                 "Error reading %s '%s' at register %d: %s",
                 entity_type, key, sensor["register"], e,
             )
             return None
+        finally:
+            self.client.quiet = False
 
     async def _async_read_contiguous_group(
         self,
@@ -966,6 +1305,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
             )
 
         if block_registers is None:
+            # Only a refusal says anything about which registers the device
+            # serves. A timeout says the device was busy, and blaming the gaps
+            # for that would cost a saving permanently over a passing stall.
+            if not block_timeout_occurred and getattr(self.client, "last_read_rejected", False):
+                self._note_gaps_refused(due_sensors)
             _LOGGER.debug(
                 "Contiguous block read failed for %d-%d; falling back to individual reads",
                 block_start,
@@ -987,6 +1331,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 "single_requests": len(due_sensors),
                 "failover_single_requests": len(due_sensors),
             }
+
+        self._note_gaps_survived(due_sensors)
 
         values: dict[str, object] = {}
         for sensor in due_sensors:
@@ -1163,27 +1509,35 @@ class MarstekCoordinator(DataUpdateCoordinator):
         successful_reads = 0
         self._timeouts_in_cycle = 0
 
-        # Connection throttling: if too many failures, temporarily stop attempting connections
-        if self._connection_suspended:
-            if self._suspension_reset_time and now > self._suspension_reset_time:
-                _LOGGER.info("Connection suspension expired - attempting reconnection")
-                self._connection_suspended = False
-                self._consecutive_failures = 0
-                
-                # Force reconnect after suspension
-                try:
-                    connected = await self.client.async_reconnect()
-                    if connected:
-                        _LOGGER.info("Successfully reconnected after suspension")
-                    else:
-                        _LOGGER.warning("Failed to reconnect after suspension - will retry next cycle")
-                        return self.data or {}
-                except Exception as exc:
-                    _LOGGER.error("Exception during reconnect: %s", exc)
-                    return self.data or {}
-            else:
-                _LOGGER.debug("Connection suspended - skipping update to prevent resource exhaustion")
+        # Standing down on request: no reads, no probe, nothing on the wire. The
+        # socket was closed when the mode was set, and the entities keep or drop
+        # their readings according to the mode.
+        if self.polling_paused:
+            _LOGGER.debug("Polling paused for %s:%d - nothing to do", self.host, self.port)
+            return self.data or {}
+
+        # While the device counts as offline the cycle is a single probe register
+        # on its own interval, not every due read waiting out its own timeout at
+        # a battery that is switched off. A probe that gets an answer means the
+        # battery is back, and this same cycle goes on to read everything.
+        if self._link_offline:
+            elapsed = (
+                (now - self._last_probe_at).total_seconds()
+                if self._last_probe_at
+                else None
+            )
+            if elapsed is not None and elapsed < self._offline_probe_interval:
                 return self.data or {}
+
+            if not await self._async_probe_link(now):
+                _LOGGER.debug(
+                    "Probe of %s:%d went unanswered - link still offline",
+                    self.host,
+                    self.port,
+                )
+                return self.data or {}
+
+            self._link_recovered()
 
         _LOGGER.debug("Coordinator poll tick at %s", now.isoformat())
 
@@ -1204,6 +1558,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.BITFIELD_TEXT_SENSOR_DEFINITIONS
             + self.GRID_POWER_SENSOR_DEFINITIONS
             + self.BMS_POWER_SENSOR_DEFINITIONS
+            + self.BATTERY_POWER_SENSOR_DEFINITIONS
+            + self.MIRROR_SENSOR_DEFINITIONS
+            + self.PACK_AGGREGATE_SENSOR_DEFINITIONS
         )
         # Only a calculated sensor that is actually enabled needs its inputs. Without
         # this check the source registers are polled even when nothing consumes them,
@@ -1310,6 +1667,13 @@ class MarstekCoordinator(DataUpdateCoordinator):
         due_by_key = self._definitions_by_key(due_sensors)
 
         for block_group in self._build_contiguous_read_groups(readable_sensors):
+            # The mode can change under a running cycle: the select that sets it
+            # runs in a task of its own. Carrying on would mean a timeout per
+            # remaining register at a device somebody just said to leave alone.
+            if self.polling_paused:
+                _LOGGER.debug("Polling paused mid-cycle - abandoning the rest of it")
+                break
+
             group_due_sensors = [sensor for sensor in block_group if sensor["key"] in due_by_key]
             if not group_due_sensors:
                 continue
@@ -1445,6 +1809,10 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 self._consecutive_failures = 0
                 self._connection_suspended = False
                 self._last_successful_read = now
+
+                # Once there is data, check the firmware the gap memory was
+                # learned under. Cheap, and it costs nothing when unchanged.
+                self._sync_gap_memory_with_firmware()
                 
                 if timeout_reads and (timeout_reads / attempted_reads) >= self._timeout_ratio_reconnect_threshold:
                     self._consecutive_timeout_cycles += 1
@@ -1495,20 +1863,18 @@ class MarstekCoordinator(DataUpdateCoordinator):
                         _LOGGER.info("Successfully reconnected")
                         self._consecutive_failures = 0
                         self._connection_established_at = now
+                        # The per-register backoff was counting a dead socket,
+                        # not dead registers. Leaving it in place would hold
+                        # readings back for up to an hour after the link is
+                        # already working again.
+                        self._register_failures.clear()
                     else:
                         _LOGGER.warning("Immediate reconnection failed")
                 except Exception as exc:
                     _LOGGER.error("Exception during immediate reconnect: %s", exc)
                 
                 if self._consecutive_failures >= self._max_consecutive_failures:
-                    # Too many failures - suspend connection attempts for 1 minute
-                    self._connection_suspended = True
-                    self._suspension_reset_time = now + timedelta(minutes=1)
-                    _LOGGER.error(
-                        "Connection suspended after %d consecutive failures. "
-                        "Will retry in 1 minute to prevent resource exhaustion.",
-                        self._consecutive_failures
-                    )
+                    self._link_lost(now)
                 self._consecutive_timeout_cycles = 0
         else:
             _LOGGER.debug("No sensors due for update in this cycle")
@@ -1551,7 +1917,93 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         # Update the coordinator's data
         self.data.update(updated_data)
+        self._derive_battery_power()
+        self._derive_pack_averages()
         return self.data
+
+    def _derive_pack_averages(self) -> None:
+        """Average a per-pack reading over the packs that are actually fitted.
+
+        The 34000 block is pack 1, so a register from it is pack 1's answer and
+        not the stack's. `battery_cycle_count` read 34003 and therefore reported
+        one pack: on a seven-pack Venus D measuring 6, 27, 26, 31, 29, 73 and 67
+        cycles it showed the 6, and `battery_health` and `remaining_cycles`
+        inherited that when they moved onto it.
+
+        A pack that is not installed answers its whole block with zeros, so the
+        voltages decide who counts - averaging absent packs in as zero would
+        drag the figure down by however many slots are empty. Like the battery
+        power, the result goes into `data` so the sensors built on it can find
+        it there.
+        """
+        for definition in self.PACK_AGGREGATE_SENSOR_DEFINITIONS:
+            key = definition.get("key")
+            dependencies = definition.get("dependency_keys") or {}
+            if key is None:
+                continue
+
+            values = []
+            for alias, source in dependencies.items():
+                if not alias.startswith("cycles"):
+                    continue
+                index = alias[len("cycles"):]
+                present = self.data.get(dependencies.get(f"present{index}"))
+                value = self.data.get(source)
+                if value is None or present is None:
+                    continue
+                try:
+                    if float(present) <= 0:
+                        continue
+                    values.append(float(value) * float(self._scales.get(source, 1)))
+                except (TypeError, ValueError):
+                    continue
+
+            if values:
+                self.data[key] = round(sum(values) / len(values), 2)
+
+    def _derive_battery_power(self) -> None:
+        """Work out the battery power and put it in `data` with the registers.
+
+        A calculated sensor reads its dependencies out of `self.data`, which
+        holds register readings only - so one calculated value cannot be built
+        on another. `battery_power` has to be, because it is a sum of the DC
+        measurement point and the string powers, and `runtime_to_empty`,
+        `runtime_to_full` and anything a user writes against it need it in turn.
+
+        Doing it here instead puts the result next to the registers, where every
+        consumer already looks. The definition still lives in the register map;
+        this only evaluates it.
+
+        Missing strings count as zero, the same rule the sensor applies: one
+        unavailable MPPT register must not blank the battery power and both
+        runtimes with it.
+
+        `data` holds raw register words, with each definition's scale applied by
+        whoever reads them, so the scales have to be applied here before the sum
+        - the DC point counts whole watts and the strings tenths. The result is
+        stored already scaled, which is what a consumer of a key that has no
+        scale of its own will assume.
+        """
+        for definition in self.BATTERY_POWER_SENSOR_DEFINITIONS:
+            key = definition.get("key")
+            dependencies = definition.get("dependency_keys") or {}
+            base_key = dependencies.get("dc")
+            base = self.data.get(base_key)
+            if key is None or base is None:
+                continue
+
+            try:
+                total = float(base) * float(self._scales.get(base_key, 1))
+                for alias, source in dependencies.items():
+                    if alias == "dc":
+                        continue
+                    value = self.data.get(source)
+                    if value is not None:
+                        total += float(value) * float(self._scales.get(source, 1))
+            except (TypeError, ValueError):
+                continue
+
+            self.data[key] = round(total, 2)
     
 
     async def async_close(self):
@@ -1586,6 +2038,9 @@ def get_registers(version: str):
     - BITFIELD_TEXT_SENSOR_DEFINITIONS
     - GRID_POWER_SENSOR_DEFINITIONS
     - BMS_POWER_SENSOR_DEFINITIONS
+    - BATTERY_POWER_SENSOR_DEFINITIONS
+    - MIRROR_SENSOR_DEFINITIONS
+    - PACK_AGGREGATE_SENSOR_DEFINITIONS
     - DEV_UNKNOWN_SENSOR_DEFINITIONS
     - DEV_DUPLICATE_SENSOR_DEFINITIONS
 
@@ -1700,6 +2155,15 @@ def get_registers(version: str):
                     ),
                     "BMS_POWER_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("BMS_POWER_SENSOR_DEFINITIONS")
+                    ),
+                    "BATTERY_POWER_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("BATTERY_POWER_SENSOR_DEFINITIONS")
+                    ),
+                    "MIRROR_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("MIRROR_SENSOR_DEFINITIONS")
+                    ),
+                    "PACK_AGGREGATE_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("PACK_AGGREGATE_SENSOR_DEFINITIONS")
                     ),
                     "DEV_UNKNOWN_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("DEV_UNKNOWN_SENSOR_DEFINITIONS")

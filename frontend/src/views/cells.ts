@@ -91,6 +91,9 @@ export class MkViewCells extends MkView {
       (worst, x) => (!worst || x.max - x.min > worst.max - worst.min ? x : worst),
       null,
     );
+    // Counted, not 16 times the packs: a Venus A has 13 cells to a pack and
+    // was told it had 32 of them.
+    const cellsTotal = ranges.length * r.cellsPerPack();
     const inPackDeltas = ranges.map((x) => x.max - x.min);
     const meanDelta = inPackDeltas.length
       ? inPackDeltas.reduce((a, b) => a + b, 0) / inPackDeltas.length
@@ -147,7 +150,7 @@ export class MkViewCells extends MkView {
         <mk-stat
           label=${t("cells.packs_online")}
           value=${`${ranges.length} / ${r.num("bms_pack_count") ?? ranges.length}`}
-          foot=${t("cells.cells_total", { count: ranges.length * 16 })}
+          foot=${cellsTotal ? t("cells.cells_total", { count: cellsTotal }) : ""}
         ></mk-stat>
       </div>
 

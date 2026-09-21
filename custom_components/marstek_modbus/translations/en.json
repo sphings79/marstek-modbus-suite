@@ -487,6 +487,9 @@
       "battery_power": {
         "name": "Battery Power"
       },
+      "dc_sample_power": {
+        "name": "DC Sample Power"
+      },
       "internal_temperature": {
         "name": "Internal Temperature"
       },
@@ -511,8 +514,14 @@
       "total_charging_energy": {
         "name": "Total Charging Energy"
       },
+      "total_ac_input_energy": {
+        "name": "Total AC Input Energy"
+      },
       "total_discharging_energy": {
         "name": "Total Discharging Energy"
+      },
+      "total_ac_output_energy": {
+        "name": "Total AC Output Energy"
       },
       "battery_cycle_count": {
         "name": "Cycle Count"
@@ -544,14 +553,26 @@
       "total_daily_charging_energy": {
         "name": "Daily Charging Energy"
       },
+      "total_daily_ac_input_energy": {
+        "name": "Daily AC Input Energy"
+      },
       "total_daily_discharging_energy": {
         "name": "Daily Discharging Energy"
+      },
+      "total_daily_ac_output_energy": {
+        "name": "Daily AC Output Energy"
       },
       "total_monthly_charging_energy": {
         "name": "Monthly Charging Energy"
       },
+      "total_monthly_ac_input_energy": {
+        "name": "Monthly AC Input Energy"
+      },
       "total_monthly_discharging_energy": {
         "name": "Monthly Discharging Energy"
+      },
+      "total_monthly_ac_output_energy": {
+        "name": "Monthly AC Output Energy"
       },
       "max_cell_temperature": {
         "name": "Max Cell Temperature"
@@ -1206,6 +1227,14 @@
           "thursday": "Thursday",
           "friday": "Friday",
           "saturday": "Saturday"
+        }
+      },
+      "modbus_device_polling": {
+        "name": "Modbus device polling",
+        "state": {
+          "active": "Active",
+          "paused_unavailable": "Paused, entities unavailable",
+          "paused_frozen": "Paused, entities frozen"
         }
       }
     },

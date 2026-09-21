@@ -149,7 +149,13 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_power:
+    dc_sample_power:
+        # The firmware calls this field bat_sample_power, and on a device with
+        # nothing on the MPPT inputs that is what it is: measured against the
+        # packs it came out 0.4 % off on a Venus D. It is one measurement point
+        # on the DC side, though, so with PV connected it carries the strings as
+        # well - a Venus A read -1557 W here while its packs supplied 870 W and
+        # 723 W came off the roof. battery_power below subtracts the PV back out.
         register: 30001
         count: 1
         scale: 1
@@ -211,7 +217,14 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 2
         scan_interval: high
-    total_charging_energy:
+    # --- Lifetime and period energy, counted on the AC side ---
+    # Measured on a Venus A over 52 minutes at a five second poll: the "output"
+    # counter rose 0.280 kWh while the integral of ac_power was 0.274 kWh, six
+    # watt hours apart. The battery took in 0.483 kWh over the same window and
+    # the "input" counter did not move at all, so these count what crosses the
+    # grid connection, not what the packs do. Without PV the two coincide, which
+    # is why the names said "charging" and "discharging" until now.
+    total_ac_input_energy:
         register: 33000
         count: 2
         scale: 0.01
@@ -222,7 +235,7 @@ SENSOR_DEFINITIONS:
         data_type: uint32
         precision: 2
         scan_interval: low
-    total_discharging_energy:
+    total_ac_output_energy:
         register: 33002
         count: 2
         scale: 0.01
@@ -233,19 +246,7 @@ SENSOR_DEFINITIONS:
         data_type: uint32
         precision: 2
         scan_interval: low
-    battery_cycle_count:
-        # i16 per the v150 descriptor table (type code 0x12), same word as
-        # battery_1_cycle_count. Both must decode it the same way.
-        register: 34003
-        scale: 1
-        icon: "mdi:counter"
-        state_class: total_increasing
-        category: diagnostic
-        enabled_by_default: true
-        data_type: int16
-        precision: 0
-        scan_interval: low
-    total_daily_charging_energy:
+    total_daily_ac_input_energy:
         register: 33004
         count: 2
         scale: 0.01
@@ -256,7 +257,7 @@ SENSOR_DEFINITIONS:
         data_type: uint32
         precision: 2
         scan_interval: low
-    total_daily_discharging_energy:
+    total_daily_ac_output_energy:
         register: 33006
         count: 2
         scale: 0.01
@@ -267,7 +268,7 @@ SENSOR_DEFINITIONS:
         data_type: uint32
         precision: 2
         scan_interval: low
-    total_monthly_charging_energy:
+    total_monthly_ac_input_energy:
         register: 33008
         count: 2
         scale: 0.01
@@ -278,7 +279,7 @@ SENSOR_DEFINITIONS:
         data_type: uint32
         precision: 2
         scan_interval: low
-    total_monthly_discharging_energy:
+    total_monthly_ac_output_energy:
         register: 33010
         count: 2
         scale: 0.01
@@ -3045,8 +3046,8 @@ EFFICIENCY_SENSOR_DEFINITIONS:
         state_class: measurement
         mode: round_trip
         dependency_keys:
-            charge: total_charging_energy
-            discharge: total_discharging_energy
+            charge: total_ac_input_energy
+            discharge: total_ac_output_energy
     round_trip_efficiency_monthly:
         key: round_trip_efficiency_monthly
         unit: "%"
@@ -3054,15 +3055,15 @@ EFFICIENCY_SENSOR_DEFINITIONS:
         state_class: measurement
         mode: round_trip
         dependency_keys:
-            charge: total_monthly_charging_energy
-            discharge: total_monthly_discharging_energy
+            charge: total_monthly_ac_input_energy
+            discharge: total_monthly_ac_output_energy
     conversion_efficiency:
         key: conversion_efficiency
         unit: "%"
         state_class: measurement
         mode: conversion
         dependency_keys:
-            battery_power: battery_power
+            battery_power: dc_sample_power
             ac_power: ac_power
 
 STORED_ENERGY_SENSOR_DEFINITIONS:
@@ -3076,15 +3077,6 @@ STORED_ENERGY_SENSOR_DEFINITIONS:
             capacity: battery_total_energy
 
 CYCLE_SENSOR_DEFINITIONS:
-    battery_cycle_count_calc:
-        key: battery_cycle_count_calc
-        icon: "mdi:counter"
-        category: diagnostic
-        state_class: total_increasing
-        dependency_keys:
-            discharge: total_discharging_energy
-            capacity: battery_total_energy
-
 RUNTIME_SENSOR_DEFINITIONS:
 
     runtime_to_empty:
@@ -3129,8 +3121,7 @@ BATTERY_LIFE_SENSOR_DEFINITIONS:
         mode: remaining_cycles
         rated_cycles: 6000
         dependency_keys:
-            discharge: total_discharging_energy
-            capacity: battery_total_energy
+            cycles: battery_cycle_count
     battery_health:
         key: battery_health
         unit: "%"
@@ -3142,8 +3133,7 @@ BATTERY_LIFE_SENSOR_DEFINITIONS:
         mode: health
         rated_cycles: 6000
         dependency_keys:
-            discharge: total_discharging_energy
-            capacity: battery_total_energy
+            cycles: battery_cycle_count
 
 ENERGY_WINDOW_SENSOR_DEFINITIONS:
 
@@ -3199,6 +3189,149 @@ BACKUP_RESERVE_SENSOR_DEFINITIONS:
         dependency_keys:
             soc: battery_soc
             capacity: battery_total_energy
+
+MIRROR_SENSOR_DEFINITIONS:
+
+    # The six counters above were renamed in 3.0.0-beta.3, because they are
+    # measured at the grid connection rather than at the packs. A rename changes
+    # the unique id, which drops the entity out of every Energy dashboard,
+    # template and automation that named it.
+    #
+    # So the old keys stay, as pass-throughs of the new ones. The unique id is
+    # unchanged, so an existing install keeps the entity, its id and its
+    # statistics; the value is identical, because it is the same register.
+    # They ship disabled, which only applies to entities being created for the
+    # first time - an installation that already has them enabled keeps them.
+    #
+    # Nothing new should depend on these. They exist so that upgrading does not
+    # break what somebody already built.
+    total_charging_energy:
+        key: total_charging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-export"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_ac_input_energy
+    total_discharging_energy:
+        key: total_discharging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-import"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_ac_output_energy
+    total_daily_charging_energy:
+        key: total_daily_charging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-export"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_daily_ac_input_energy
+    total_daily_discharging_energy:
+        key: total_daily_discharging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-import"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_daily_ac_output_energy
+    total_monthly_charging_energy:
+        key: total_monthly_charging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-export"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_monthly_ac_input_energy
+    total_monthly_discharging_energy:
+        key: total_monthly_discharging_energy
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        precision: 2
+        icon: "mdi:transmission-tower-import"
+        enabled_by_default: false
+        dependency_keys:
+            value: total_monthly_ac_output_energy
+
+PACK_AGGREGATE_SENSOR_DEFINITIONS:
+
+    # Register 34003 is pack 1's cycle count, not the stack's - the 34000 block
+    # is pack 1, the same way 30100 and 30101 were pack 1's voltage and current.
+    # Reporting it as the battery's figure understates a stack whose packs have
+    # aged apart: one measured seven packs at 6, 27, 26, 31, 29, 73 and 67
+    # cycles, and 34003 showed the 6.
+    #
+    # The mean over the packs that are actually fitted is what this reports
+    # instead. Pack 1's own count stays available as battery_1_cycle_count.
+    # A pack that is not installed answers its whole block with zeros, so the
+    # voltages decide which ones count - averaging in absent packs as zero would
+    # drag the figure down by however many slots happen to be empty.
+    battery_cycle_count:
+        key: battery_cycle_count
+        icon: "mdi:counter"
+        state_class: total_increasing
+        category: diagnostic
+        precision: 0
+        enabled_by_default: true
+        dependency_keys:
+            cycles1: battery_1_cycle_count
+            cycles2: battery_2_cycle_count
+            cycles3: battery_3_cycle_count
+            cycles4: battery_4_cycle_count
+            cycles5: battery_5_cycle_count
+            cycles6: battery_6_cycle_count
+            cycles7: battery_7_cycle_count
+            present1: battery_1_voltage
+            present2: battery_2_voltage
+            present3: battery_3_voltage
+            present4: battery_4_voltage
+            present5: battery_5_voltage
+            present6: battery_6_voltage
+            present7: battery_7_voltage
+
+BATTERY_POWER_SENSOR_DEFINITIONS:
+
+    # What actually flows in and out of the packs, which no register reports on
+    # a device that also has PV. The DC measurement point carries the strings
+    # and the packs together and counts power leaving towards the AC side as
+    # negative, so the strings' contribution has to be added back:
+    #
+    #     battery = dc_sample_power + mppt1 + mppt2 + mppt3 + mppt4
+    #
+    # Worked example from a Venus A: the point read -1557 W while the roof
+    # delivered 723 W, leaving -834 W for the packs, which measured -870 W.
+    #
+    # Checked against pack voltage times pack current on a Venus A over 29
+    # samples with every input inside eight seconds: 39 W mean error, 85 W worst,
+    # equally good charging and discharging. On a Venus D without PV it reduces
+    # to the register itself, which measured 8 W against the packs.
+    battery_power:
+        key: battery_power
+        unit: W
+        device_class: power
+        state_class: measurement
+        precision: 1
+        icon: "mdi:home-battery"
+        enabled_by_default: true
+        dependency_keys:
+            dc: dc_sample_power
+            mppt1: mppt1_power
+            mppt2: mppt2_power
+            mppt3: mppt3_power
+            mppt4: mppt4_power
 
 SOLAR_POWER_SENSOR_DEFINITIONS:
     solar_power_total:

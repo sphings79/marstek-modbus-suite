@@ -45,6 +45,9 @@ async def async_setup_entry(
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
         (MarstekBmsBatteryPowerSensor, coordinator.BMS_POWER_SENSOR_DEFINITIONS),
+        (MarstekDerivedSensor, getattr(coordinator, "BATTERY_POWER_SENSOR_DEFINITIONS", []) or []),
+        (MarstekMirrorSensor, getattr(coordinator, "MIRROR_SENSOR_DEFINITIONS", []) or []),
+        (MarstekDerivedSensor, getattr(coordinator, "PACK_AGGREGATE_SENSOR_DEFINITIONS", []) or []),
         # getattr: Die DEV-Sektionen sind optional. Fehlt ein Attribut (z. B. weil
         # eine aeltere Coordinator-Version geladen ist), soll das nicht die gesamte
         # Sensor-Plattform scheitern lassen.
@@ -106,6 +109,11 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
         # Consider the sensor available when coordinator has provided a value
         # for this key. This avoids sensors remaining 'unknown' when the
         # coordinator had transient update failures but still supplies data.
+        #
+        # A pause set to drop its readings overrides that: the value is still in
+        # the coordinator, it just no longer stands for anything current.
+        if not self.coordinator.readings_available:
+            return False
         data = getattr(self.coordinator, "data", None)
         return isinstance(data, dict) and self._key in data
 
@@ -484,6 +492,48 @@ class MarstekSolarPowerSensor(MarstekCalculatedSensor):
         total = round(sum(float(value) for value in values), 2)
         self._attr_native_value = total
         return total
+
+
+class MarstekMirrorSensor(MarstekCalculatedSensor):
+    """An old key kept alive, reporting the value of the one that replaced it.
+
+    Renaming a register key changes the entity's unique id, and Home Assistant
+    treats that as a different entity: the old one is dropped from every Energy
+    dashboard, template and automation that named it, and its statistics stop.
+    A mirror under the old key keeps the unique id, so none of that happens -
+    the entity, its id and its history carry on, reporting the same register
+    through its new name.
+    """
+
+    def calculate_value(self, dep_values: dict):
+        value = dep_values.get("value")
+        if value is None:
+            return None
+        self._attr_native_value = value
+        return value
+
+
+class MarstekDerivedSensor(MarstekCalculatedSensor):
+    """A value the coordinator worked out and left beside the register readings.
+
+    Normally a calculated sensor does its own arithmetic here. These cannot,
+    because other sensors depend on them: a calculated sensor reads its inputs
+    out of the coordinator's data, which holds register readings, so one
+    calculated value cannot be built on another. `battery_power` has both
+    runtimes hanging off it and `battery_cycle_count` has the two life
+    estimates, so the coordinator works them out as the readings land and this
+    only reports the result - one sum rather than two that could drift apart.
+
+    What each one means is documented where it is computed, in
+    `_derive_battery_power` and `_derive_pack_averages`.
+    """
+
+    def calculate_value(self, dep_values: dict):
+        value = self.coordinator.data.get(self._key)
+        if value is None:
+            return None
+        self._attr_native_value = value
+        return value
 
 
 class MarstekCellVoltageDeltaSensor(MarstekCalculatedSensor):
@@ -904,12 +954,24 @@ class MarstekBackupReserveSensor(MarstekWindowSensor):
 
 class MarstekBatteryLifeSensor(MarstekCalculatedSensor):
     """
-    Remaining cycles or state of health, derived from lifetime throughput.
+    Remaining cycles or state of health, measured against 'rated_cycles'.
 
-    Both share one estimate: cycles used so far are the lifetime discharged
-    energy divided by the pack capacity, measured against the cycle rating in
-    'rated_cycles'. That rating is a manufacturer figure the battery does not
-    report, so these are estimates, not readings.
+    How many cycles have been used comes from one of two places, and which one
+    is decided by the dependencies the definition declares:
+
+    - `cycles`, the BMS's own count. Preferred wherever the register exists.
+    - `discharge` over `capacity`, the lifetime discharged energy divided by the
+      pack size. Only sound where that counter really is battery throughput.
+
+    The fallback is not interchangeable with the reading. On a device with PV
+    the energy counter follows the grid connection rather than the packs, so the
+    division answers a different question: a Venus A with 153 BMS cycles came
+    out at 1211 by that route, and reported 79.8 % health where the BMS implies
+    97.5 %. Models whose firmware exposes the count use it; the rest keep the
+    estimate, which on a battery without PV is what it always was.
+
+    The rating itself is a manufacturer figure the battery does not report, so
+    both routes are estimates of what is left, not readings.
 
     Mode is determined by 'mode' in the sensor definition:
     - "remaining_cycles": rated cycles minus the cycles used
@@ -917,11 +979,6 @@ class MarstekBatteryLifeSensor(MarstekCalculatedSensor):
     """
 
     def calculate_value(self, dep_values: dict):
-        discharge = dep_values.get("discharge")
-        capacity = dep_values.get("capacity")
-        if discharge is None or not capacity:
-            return None
-
         rated = self.definition.get("rated_cycles")
         if not rated:
             _LOGGER.warning(
@@ -929,7 +986,17 @@ class MarstekBatteryLifeSensor(MarstekCalculatedSensor):
             )
             return None
 
-        used = discharge / capacity
+        if "cycles" in self.get_dependency_keys():
+            used = dep_values.get("cycles")
+            if used is None:
+                return None
+        else:
+            discharge = dep_values.get("discharge")
+            capacity = dep_values.get("capacity")
+            if discharge is None or not capacity:
+                return None
+            used = discharge / capacity
+
         mode = self.definition.get("mode", "remaining_cycles")
         if mode == "remaining_cycles":
             return round(max(rated - used, 0))

@@ -174,8 +174,11 @@ export class MkViewPacks extends MkView {
           foot=${t("packs.nominal")}
         ></mk-stat>
         <mk-stat
-          label=${t("packs.cycles_sum")}
-          value=${f.num(cycles.length ? cycles.reduce((a, b) => a + b, 0) : null, 0)}
+          label=${t("packs.cycles_mean")}
+          value=${f.num(
+            cycles.length ? cycles.reduce((a, b) => a + b, 0) / cycles.length : null,
+            0,
+          )}
           foot=${cycles.length < this.packs.length
             ? t("packs.cycles_partial", {
                 have: cycles.length,

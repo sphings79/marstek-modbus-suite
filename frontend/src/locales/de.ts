@@ -13,6 +13,9 @@ export const de: Record<string, string> = {
     "Diese beiden setzen den Betriebspunkt direkt. Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager — schreibt dieselben Register und gewinnt innerhalb von Sekunden.",
   "control.limits": "Grenzwerte",
   "control.mode": "Modus",
+  "control.polling": "Abfrage",
+  "control.polling_hint":
+    "Hält die Abfrage dieses Speichers komplett an und schließt die Verbindung — gedacht für ein Gerät, das über den Winter ausgeschaltet ist. Pausierte Entitäten behalten entweder ihren letzten Wert oder werden nicht verfügbar, je nach Auswahl. Nach einem Neustart von Home Assistant sind die Werte weg.",
   "control.backup_hint": "Hält eine Reserve für den Notstromausgang zurück.",
   "control.rs485_hint":
     "Ausgeschaltet gibt die Steuerung an das Gerät zurück — diese Seite bleibt dann wirkungslos.",
@@ -41,6 +44,9 @@ export const de: Record<string, string> = {
   "control.opt.standby": "Bereit",
   "control.opt.charge": "Laden",
   "control.opt.discharge": "Entladen",
+  "control.opt.active": "Abfrage",
+  "control.opt.paused_unavailable": "Pausiert · Entitäten nicht verfügbar",
+  "control.opt.paused_frozen": "Pausiert · Entitäten eingefroren",
 
   "control.day.monday": "Mo",
   "control.day.tuesday": "Di",
@@ -51,6 +57,14 @@ export const de: Record<string, string> = {
   "control.day.sunday": "So",
 
   "status.modbus": "MODBUS",
+  "status.modbus_offline": "MODBUS OFFLINE",
+  "status.modbus_offline_since": "MODBUS OFFLINE · letzte Antwort {time}",
+  "status.modbus_paused": "MODBUS PAUSIERT",
+  "status.modbus_paused_hint":
+    "Die Abfrage ist für diesen Speicher abgeschaltet. Es wird nichts gelesen, und die Werte darunter sind die zuletzt gesehenen.",
+  "status.modbus_offline_hint":
+    "Die Batterie antwortet nicht. Alle Werte darunter sind die zuletzt gelesenen, bevor die Verbindung abriss.",
+  "status.modbus_degraded": "Die Verbindung antwortet, aber im letzten Abruf liefen Register in einen Timeout.",
   "status.wifi": "WLAN",
 
   "common.pack": "PACK",
@@ -119,7 +133,7 @@ export const de: Record<string, string> = {
   "packs.summed": "Packs ergeben {value} kWh",
   "packs.per_pack": "Je Pack",
   "packs.nominal": "nominal, Kapazität ÷ Packs",
-  "packs.cycles_sum": "Zyklen, alle Packs",
+  "packs.cycles_mean": "Zyklen, Mittel je Pack",
   "packs.cycles_partial": "{have} von {total} Packs melden",
   "packs.fill_title": "Ladezustand je Pack",
   "packs.fill_axis": "Säulenhöhe = SoC · Zahl darin = kWh",
