@@ -191,10 +191,19 @@ Worth noting that the two maps picked different sides of each pair: d.yaml takes
 register, e_v3.yaml the mirror. Both read the same memory, so nothing is wrong either way, but if
 the maps are ever aligned this is where they differ.
 
-### Still open
+### The cell voltages followed
 
-The 16 cell voltages are still `battery_1_cell_N_voltage` while everything around them has lost the
-index. Renaming them breaks existing entity ids, so it wants its own commit and a migration note.
+The 16 `battery_1_cell_N_voltage` entries are now `battery_cell_N_voltage`, so nothing in this map
+carries a pack index any more. **This renames existing entities** — an E3 set up under an earlier
+version keeps its old `sensor.*_battery_1_cell_1_voltage` as an orphan, and history, automations
+and template sensors that name it have to be pointed at the new id.
+
+The panel needed one change to go with it. Everything that draws a battery there is written for the
+stack and looks a pack up by number, which is what lets the same code serve three packs and seven.
+Rather than teach each of those places a second naming scheme, `findDevices` now points pack 1 at
+the unindexed entities when a device has no indexed ones — including `max_cell_voltage` and
+`min_cell_voltage`, which carry no `battery_` prefix and are what `packCount` reads to decide a pack
+is there at all. A device that has both names keeps its own, so the D and A are untouched.
 
 ## Known traps
 

@@ -1145,6 +1145,54 @@
       },
       "bms_battery_soc": {
         "name": "BMS batterij SoC"
+      },
+      "battery_cell_1_voltage": {
+        "name": "Batterij Cel 1 Spanning"
+      },
+      "battery_cell_2_voltage": {
+        "name": "Batterij Cel 2 Spanning"
+      },
+      "battery_cell_3_voltage": {
+        "name": "Batterij Cel 3 Spanning"
+      },
+      "battery_cell_4_voltage": {
+        "name": "Batterij Cel 4 Spanning"
+      },
+      "battery_cell_5_voltage": {
+        "name": "Batterij Cel 5 Spanning"
+      },
+      "battery_cell_6_voltage": {
+        "name": "Batterij Cel 6 Spanning"
+      },
+      "battery_cell_7_voltage": {
+        "name": "Batterij Cel 7 Spanning"
+      },
+      "battery_cell_8_voltage": {
+        "name": "Batterij Cel 8 Spanning"
+      },
+      "battery_cell_9_voltage": {
+        "name": "Batterij Cel 9 Spanning"
+      },
+      "battery_cell_10_voltage": {
+        "name": "Batterij Cel 10 Spanning"
+      },
+      "battery_cell_11_voltage": {
+        "name": "Batterij Cel 11 Spanning"
+      },
+      "battery_cell_12_voltage": {
+        "name": "Batterij Cel 12 Spanning"
+      },
+      "battery_cell_13_voltage": {
+        "name": "Batterij Cel 13 Spanning"
+      },
+      "battery_cell_14_voltage": {
+        "name": "Batterij Cel 14 Spanning"
+      },
+      "battery_cell_15_voltage": {
+        "name": "Batterij Cel 15 Spanning"
+      },
+      "battery_cell_16_voltage": {
+        "name": "Batterij Cel 16 Spanning"
       }
     },
     "binary_sensor": {

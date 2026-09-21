@@ -304,7 +304,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_1_voltage:
+    battery_cell_1_voltage:
         register: 34018
         scale: 0.001
         unit: V
@@ -314,7 +314,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_2_voltage:
+    battery_cell_2_voltage:
         register: 34019
         scale: 0.001
         unit: V
@@ -324,7 +324,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_3_voltage:
+    battery_cell_3_voltage:
         register: 34020
         scale: 0.001
         unit: V
@@ -334,7 +334,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_4_voltage:
+    battery_cell_4_voltage:
         register: 34021
         scale: 0.001
         unit: V
@@ -344,7 +344,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_5_voltage:
+    battery_cell_5_voltage:
         register: 34022
         scale: 0.001
         unit: V
@@ -354,7 +354,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_6_voltage:
+    battery_cell_6_voltage:
         register: 34023
         scale: 0.001
         unit: V
@@ -364,7 +364,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_7_voltage:
+    battery_cell_7_voltage:
         register: 34024
         scale: 0.001
         unit: V
@@ -374,7 +374,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_8_voltage:
+    battery_cell_8_voltage:
         register: 34025
         scale: 0.001
         unit: V
@@ -384,7 +384,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_9_voltage:
+    battery_cell_9_voltage:
         register: 34026
         scale: 0.001
         unit: V
@@ -394,7 +394,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_10_voltage:
+    battery_cell_10_voltage:
         register: 34027
         scale: 0.001
         unit: V
@@ -404,7 +404,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_11_voltage:
+    battery_cell_11_voltage:
         register: 34028
         scale: 0.001
         unit: V
@@ -414,7 +414,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_12_voltage:
+    battery_cell_12_voltage:
         register: 34029
         scale: 0.001
         unit: V
@@ -424,7 +424,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_13_voltage:
+    battery_cell_13_voltage:
         register: 34030
         scale: 0.001
         unit: V
@@ -434,7 +434,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_14_voltage:
+    battery_cell_14_voltage:
         register: 34031
         scale: 0.001
         unit: V
@@ -444,7 +444,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_15_voltage:
+    battery_cell_15_voltage:
         register: 34032
         scale: 0.001
         unit: V
@@ -454,7 +454,7 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
-    battery_1_cell_16_voltage:
+    battery_cell_16_voltage:
         register: 34033
         scale: 0.001
         unit: V

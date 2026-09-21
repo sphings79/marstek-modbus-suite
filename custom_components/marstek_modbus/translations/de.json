@@ -1141,6 +1141,54 @@
       },
       "bms_battery_soc": {
         "name": "BMS Batterie-SoC"
+      },
+      "battery_cell_1_voltage": {
+        "name": "Batterie Zelle 1 Spannung"
+      },
+      "battery_cell_2_voltage": {
+        "name": "Batterie Zelle 2 Spannung"
+      },
+      "battery_cell_3_voltage": {
+        "name": "Batterie Zelle 3 Spannung"
+      },
+      "battery_cell_4_voltage": {
+        "name": "Batterie Zelle 4 Spannung"
+      },
+      "battery_cell_5_voltage": {
+        "name": "Batterie Zelle 5 Spannung"
+      },
+      "battery_cell_6_voltage": {
+        "name": "Batterie Zelle 6 Spannung"
+      },
+      "battery_cell_7_voltage": {
+        "name": "Batterie Zelle 7 Spannung"
+      },
+      "battery_cell_8_voltage": {
+        "name": "Batterie Zelle 8 Spannung"
+      },
+      "battery_cell_9_voltage": {
+        "name": "Batterie Zelle 9 Spannung"
+      },
+      "battery_cell_10_voltage": {
+        "name": "Batterie Zelle 10 Spannung"
+      },
+      "battery_cell_11_voltage": {
+        "name": "Batterie Zelle 11 Spannung"
+      },
+      "battery_cell_12_voltage": {
+        "name": "Batterie Zelle 12 Spannung"
+      },
+      "battery_cell_13_voltage": {
+        "name": "Batterie Zelle 13 Spannung"
+      },
+      "battery_cell_14_voltage": {
+        "name": "Batterie Zelle 14 Spannung"
+      },
+      "battery_cell_15_voltage": {
+        "name": "Batterie Zelle 15 Spannung"
+      },
+      "battery_cell_16_voltage": {
+        "name": "Batterie Zelle 16 Spannung"
       }
     },
     "binary_sensor": {

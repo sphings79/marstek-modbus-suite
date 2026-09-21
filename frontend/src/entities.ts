@@ -42,7 +42,41 @@ export function findDevices(hass: HomeAssistant): MarstekDevice[] {
     device.byKey[entry.translation_key] = entry.entity_id;
   }
 
+  for (const device of devices.values()) aliasSinglePackAsPackOne(device);
+
   return [...devices.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Let a model with one battery answer to the pack-indexed keys.
+ *
+ * The Venus D and A stack their packs, so every battery reading is named after
+ * its pack: `battery_1_voltage`, `battery_1_cell_7_voltage`. The Venus E3 has a
+ * single built-in battery and names the same readings without an index, because
+ * "pack 1" of one is a number nobody needs to see.
+ *
+ * Everything that draws a battery here is written for the stack — packCount,
+ * cellsPerPack, the pack matrix, the per-pack rows — and looking a pack up by
+ * number is what lets that code serve three packs as well as seven. Rather than
+ * teach each of those places a second naming scheme, pack 1 is pointed at the
+ * unindexed entities. The views then see one pack and draw it as they always do.
+ *
+ * Gaps only: a device that carries both names keeps its own.
+ */
+function aliasSinglePackAsPackOne(device: MarstekDevice): void {
+  for (const [key, entityId] of Object.entries(device.byKey)) {
+    // battery_2_voltage is already a pack, not a battery missing its index.
+    if (!key.startsWith("battery_") || /^battery_\d+_/.test(key)) continue;
+    const indexed = `battery_1_${key.slice("battery_".length)}`;
+    if (!device.byKey[indexed]) device.byKey[indexed] = entityId;
+  }
+
+  // The cell range is the one pair that carries no battery_ prefix on the E3,
+  // and it is what packCount reads to decide a pack is there at all.
+  for (const edge of ["max_cell_voltage", "min_cell_voltage"]) {
+    const indexed = `battery_1_${edge}`;
+    if (device.byKey[edge] && !device.byKey[indexed]) device.byKey[indexed] = device.byKey[edge];
+  }
 }
 
 /**
