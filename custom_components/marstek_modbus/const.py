@@ -13,11 +13,18 @@ DEFAULT_UNIT_ID = 1  # Default Modbus Unit ID (unit ID)
 DEFAULT_TIMEOUT = 3  # Default Modbus request timeout in seconds
 
 # How many unrequested registers a block read may span to avoid a second
-# request. Measured on a Venus D: bridging gaps of one or two never drew a
-# rejection across the full register map, the default entity set, or the map
-# with the DEV registers added, and saved 18 to 27 percent of the requests in
-# a cycle. Wider bridging saves a little more but starts hitting registers the
-# device does not implement, and each of those costs a request of its own.
+# request. A request costs about the same whatever it carries, so reading a
+# couple of registers nobody asked for beats a second round trip.
+#
+# Two is the value that has been run rather than only measured: seventeen
+# hours on a Venus D with every register of the map enabled, and the gap
+# memory below stayed empty the whole time - not one bridged block refused.
+#
+# Wider bridging saves more requests on paper and now costs little when it
+# guesses wrong, because a refusal comes back in about 150 ms since the
+# exception frames became readable, and is learned once per firmware. It has
+# not been run for a day on a real battery, which is the only reason this
+# still says two.
 DEFAULT_MAX_READ_GAP = 2
 
 # Gaps the device refused to bridge, remembered per firmware so a map that
