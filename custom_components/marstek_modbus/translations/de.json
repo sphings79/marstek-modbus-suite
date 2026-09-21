@@ -55,14 +55,14 @@
       },
       "polling": {
         "title": "Polling-Intervalle konfigurieren",
-        "description": "Abfragehäufigkeit pro Kategorie anpassen",
+        "description": "Abfragehäufigkeit pro Kategorie anpassen. Minimum: High {min_high} s, Low {min_low} s.",
         "data": {
           "high": "High-Priorität Intervall (s)",
           "low": "Low-Priorität Intervall (s)"
         },
         "data_description": {
-          "high": "Schnell wechselnde Werte wie Leistung und SoC. Die Untergrenze richtet sich nach dem Modell: kürzer als ein Abfragezyklus dauert wird nicht schneller gepollt, es staut sich nur.",
-          "low": "Selten wechselnde Werte wie Energiezähler und Versionen. Der Koordinator taktet mit dem kleineren der beiden Werte, deshalb entscheidet dieser, wie oft eine komplette Runde beginnt."
+          "high": "Schnell wechselnde Werte wie Leistung und SoC. Minimum für dieses Modell: {min_high} s — kürzer als ein Abfragezyklus dauert wird nicht schneller gepollt, es staut sich nur.",
+          "low": "Selten wechselnde Werte wie Energiezähler und Versionen. Minimum für dieses Modell: {min_low} s. Der Koordinator taktet mit dem kleineren der beiden Werte, deshalb entscheidet dieser, wie oft eine komplette Runde beginnt."
         }
       },
       "connection": {

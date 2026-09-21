@@ -413,7 +413,11 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                 _polling_schema(config.data.get(CONF_DEVICE_VERSION)), defaults
             ),
             errors=errors,
-            description_placeholders={"lowest": str(lowest)},
+            description_placeholders={
+                "lowest": str(lowest),
+                "min_high": str(floors["high"]),
+                "min_low": str(floors["low"]),
+            },
             last_step=True,
         )
 

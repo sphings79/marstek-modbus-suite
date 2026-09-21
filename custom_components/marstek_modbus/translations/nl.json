@@ -55,14 +55,14 @@
       },
       "polling": {
         "title": "Configureer polling-intervallen",
-        "description": "Pas de pollingfrequentie per categorie aan",
+        "description": "Pas de pollingfrequentie per categorie aan. Minimum: high {min_high} s, low {min_low} s.",
         "data": {
           "high": "High-prioriteit interval (s)",
           "low": "Low-prioriteit interval (s)"
         },
         "data_description": {
-          "high": "Snel wisselende waarden zoals vermogen en SoC. Het minimum hangt af van het model: korter dan een pollcyclus duurt levert geen snellere polling op, alleen wachtrij.",
-          "low": "Traag wisselende waarden zoals energietellers en versies. De coördinator tikt op de kleinste van de twee, dus deze bepaalt hoe vaak een volledige ronde start."
+          "high": "Snel wisselende waarden zoals vermogen en SoC. Minimum voor dit model: {min_high} s — korter dan een pollcyclus duurt levert geen snellere polling op, alleen wachtrij.",
+          "low": "Traag wisselende waarden zoals energietellers en versies. Minimum voor dit model: {min_low} s. De coördinator tikt op de kleinste van de twee, dus deze bepaalt hoe vaak een volledige ronde start."
         }
       },
       "connection": {
