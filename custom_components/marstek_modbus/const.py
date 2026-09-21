@@ -91,7 +91,7 @@ DEVICE_VERSION_LABELS = {
 # Lower bounds for the polling intervals, in seconds, per model.
 #
 # A cycle costs what the device takes to answer, and that is measurable. On a
-# Venus D on EMS v150, read directly at 192.168.181.154:502 with the standard
+# Venus D on EMS v150, read directly at the device's own port 502 with the standard
 # register set and the integration's 80 ms pacing between requests:
 #
 #   fast tick            22 requests   3.30 s

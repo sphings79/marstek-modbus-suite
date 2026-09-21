@@ -2,8 +2,8 @@
 
 A Venus announces itself on the local network once a second, unprompted:
 
-    192.168.181.154:22222 -> 192.168.181.255:12345   UDP, 50 bytes
-    \\x01\\x02 50|VNSD-0|682499eef75c|HME-3|000000000000|0|0 \\x03 46
+    192.168.1.50:22222 -> 192.168.1.255:12345   UDP, 50 bytes
+    \\x01\\x02 50|VNSD-0|aabbccddeeff|HME-3|000000000000|0|0 \\x03 46
 
 Fields after the framing: a number, the model code, the Bluetooth MAC without
 separators, the communication module type, a second MAC (zero on every device

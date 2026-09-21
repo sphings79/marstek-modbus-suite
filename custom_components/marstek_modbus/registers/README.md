@@ -167,8 +167,8 @@ Both resolve to the same firmware source as `ac_offgrid_voltage` (32300) and
 
 | Register | Key | Notes |
 |----------|-----|-------|
-| 30400–30401 | `device_ip_address` | Two octets per register, high byte first. 0xC0A8 / 0xB59A → 192.168.181.154. |
-| 30402–30403 | `gateway_ip_address` | Same encoding. 0xC0A8 / 0xB501 → 192.168.181.1. |
+| 30400–30401 | `device_ip_address` | Two octets per register, high byte first. 0xC0A8 / 0x0132 → 192.168.1.50. |
+| 30402–30403 | `gateway_ip_address` | Same encoding. 0xC0A8 / 0x0101 → 192.168.1.1. |
 
 Decoded by the `ipv4` data type in `helpers/modbus_client.py`. Diagnostic, disabled by default.
 
