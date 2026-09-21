@@ -1156,7 +1156,7 @@
           <div class="head"><div class="label">${s("solar.diagnostics")}</div></div>
           ${this.kv("mppt_error",0,{tone:e.num("mppt_error")?"crit":"ok"})}
           ${this.kv("mppt_warning",0,{tone:e.num("mppt_warning")?"warn":"ok"})}
-          ${this.kv("mppt_version",0)}
+          ${this.kv("mppt_version",0,{version:!0})}
           ${i===null?p:this.row(s("solar.channels_reporting"),`${a.filter(l=>l!==null).length} / ${Q.length}`)}
         </div>
       </div>

@@ -1104,6 +1104,9 @@
       "fault_status_2_low_description": {
         "name": "Foutstatus 2 laag woord beschrijving"
       },
+      "alarm_status_low_description": {
+        "name": "Alarmstatus laag woord beschrijving"
+      },
       "grid_power": {
         "name": "Netvermogen"
       },

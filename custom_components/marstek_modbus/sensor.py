@@ -193,6 +193,12 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(value, float) and value.is_integer():
                     value = int(value)
 
+        # Firmware version registers are numbers on the wire but versions to a
+        # reader: 1509 is release 150.9. Formatting them here keeps the single
+        # sensors consistent with the combined firmware_version string.
+        if self.definition.get("version_format") and isinstance(value, (int, float)):
+            return _format_version_part(value)
+
         if self.states and value in self.states:
             return self.states[value]
 
@@ -202,7 +208,7 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
     @property
     def suggested_display_precision(self) -> int | None:
         """Suggest display precision based on definition, but only if not a string or mapped state."""
-        if self.states:
+        if self.states or self.definition.get("version_format"):
             return None
         return self.definition.get("precision")
 
@@ -341,6 +347,11 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
         self._key = definition["key"]
         self.definition = definition
 
+        # Which dependencies were missing the last time this sensor was
+        # calculated. Used to report a given gap once instead of on every
+        # coordinator update - see _calculate().
+        self._last_missing: tuple[str, ...] | None = None
+
         # Assign the entity type to the coordinator mapping
         self.coordinator._entity_types[self._key] = self.entity_type
 
@@ -449,12 +460,25 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
                 dep_values[alias] = float(val) * scale
 
         if missing:
-            _LOGGER.warning(
+            # A dependency that is permanently absent - a pack register on a
+            # device with fewer packs, say - would otherwise log on every
+            # coordinator update. On a 3-pack device that was ~11k lines a day
+            # from battery_power_bms alone, which buries the log without saying
+            # anything new after the first line. Report each distinct gap once
+            # at warning level, then keep it at debug until it changes.
+            missing_now = tuple(missing)
+            log = _LOGGER.debug if self._last_missing == missing_now else _LOGGER.warning
+            self._last_missing = missing_now
+            log(
                 "%s missing required value(s): %s. Current data: %s. Cannot calculate value.",
                 self._key, ", ".join(missing), {k: data.get(v) for k, v in dependency_keys.items()},
             )
             self._attr_native_value = None
             return
+
+        if self._last_missing is not None:
+            _LOGGER.info("%s recovered, all required values present", self._key)
+            self._last_missing = None
 
         try:
             value = self.calculate_value(dep_values)
@@ -1007,8 +1031,27 @@ class MarstekBatteryLifeSensor(MarstekCalculatedSensor):
         return None
 
 
+def _format_version_part(raw) -> str:
+    """Render one firmware version register the way Marstek numbers its releases.
+
+    Four digits carry a tenth in the last position, three digits are a whole
+    version: 1509 -> "150.9", 1193 -> "119.3", 1105 -> "110.5", 118 -> "118".
+    The rule holds for every component, not just the EMS - the firmware archive
+    shows it for controls (1487, 1508, 1509), inverters (1193, 1211) and BMS
+    (1105, 1177) alike. Anything outside that range is passed through unchanged
+    rather than guessed at.
+    """
+    value = int(raw)
+    if 1000 <= value <= 9999:
+        return f"{value // 10}.{value % 10}"
+    return str(value)
+
+
 class MarstekVersionSensor(MarstekCalculatedSensor):
     """Sensor that formats multiple version registers into a human-readable version string.
+
+    Every part is rendered by _format_version_part, so a four-digit register
+    shows its tenth.
 
     Supported modes:
                 - "ems_bms": combines ems_version + bms_version
@@ -1039,14 +1082,9 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
     def calculate_value(self, raw_values: dict):
         mode = self.definition.get("mode")
         if mode in ("ems_bms", "ems_vms_bms", "ems_vms_mppt_bms"):
-            ems_raw = int(raw_values["ems"])
-            bms = int(raw_values["bms"])
+            ems_str = _format_version_part(raw_values["ems"])
+            bms = _format_version_part(raw_values["bms"])
             vms_raw = raw_values.get("vms")
-            # ems_version: 4-digit encodes tenths (1476 -> 147.6), 3-digit = whole
-            if ems_raw >= 1000:
-                ems_str = f"{ems_raw // 10}.{ems_raw % 10}"
-            else:
-                ems_str = str(ems_raw)
 
             if mode == "ems_bms":
                 return f"V{ems_str}.{bms}"
@@ -1055,17 +1093,19 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
             if vms_raw is None:
                 _LOGGER.warning("%s missing vms for mode '%s'", self._key, mode)
                 return None
-            vms = int(vms_raw)
+            vms = _format_version_part(vms_raw)
 
             if mode == "ems_vms_bms":
                 return f"V{ems_str}.{vms}.{bms}"
 
-            # ems_vms_mppt_bms adds the MPPT firmware version (Venus D/A).
+            # ems_vms_mppt_bms adds the MPPT firmware version (Venus D/A). The
+            # part stays in even when it reads 0, which is what a model without
+            # an MPPT stage reports - the field count then matches across models.
             mppt_raw = raw_values.get("mppt")
             if mppt_raw is None:
                 _LOGGER.warning("%s missing mppt for mode '%s'", self._key, mode)
                 return None
-            mppt = int(mppt_raw)
+            mppt = _format_version_part(mppt_raw)
             return f"V{ems_str}.{vms}.{mppt}.{bms}"
         _LOGGER.warning("%s unknown version mode '%s'", self._key, mode)
         return None

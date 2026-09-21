@@ -1100,6 +1100,9 @@
       "fault_status_2_low_description": {
         "name": "Fehlerstatus 2 Low-Word Beschreibung"
       },
+      "alarm_status_low_description": {
+        "name": "Alarmstatus Low-Word Beschreibung"
+      },
       "grid_power": {
         "name": "Netzleistung"
       },

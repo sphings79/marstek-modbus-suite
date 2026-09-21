@@ -60,6 +60,11 @@ export class Formatter {
    * A firmware version. The device encodes four-digit versions with the last
    * digit as the minor part, so 1177 is version 117.7. Shorter values are
    * already in their final form and are left alone.
+   *
+   * The integration now applies the same rule to the entity state, so this
+   * usually sees "117.7" and passes it through. It stays because the step is
+   * idempotent and the panel also has to render a device set up under an
+   * older version, whose entities still carry the raw number.
    */
   version(value: string | null | undefined): string {
     if (value === null || value === undefined || value === "") return DASH;

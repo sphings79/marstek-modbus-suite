@@ -6,8 +6,6 @@ MISSING:
     sensor:
         - sn_code
         - software_version
-        - fault_status
-        - alarm_status
     binary:
         - discharge_limit_mode
     select:
@@ -31,6 +29,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
+        version_format: true
     vms_version:
         register: 30202
         icon: "mdi:battery-check-outline"
@@ -38,6 +37,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
+        version_format: true
     ems_version:
         register: 30200
         category: diagnostic
@@ -46,6 +46,7 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         scale: 1
         scan_interval: low
+        version_format: true
     comm_module_firmware:
         register: 30350
         count: 6
@@ -549,6 +550,68 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    # --- Fault and alarm words ---
+    # The Venus E3 serves the same three 32-bit words as the Venus D, at the
+    # same register numbers: the descriptor table unpacked from the E3 control
+    # firmware carries 36000, 36100 and 36102 (aliases 37013/37015) and matches
+    # the D table entry for entry - 246 registers, no difference in type, scale,
+    # element size or count, only shifted SRAM pointers. They were simply never
+    # mapped here.
+    #
+    # The word order is the D's as well, high word first:
+    # error_code1 = 36100 << 16 | 36101, error_code2 = 36102 << 16 | 36103.
+    alarm_status:
+        register: 36000
+        data_type: uint16
+        device_class: problem
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # High word of the alarm mask. No setter exists above bit 0, so this
+        # register is expected to stay at 0.
+    alarm_status_low:
+        register: 36001
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # Low word, bit N here is overall bit N. Unlike the Venus D, whose
+        # inverter firmware never writes the alarm word at all, the E3 sets and
+        # clears bit 0.
+    fault_status:
+        register: 36100
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # High word of error_code1, so bit N here is overall bit 16+N.
+    fault_status_low:
+        register: 36101
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # Low word of error_code1, so bit N here is overall bit N.
+    fault_status_2:
+        register: 36102
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # High word of error_code2, so bit N here is overall bit 16+N.
+    fault_status_2_low:
+        register: 36103
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # Low word of error_code2, so bit N here is overall bit N.
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -1030,6 +1093,91 @@ BUTTON_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         data_type: uint16
+
+BITFIELD_TEXT_SENSOR_DEFINITIONS:
+    # These texts come from the Venus D inverter firmware, and that transfer is
+    # justified here: the E3 inverter image (inv_app_0119) is the same code base
+    # as the D's (vd_inv_app_0116) - same reset handler 0x080042AD, 43% shared
+    # code blocks, the error block reached the same way through a literal pool,
+    # and bit for bit the same layout including the event codes that go with it
+    # (0x36 for the hardware latches, 0x13 for bit 7, 0x31 for bit 8, 0x35 for
+    # bit 11). The Venus A is a different code base and does not share any of
+    # this - see a.yaml.
+    #
+    # Two differences to the D are already known and are reflected below:
+    # the E3 writes alarm bit 0, which the D never touches, and the D notes are
+    # missing err2 bit 8, which both images set.
+    fault_status_description:
+        key: fault_status_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: true
+        dependency_keys:
+            source: fault_status
+        # Bit N is overall bit 16+N. Both were confirmed on Venus D hardware:
+        # pulling the battery raises overall bit 20, and a pack running a
+        # mismatched firmware raised overall bit 21.
+        bit_descriptions:
+            4: BMS offline / battery disconnected
+            5: BMS reports a fault (check pack firmware versions)
+    fault_status_low_description:
+        key: fault_status_low_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: true
+        dependency_keys:
+            source: fault_status_low
+        # Carried over from the Venus D, where bit 7 is confirmed across several
+        # hardware logs. Bits 6 and 9 were only ever seen together during DC
+        # discharge and are not established. None of the three has been seen on
+        # an E3 yet.
+        bit_descriptions:
+            6: Seen during DC discharge (unconfirmed)
+            7: Backup / off-grid branch cannot operate (overload, too little energy, no battery)
+            9: Seen during DC discharge (unconfirmed)
+    fault_status_2_description:
+        key: fault_status_2_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: fault_status_2
+        bit_descriptions:
+            0: Self-test failed
+    fault_status_2_low_description:
+        key: fault_status_2_low_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: fault_status_2_low
+        # Bits 0, 1 and 3 latch individual hardware protections that the
+        # firmware never names; bit 4 is set alongside any of them. Bit 8 is the
+        # overload integrator: a counter that climbs while the current stays
+        # above its threshold and only trips once it overflows, so it means the
+        # limit was exceeded for a while rather than for an instant.
+        bit_descriptions:
+            0: Hardware protection latch B
+            1: Hardware protection latch A
+            3: Hardware protection latch C
+            4: Hardware protection triggered
+            7: Shut down by supervisor, retry after 60 s
+            8: Operating limit exceeded for too long (overload integrator)
+            9: Supervisor fault (low confidence)
+            11: Limit exceeded for more than 3000 cycles
+    alarm_status_low_description:
+        key: alarm_status_low_description
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: alarm_status_low
+        # The only alarm bit any of the analysed images writes. It is set while
+        # an internal mode flag is clear and cleared again when it is set, and
+        # each branch then works against a different limit table - so it marks
+        # an operating mode rather than a fault. Not confirmed on hardware.
+        bit_descriptions:
+            0: Alternate limit set active (low confidence)
 
 VERSION_SENSOR_DEFINITIONS:
     firmware_version:

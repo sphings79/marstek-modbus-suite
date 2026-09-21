@@ -42,6 +42,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
+        version_format: true
     ems_version:
         register: 30200
         category: diagnostic
@@ -50,6 +51,7 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         scale: 1
         scan_interval: low
+        version_format: true
     comm_module_firmware:
         register: 30350
         count: 6
@@ -2142,6 +2144,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_2_cycle_count:
         register: 34103
         data_type: int16
@@ -2164,6 +2167,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_3_cycle_count:
         register: 34203
         data_type: int16
@@ -2186,6 +2190,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_4_cycle_count:
         register: 34303
         data_type: int16
@@ -2208,6 +2213,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_5_cycle_count:
         register: 34403
         data_type: int16
@@ -2230,6 +2236,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_6_cycle_count:
         register: 34503
         data_type: int16
@@ -2267,6 +2274,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_7_bms_version:
         register: 34610
         data_type: uint16
@@ -2274,6 +2282,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     # --- Per-pack terminal voltage and current, packs 1-7 ---
     # Pack 1 sits at 34000/34001, which the firmware also serves at 30100/30101
     # (source pointers 0x20014FB4 and 0x20014FB6). The single-pack E models map
@@ -2451,6 +2460,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     vns_boot_version:
         register: 30203
         data_type: uint16
@@ -2458,6 +2468,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     # --- BMS CAN aggregate (32100). Feeds the calculated battery_power_bms. ---
     bms_battery_voltage:
         register: 32100
@@ -2541,6 +2552,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -3426,6 +3438,16 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
             max: battery_7_max_cell_voltage
             min: battery_7_min_cell_voltage
 BITFIELD_TEXT_SENSOR_DEFINITIONS:
+    # These texts come from the Venus A inverter firmware (VA_inv_app 0119 /
+    # 1193 / 1211, which share one bit layout), not from the Venus D. The two
+    # are separate code bases - 0.4% shared code - so no D bit meaning carries
+    # over, and this file used to show the D ones.
+    #
+    # Every set location in the image is enumerated, so a bit that is absent
+    # here has no setter at all: err1 only ever carries bits 0-4, 7, 20 and 21,
+    # err2 only bits 5, 6, 7, 8, 9, 11 and 13. A word with any other bit set
+    # did not come from the device - a read that lands out of step after a
+    # timeout produces exactly that.
     fault_status_description:
         key: fault_status_description
         icon: "mdi:alert-circle-outline"
@@ -3433,9 +3455,15 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: true
         dependency_keys:
             source: fault_status
+        # High word of error_code1, so bit N here is overall bit 16+N. Both are
+        # set and cleared by the inverter's communication watchdog. The naming
+        # follows the manufacturer's bit table carried in e_v12.yaml, which
+        # agrees with what the Venus D analysis derived for the same two bits
+        # and with the one case confirmed on D hardware (pulling the battery
+        # raises overall bit 20).
         bit_descriptions:
-            4: BMS offline / Battery disconnected
-            5: BMS reports a fault (check pack firmware versions)
+            4: Battery communication failure
+            5: BMS protection active
     fault_status_low_description:
         key: fault_status_low_description
         icon: "mdi:alert-circle-outline"
@@ -3443,10 +3471,20 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: true
         dependency_keys:
             source: fault_status_low
+        # Low word of error_code1. Bits 0-4 are all set in the grid protection
+        # routine against a configured limit and a trip counter, so each one
+        # means "outside the limit for too long", not a momentary excursion.
+        # Which quantity belongs to which bit is settled: bits 0/1 compare the
+        # grid voltage, bits 2/3 the frequency, and the same order appears in
+        # the manufacturer's own bit table carried in e_v12.yaml. Bit 7 has no
+        # counterpart there and stays a guess.
         bit_descriptions:
-            6: Seen during DC discharge (unconfirmed)
-            7: Backup / off-grid branch cannot operate (overload, too little energy, no battery)
-            9: Seen during DC discharge (unconfirmed)
+            0: Grid overvoltage (above limit for too long)
+            1: Grid undervoltage (below limit for too long)
+            2: Grid overfrequency (above limit for too long)
+            3: Grid underfrequency (below limit for too long)
+            4: Grid peak voltage (above 430 V)
+            7: Grid protection tripped (low confidence)
     fault_status_2_description:
         key: fault_status_2_description
         icon: "mdi:alert-circle-outline"
@@ -3454,8 +3492,9 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: false
         dependency_keys:
             source: fault_status_2
-        bit_descriptions:
-            0: Self-test failed
+        # High word of error_code2. The firmware has no setter above bit 13, so
+        # this word is always 0 on the Venus A - anything else is a bad read.
+        bit_descriptions: {}
     fault_status_2_low_description:
         key: fault_status_2_low_description
         icon: "mdi:alert-circle-outline"
@@ -3463,14 +3502,17 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: false
         dependency_keys:
             source: fault_status_2_low
+        # Low word of error_code2. Bits 8 and 11 are the two integrators: they
+        # need a limit to stay violated for a while, so they say "this went on
+        # too long" rather than naming a single event.
         bit_descriptions:
-            0: Hardware protection latch B
-            1: Hardware protection latch A
-            3: Hardware protection latch C
-            4: Hardware protection triggered
-            7: Shut down by supervisor, retry after 60 s
+            5: Protection shutdown (trigger not identified)
+            6: DC link overvoltage (above 568 V)
+            7: Shut down by supervisor (low confidence)
+            8: Operating limit exceeded for too long (overload integral, or grid below 207 V for 201 cycles)
             9: Supervisor fault (low confidence)
-            11: Limit exceeded for more than 3000 cycles
+            11: Limit exceeded for too long - collective bit, the channel is only in the device event log
+            13: Limit exceeded for more than 20000 cycles
 
 GRID_POWER_SENSOR_DEFINITIONS:
     grid_power:

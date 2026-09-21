@@ -31,6 +31,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
+        version_format: true
     bms_version:
         register: 31102
         icon: "mdi:battery-check-outline"
@@ -38,6 +39,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
+        version_format: true
     ems_version:
         register: 31101
         category: diagnostic
@@ -46,6 +48,7 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         scale: 1
         scan_interval: low
+        version_format: true
     comm_module_firmware:
         register: 30800
         count: 6

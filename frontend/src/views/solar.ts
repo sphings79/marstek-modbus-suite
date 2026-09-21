@@ -135,7 +135,7 @@ export class MkViewSolar extends MkView {
           ${this.kv("mppt_warning", 0, {
             tone: r.num("mppt_warning") ? "warn" : "ok",
           })}
-          ${this.kv("mppt_version", 0)}
+          ${this.kv("mppt_version", 0, { version: true })}
           ${total === null
             ? nothing
             : this.row(t("solar.channels_reporting"), `${powers.filter((p) => p !== null).length} / ${CHANNELS.length}`)}

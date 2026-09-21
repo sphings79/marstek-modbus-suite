@@ -31,6 +31,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
+        version_format: true
     ems_version:
         register: 30200
         category: diagnostic
@@ -39,6 +40,7 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         scale: 1
         scan_interval: low
+        version_format: true
     comm_module_firmware:
         register: 30350
         count: 6
@@ -2341,6 +2343,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_2_cycle_count:
         register: 34103
         data_type: int16
@@ -2363,6 +2366,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_3_cycle_count:
         register: 34203
         data_type: int16
@@ -2385,6 +2389,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_4_cycle_count:
         register: 34303
         data_type: int16
@@ -2407,6 +2412,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_5_cycle_count:
         register: 34403
         data_type: int16
@@ -2429,6 +2435,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_6_cycle_count:
         register: 34503
         data_type: int16
@@ -2451,6 +2458,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     battery_7_cycle_count:
         register: 34603
         data_type: int16
@@ -2473,6 +2481,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     # --- Per-pack terminal voltage and current, packs 1-7 ---
     # Pack 1 sits at 34000/34001, which the firmware also serves at 30100/30101
     # (source pointers 0x20014FB4 and 0x20014FB6). The single-pack E models map
@@ -2650,6 +2659,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     vns_boot_version:
         register: 30203
         data_type: uint16
@@ -2657,6 +2667,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
     # --- BMS CAN aggregate (32100). Feeds the calculated battery_power_bms. ---
     bms_battery_voltage:
         register: 32100
@@ -2751,6 +2762,7 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        version_format: true
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -3671,12 +3683,19 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: false
         dependency_keys:
             source: fault_status_2_low
+        # Bit 8 was missed by the original firmware notes because its setter
+        # reaches the error word through r8 rather than the usual r0. It is an
+        # overload integrator (event 0x31): a counter climbs while the current
+        # stays above its threshold and only trips once it overflows, so the bit
+        # means the limit was exceeded for a while, not for an instant. The
+        # Venus E3 image carries the identical code.
         bit_descriptions:
             0: Hardware protection latch B
             1: Hardware protection latch A
             3: Hardware protection latch C
             4: Hardware protection triggered
             7: Shut down by supervisor, retry after 60 s
+            8: Operating limit exceeded for too long (overload integrator)
             9: Supervisor fault (low confidence)
             11: Limit exceeded for more than 3000 cycles
 
