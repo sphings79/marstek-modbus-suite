@@ -61,8 +61,8 @@
           "low": "Low priority interval (s)"
         },
         "data_description": {
-          "high": "Fast-moving values such as power and SoC. Minimum 3 s — one poll cycle took 3–10 s on a measured device, so a shorter setting does not poll faster, it queues.",
-          "low": "Slow-moving values such as energy counters and versions. Minimum 10 s."
+          "high": "Fast-moving values such as power and SoC. The minimum depends on the model: asking for less than a poll cycle takes does not poll faster, it queues.",
+          "low": "Slow-moving values such as energy counters and versions. The coordinator ticks at the smaller of the two, so this one decides how often a full round starts."
         }
       },
       "connection": {

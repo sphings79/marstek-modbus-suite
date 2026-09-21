@@ -79,18 +79,40 @@ DEVICE_VERSION_LABELS = {
     "E v1/v2": "Venus E v1 & v2",
 }
 
-# Lower bounds for the polling intervals, in seconds.
+# Lower bounds for the polling intervals, in seconds, per model.
 #
-# Measured on a three-pack Venus A with no PV: one high-priority cycle is 22 to
-# 33 Modbus requests, the device answers each in about 0.15 s, and a cycle took
-# 3.4 to 9.9 s end to end. Asking for a shorter interval than that does not
-# poll faster, it only queues - the coordinator was already drifting to 13 s
-# with 10 s configured. A larger register map or more packs makes it worse, so
-# these are a floor against the obviously pointless rather than a promise.
+# A cycle costs what the device takes to answer, and that is measurable: on a
+# Venus A the device answered each request in about 0.15 s, a high-priority
+# cycle was 22 to 33 requests, and end to end it took 3.4 to 9.9 s. Counting the
+# enabled registers in each map against that 0.15 s gives:
+#
+#   Venus A / D    high alone ~4.0 s    high and low together ~10.3 s
+#   Venus E v3     high alone ~1.9 s    together ~3.8 s
+#   Venus E v1/v2  high alone ~1.3 s    together ~3.6 s
+#
+# Asking for less than that does not poll faster, it queues - the coordinator on
+# the measured device was already drifting to 13 s with 10 s configured. The
+# floors therefore differ by model: one number would either strangle the E,
+# whose map is half the size, or let a D ask for something it cannot deliver.
+#
+# The coordinator ticks at min(high, low), so the low floor is what keeps a full
+# round from starting before the last one finished. On the A and D that round is
+# ~10.3 s, which is why low sits at 12 rather than 10 - at 10 it would be exactly
+# at the edge, with nothing left for a retry or a slow answer.
 MIN_SCAN_INTERVALS = {
-    "high": 3,
-    "low": 10,
+    "A": {"high": 5, "low": 12},
+    "D": {"high": 5, "low": 12},
+    "E v3": {"high": 3, "low": 10},
+    "E v1/v2": {"high": 3, "low": 10},
 }
+
+# Used when the version is missing or unknown: the safe end of the range.
+DEFAULT_MIN_SCAN_INTERVALS = {"high": 5, "low": 12}
+
+
+def min_scan_intervals(version):
+    """The floors for one device version, falling back to the cautious pair."""
+    return MIN_SCAN_INTERVALS.get(str(version or "").strip(), DEFAULT_MIN_SCAN_INTERVALS)
 
 # Device names offered as the default during setup, keyed by SUPPORTED_VERSIONS.
 # The name becomes the config entry title, and the title is what the device and

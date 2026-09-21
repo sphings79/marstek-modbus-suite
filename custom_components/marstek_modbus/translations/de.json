@@ -61,8 +61,8 @@
           "low": "Low-Priorität Intervall (s)"
         },
         "data_description": {
-          "high": "Schnell wechselnde Werte wie Leistung und SoC. Minimum 3 s — ein Abfragezyklus dauert auf einem gemessenen Gerät 3–10 s, kürzer eingestellt wird er nicht schneller, sondern staut sich nur.",
-          "low": "Selten wechselnde Werte wie Energiezähler und Versionen. Minimum 10 s."
+          "high": "Schnell wechselnde Werte wie Leistung und SoC. Die Untergrenze richtet sich nach dem Modell: kürzer als ein Abfragezyklus dauert wird nicht schneller gepollt, es staut sich nur.",
+          "low": "Selten wechselnde Werte wie Energiezähler und Versionen. Der Koordinator taktet mit dem kleineren der beiden Werte, deshalb entscheidet dieser, wie oft eine komplette Runde beginnt."
         }
       },
       "connection": {

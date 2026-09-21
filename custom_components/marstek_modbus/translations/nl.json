@@ -61,8 +61,8 @@
           "low": "Low-prioriteit interval (s)"
         },
         "data_description": {
-          "high": "Snel wisselende waarden zoals vermogen en SoC. Minimum 3 s — één pollcyclus duurde op een gemeten apparaat 3–10 s; korter instellen levert geen snellere polling op, alleen wachtrij.",
-          "low": "Traag wisselende waarden zoals energietellers en versies. Minimum 10 s."
+          "high": "Snel wisselende waarden zoals vermogen en SoC. Het minimum hangt af van het model: korter dan een pollcyclus duurt levert geen snellere polling op, alleen wachtrij.",
+          "low": "Traag wisselende waarden zoals energietellers en versies. De coördinator tikt op de kleinste van de twee, dus deze bepaalt hoe vaak een volledige ronde start."
         }
       },
       "connection": {

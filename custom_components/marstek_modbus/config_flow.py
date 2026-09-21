@@ -26,7 +26,7 @@ from .const import (
     DEVICE_NAME_DEFAULTS,
     DEVICE_VERSION_LABELS,
     DOMAIN,
-    MIN_SCAN_INTERVALS,
+    min_scan_intervals,
     MAX_PACK_COUNT,
     CONF_PACK_COUNT,
     PACK_COUNT_AUTO,
@@ -75,39 +75,33 @@ DEVICE_VERSION_SELECTOR = selector.SelectSelector(
 )
 
 
-def _interval_selector(key: str):
-    """Seconds picker for one polling group, floored at what the device can keep up with.
+def _polling_schema(version):
+    """Seconds pickers for one device version, floored at what its map can keep up with.
 
-    A number box rather than a free field: the minimum is then visible in the
+    Number boxes rather than free fields: the minimum is then visible in the
     dialog and unreachable by typing, instead of a value that silently becomes
-    something else on save. See MIN_SCAN_INTERVALS for where the floors come from.
+    something else on save. The floors come from the register count of that
+    model - see MIN_SCAN_INTERVALS.
     """
-    return selector.NumberSelector(
-        selector.NumberSelectorConfig(
-            min=MIN_SCAN_INTERVALS[key],
-            max=3600,
-            step=1,
-            unit_of_measurement="s",
-            mode=selector.NumberSelectorMode.BOX,
+    floors = min_scan_intervals(version)
+
+    def box(key):
+        return vol.All(
+            selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=floors[key],
+                    max=3600,
+                    step=1,
+                    unit_of_measurement="s",
+                    mode=selector.NumberSelectorMode.BOX,
+                )
+            ),
+            vol.Coerce(int),
+            vol.Clamp(min=floors[key], max=3600),
         )
-    )
 
+    return vol.Schema({vol.Required("high"): box("high"), vol.Required("low"): box("low")})
 
-# Schema for polling intervals
-SCHEMA_POLLING = vol.Schema(
-    {
-        vol.Required("high"): vol.All(
-            _interval_selector("high"),
-            vol.Coerce(int),
-            vol.Clamp(min=MIN_SCAN_INTERVALS["high"], max=3600),
-        ),
-        vol.Required("low"): vol.All(
-            _interval_selector("low"),
-            vol.Coerce(int),
-            vol.Clamp(min=MIN_SCAN_INTERVALS["low"], max=3600),
-        ),
-    }
-)
 
 SCHEMA_LIMITS = vol.Schema(
     {
@@ -385,8 +379,9 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         # An entry configured before the floors existed can carry a value the
         # number box would now refuse. Raise what the form offers, so the dialog
         # opens on something it will accept instead of on a rejected field.
+        floors = min_scan_intervals(config.data.get(CONF_DEVICE_VERSION))
         defaults = {
-            key: max(int(value), MIN_SCAN_INTERVALS.get(key, 1))
+            key: max(int(value), floors.get(key, 1))
             for key, value in defaults.items()
         }
 
@@ -415,7 +410,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="polling",
             data_schema=self.add_suggested_values_to_schema(
-                SCHEMA_POLLING, defaults
+                _polling_schema(config.data.get(CONF_DEVICE_VERSION)), defaults
             ),
             errors=errors,
             description_placeholders={"lowest": str(lowest)},

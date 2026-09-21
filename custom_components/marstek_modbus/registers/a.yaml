@@ -2545,6 +2545,13 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    selftest_status:
+        register: 30212
+        data_type: uint16
+        icon: "mdi:clipboard-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
     mppt_version:
         register: 30205
         data_type: uint16
