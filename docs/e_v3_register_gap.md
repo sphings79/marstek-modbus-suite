@@ -88,6 +88,60 @@ One thing left to settle while mapping: **the aliases in 37xxx.** 37013 and 3701
 words again under a second number. Mapping them creates a second entity for the same value, which
 is worth carrying only where the primary register is not served — and on this model it always is.
 
+## What d.yaml does with each of them
+
+The CSV carries two more columns, `d_yaml_section` and `d_yaml_key`, so the classification does not
+have to be redone by hand. Whatever the Venus D map decided about a register should carry over
+unless there is a reason it should not — the register is the same register.
+
+| Class | Count | What it means | Goes into e_v3.yaml as |
+|---|---|---|---|
+| `SENSOR` | 24 | ordinary entity in d.yaml | the same kind of entity |
+| `DEV_UNKNOWN` | 28 | `dev_xxxxx` — served, meaning not established | `DEV_UNKNOWN_SENSOR_DEFINITIONS` |
+| `DEV_DUPLICATE` | 13 | `dev_xxxxx` — a second view of a value that already has an entity | `DEV_DUPLICATE_SENSOR_DEFINITIONS` |
+| `DUPLICATE_UNMAPPED` | 16 | **not in d.yaml at all**, because the same SRAM source is mapped under another register number | open, see below |
+| `NOT_IN_D_YAML` | 16 | neither mapped nor a duplicate of anything mapped | open, see below |
+
+### The 16 that duplicate a mapped register
+
+d.yaml leaves these out entirely rather than marking them as duplicates. Same SRAM source, second
+register number:
+
+| Register | Name | already served as |
+|---|---|---|
+| 30002 / 30003 | `env_temp` / `radiator_temp` | `internal_temperature` (35000), `internal_mos1_temperature` (35001) |
+| 30004 | `grid_volt` | `ac_voltage` (32200) |
+| 30005 / 30007 | `off_grid_volt` / `off_grid_power` | `ac_offgrid_voltage` (32300), `ac_offgrid_power` (32302) |
+| 30107 / 30108 | pack 1 temperature mirrors | `battery_1_env_temperature` (34011), `battery_1_mos_temperature` (34012) |
+| 32102 | `bat_sample_power` | `dc_sample_power` (30001) |
+| 32108 | `bms_battery_temp` | `max_cell_temperature` (35010) |
+| 32201 / 32202 | `grid_volt_dup` / `grid_sample_power` | `ac_voltage` (32200), `ac_power` (30006) |
+| 34017 | `pack1_ntc_unused` | `dev_30106` (30106) |
+| 37005 | `pack1_soc_scaled` | `battery_soc_1` (34002) |
+| 37011 | `block_34009_34010` | `dev_34009` (34009) |
+| 37013 / 37015 | `error_code1` / `error_code2` | `fault_status` (36100), `fault_status_2` (36102) |
+
+Adding them as `DEV_DUPLICATE` would make the E3 map carry entities the D map deliberately does
+not. Leaving them out keeps the two consistent. **Decision needed** — the safe default is to leave
+them out and note them here.
+
+### The 16 that d.yaml simply does not have
+
+`30000` `30028` `30029` `32101` `32103` `32106` `32107` `32203` `35111` `35112` `37000` `37002`
+`37003` `37012` `37014` `37016`
+
+Worth separating:
+
+- `32106`/`32107` and `35111`/`35112` are **two number pairs on the same SRAM** (`0x20014FA0`,
+  `0x20014FA2`) — the BMS charge and discharge current limits. d.yaml maps neither, which looks
+  like a gap in the D map rather than a decision. `35110` (charge voltage limit) is already in this
+  list as a regular sensor, so its two siblings belong with it.
+- `32101` is the register `Read_Serializer` corrupts, see below. It should stay out.
+- `32103`, `32203`, `37012`, `37014`, `37016` are second words of u32 values whose first word is
+  handled elsewhere — no entity of their own.
+- `37000`, `37002`, `37003` mirror the Modbus address and the two power limits read-only; the
+  writable registers (`41100`, `44002`, `44003`) are already mapped.
+
 ## Known traps
 
 - **`32101` is unusable.** `Read_Serializer` sign-extends the i16 into an unsigned word before
