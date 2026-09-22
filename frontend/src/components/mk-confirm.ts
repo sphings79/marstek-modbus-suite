@@ -3,6 +3,16 @@ import { customElement, property, query } from "lit/decorators.js";
 import { baseStyles } from "../styles";
 
 /**
+ * How long after opening a click on the backdrop is ignored.
+ *
+ * A double click on the button that opens the dialog puts its second click
+ * wherever the backdrop now is, and without this the dialog appears and
+ * vanishes again in the same gesture. Long enough to cover a double click,
+ * short enough that nobody deliberately dismissing it notices.
+ */
+const BACKDROP_GUARD_MS = 300;
+
+/**
  * A question asked before something that cannot be taken back.
  *
  * This replaced a pair of buttons that swapped places: the confirmation
@@ -98,9 +108,15 @@ export class MkConfirm extends LitElement {
     `,
   ];
 
+  /** When the dialog last opened, for the guard above. */
+  private openedAt = 0;
+
   protected updated(changed: Map<string, unknown>): void {
     if (!changed.has("open")) return;
-    if (this.open && !this.dialog.open) this.dialog.showModal();
+    if (this.open && !this.dialog.open) {
+      this.openedAt = performance.now();
+      this.dialog.showModal();
+    }
     if (!this.open && this.dialog.open) this.dialog.close();
   }
 
@@ -166,7 +182,9 @@ export class MkConfirm extends LitElement {
 
   /** A click that lands on the dialog itself landed on the backdrop. */
   private backdrop(event: MouseEvent) {
-    if (event.target === this.dialog) this.cancel();
+    if (event.target !== this.dialog) return;
+    if (performance.now() - this.openedAt < BACKDROP_GUARD_MS) return;
+    this.cancel();
   }
 }
 
