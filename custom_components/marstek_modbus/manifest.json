@@ -18,5 +18,5 @@
   "requirements": [
     "tmodbus>=0.6.2,<0.7"
   ],
-  "version": "3.0.0-beta.12"
+  "version": "3.0.0-beta.13"
 }
