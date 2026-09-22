@@ -26,9 +26,16 @@
 #
 # Read registers have since been exercised on Venus A hardware, on more than one
 # device: per-pack values on a three-pack stack, the MPPT strings, the cells, and
-# the figures derived from them. Nothing has been written to one. The power
-# limits above are the sharpest case of that - they are firmware evidence, and
-# no write has been tried against the hardware to confirm either behaviour.
+# the figures derived from them. Writing works as well - a zero-feed-in
+# automation has been driving force mode and the two power setpoints on that
+# three-pack A for a while now.
+#
+# What that leaves open is the pair of limits above, because the automation stays
+# at 1500 W and neither boundary has ever been crossed on a device. Nobody has
+# written more than 1500 to 44002 and watched 1500 come back, and nobody has
+# collected the exception 44003 is supposed to answer with. Both remain firmware
+# evidence, which makes them the first thing to confirm against hardware rather
+# than the last.
 #
 # Comments claiming a measurement name the model they were measured on.
 
