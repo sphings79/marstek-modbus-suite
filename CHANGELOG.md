@@ -5,6 +5,76 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.0.0-beta.13
+
+Mostly the panel, plus two sensors that were never going to work on a stack
+smaller than the register map.
+
+### Two aggregates were dead on anything but a full stack
+
+`battery_cycle_count` and `battery_power_bms` both name all seven packs as
+dependencies, and a calculated sensor stays blank unless every one of them has a
+value. The register map assumes an absent pack answers its block with zeros,
+which only holds while all seven blocks are polled — with the pack count pinned
+they are never asked for, so the value arrives as nothing at all.
+
+Measured on a three-pack Venus A: each of the two refused **99 times in eleven
+minutes**, once per polling cycle, for as long as the device had been running.
+
+A calculated sensor can now name the dependencies it can do without.
+`battery_power_bms` adds up the packs that answered. On that same Venus A the
+two read 395 W and 133 cycles, against pack currents totalling 8.7 A and counts
+of 156, 123 and 120.
+
+### Bypass was the wrong word
+
+Register state 6 is **Backup Passthrough**, not Bypass. It appears when the
+backup socket is switched on with a load on it and the grid is carrying that
+load — not, as the panel assumed, when solar feeds the house while the packs
+charge. The panel's own name for that second case is now **PV Passthrough**, and
+it goes through the translation catalogues instead of being English in every
+language.
+
+### Panel
+
+**The pack columns and the table disagreed** — the same split
+[beta.12](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0-beta.12)
+closed between the table and the spread tile, one layer further out. The columns
+kept a rule of their own: five points from the median, with no regard for
+whether the stack spread meant anything yet. A pack ten points low was outlined
+in warning while the tile above it read green and its own row stayed plain. All
+three ask the same question now.
+
+**Temperatures say what they are.** The pack table printed three columns of bare
+figures — 35,2 beside 38,9 beside four NTC readings, with nothing to say what
+they were. The unit now sits in the heading, once, rather than beside every
+number. It is read from the entity, so an installation on Fahrenheit gets °F
+over Fahrenheit numbers; two tiles and a pack note had °C written into the
+layout.
+
+**A choice too wide for a phone wraps** instead of widening the page. The
+polling choice spells out what pausing does to the entities, which is three
+sentences laid side by side: on a phone that bar ran out past its own panel and
+took the width of the whole page with it, leaving everything else off-screen to
+the left. Options that fit still sit beside each other.
+
+**Restarting the device asks in a dialog.** The confirmation used to replace the
+button that opened it, at the same spot and — in English — at the same width, so
+a double click went straight through to the restart. Escape, a click beside the
+dialog and the cancel button all dismiss it, the cancel button holds the focus
+when it opens, and the dialog has room to say what a restart actually costs.
+
+### Repository
+
+The tool that produced the polling numbers in beta.12 now sits in `scripts/`,
+next to the constants that rest on them. Without `--host` it touches nothing and
+only counts what each tick would ask for; with one it times those requests
+against a real device — and refuses its own output when the session keeps being
+taken away, which is what pointing it at a proxy during a Home Assistant poll
+produced: 94 reconnects and a page of 3 ms timings that looked like results.
+
+---
+
 ## 3.0.0-beta.12
 
 The largest step since [beta.11](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0-beta.11):
