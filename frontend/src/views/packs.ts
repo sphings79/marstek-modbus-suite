@@ -235,6 +235,19 @@ export class MkViewPacks extends MkView {
       .sort((a, b) => a - b);
     const median = socs.length ? socs[Math.floor(socs.length / 2)] : null;
 
+    // All three temperature columns share one unit, named by the first pack
+    // that reports a temperature at all. It goes in the heading rather than
+    // beside every number: a bare 35,2 could be read as anything, and a unit
+    // repeated down a column of figures is what stops it being scannable.
+    const tempUnit = this.unitOf(
+      ...this.packs.flatMap((i) => [
+        `battery_${i}_mos_temperature`,
+        `battery_${i}_env_temperature`,
+        `battery_${i}_cell_temperature_1`,
+      ]),
+    );
+    const degrees = (label: string) => (tempUnit ? `${label} ${tempUnit}` : label);
+
     return html`
       <div class="panel table-wrap">
         <div class="head"><div class="label">${t("packs.table_title")}</div></div>
@@ -251,9 +264,9 @@ export class MkViewPacks extends MkView {
                 <th class="n">${t("packs.col_voltage")}</th>
                 <th class="n">${t("packs.col_current")}</th>
                 <th class="n">${t("packs.col_cycles")}</th>
-                <th class="n">${t("packs.col_mos")}</th>
-                <th class="n">${t("packs.col_env")}</th>
-                <th class="n">${t("packs.col_ntc")}</th>
+                <th class="n">${degrees(t("packs.col_mos"))}</th>
+                <th class="n">${degrees(t("packs.col_env"))}</th>
+                <th class="n">${degrees(t("packs.col_ntc"))}</th>
               </tr>
             </thead>
             <tbody>

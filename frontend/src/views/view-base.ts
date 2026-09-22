@@ -139,6 +139,23 @@ export abstract class MkView extends LitElement {
     `;
   }
 
+  /**
+   * The unit of the first of these keys the device actually reports.
+   *
+   * Read off the entity rather than written into the layout. Temperatures
+   * carry a device class, so Home Assistant hands an imperial install °F -
+   * a heading that says °C would then be labelling the wrong numbers. An
+   * empty string when nothing reports one, which every caller treats as "say
+   * nothing" rather than printing a stray separator.
+   */
+  protected unitOf(...keys: string[]): string {
+    for (const key of keys) {
+      const unit = this.reader.unit(key);
+      if (unit) return unit;
+    }
+    return "";
+  }
+
   /** Pack indices, 1-based, as many as this battery reports. */
   protected get packs(): number[] {
     return Array.from({ length: this.reader.packCount() }, (_, i) => i + 1);

@@ -196,7 +196,7 @@ export class MkViewCore extends MkView {
         <mk-stat
           label=${t("core.internal_temp")}
           value=${f.num(r.num("internal_temperature"), 1)}
-          unit="°C"
+          unit=${this.unitOf("internal_temperature")}
           tone="ok"
         ></mk-stat>
         <mk-stat

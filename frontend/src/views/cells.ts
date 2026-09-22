@@ -58,6 +58,9 @@ export class MkViewCells extends MkView {
 
   private get ranges(): PackRange[] {
     const r = this.reader;
+    const unit = this.unitOf(
+      ...this.packs.map((i) => `battery_${i}_mos_temperature`),
+    );
     const out: PackRange[] = [];
     for (const i of this.packs) {
       const min = r.num(`battery_${i}_min_cell_voltage`);
@@ -68,7 +71,9 @@ export class MkViewCells extends MkView {
       const temp = r.num(`battery_${i}_mos_temperature`);
       const note = [
         cycles === null ? null : `${this.fmt.num(cycles, 0)} ⟳`,
-        temp === null ? null : `${this.fmt.num(temp, 1)} °C`,
+        temp === null
+          ? null
+          : `${this.fmt.num(temp, 1)}${unit ? ` ${unit}` : ""}`,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -98,6 +103,7 @@ export class MkViewCells extends MkView {
     const meanDelta = inPackDeltas.length
       ? inPackDeltas.reduce((a, b) => a + b, 0) / inPackDeltas.length
       : null;
+    const tempUnit = this.unitOf("max_cell_temperature", "min_cell_temperature");
 
     return html`
       <div class="grid tiles">
@@ -141,11 +147,11 @@ export class MkViewCells extends MkView {
         <mk-stat
           label=${t("cells.temp_span")}
           value=${f.num(this.tempSpan(), 1)}
-          unit="°C"
+          unit=${tempUnit}
           foot=${`${f.num(r.num("min_cell_temperature"), 1)} – ${f.num(
             r.num("max_cell_temperature"),
             1,
-          )} °C`}
+          )}${tempUnit ? ` ${tempUnit}` : ""}`}
         ></mk-stat>
         <mk-stat
           label=${t("cells.packs_online")}
