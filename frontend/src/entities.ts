@@ -199,12 +199,22 @@ export class DeviceReader {
     const idle = 30;
     const battery = this.num("battery_power");
     const ac = this.num("ac_power");
+    const solar = this.num("solar_power_total");
 
     const charging = battery !== null && battery > idle;
     const delivering = ac !== null && ac > idle;
+    // The strings have to be producing, or the name makes a claim about where
+    // the energy comes from that nothing checked. It also keeps the label off
+    // the two Venus E generations, which have no PV input and no
+    // solar_power_total: charging and delivering at once means something else
+    // on a device with nothing on the DC bus but its packs.
+    const fromSolar = solar !== null && solar > idle;
+
     // Typed as a plain function rather than the views' Translate, so this file
     // stays free of a dependency on the view layer. Callers all have one.
-    if (charging && delivering) return t ? t("core.pv_passthrough") : "PV Passthrough";
+    if (fromSolar && charging && delivering) {
+      return t ? t("core.pv_passthrough") : "PV Passthrough";
+    }
 
     return this.str("inverter_state");
   }
