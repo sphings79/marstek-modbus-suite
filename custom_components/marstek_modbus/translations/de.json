@@ -941,7 +941,7 @@
           "3": "Entladen",
           "4": "Backup-Modus",
           "5": "OTA-Upgrade",
-          "6": "Bypass"
+          "6": "Notstrom-Durchleitung"
         }
       },
       "fault_status": {

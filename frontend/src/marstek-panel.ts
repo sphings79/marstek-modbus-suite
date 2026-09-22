@@ -625,8 +625,8 @@ export class MarstekPanel extends LitElement {
           <i class="led ${link.led}"></i>
           ${link.label}
         </span>
-        ${live && reader.inverterState()
-          ? html`<span>${reader.inverterState()}</span>`
+        ${live && reader.inverterState(this.t)
+          ? html`<span>${reader.inverterState(this.t)}</span>`
           : nothing}
         <button
           class="gear"

@@ -83,6 +83,7 @@ export const de: Record<string, string> = {
   "core.stored_of_total": "Gespeichert / gesamt",
   "core.usable": "Nutzbare Energie",
   "core.to_full": "Energie bis voll",
+  "core.pv_passthrough": "PV-Durchleitung",
   "core.runtime": "Laufzeit",
   "core.to_empty": "Bis leer",
   "core.until_full": "Bis voll",

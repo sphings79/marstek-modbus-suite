@@ -441,12 +441,28 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
         self._calculate(data)
         self.async_write_ha_state()
 
+    def optional_dependencies(self) -> set:
+        """Aliases whose absence must not stop the calculation.
+
+        Pack registers on a stack with fewer packs are what this is for. A map
+        describes all seven blocks because one model can carry them, and a
+        three-pack device answers for three. The map assumes an absent pack
+        replies with zeros, which holds only while every block is polled: with
+        `pack_count` pinned, the missing blocks are never asked for, so their
+        value arrives as None rather than zero and a calculation that demands
+        all seven never runs at all. Measured on a three-pack Venus A, where
+        `battery_cycle_count` and `battery_power_bms` each refused on every
+        one of 99 cycles in eleven minutes.
+        """
+        return set()
+
     def _calculate(self, data: dict) -> None:
         """
         Centralized method to check dependencies, log missing values,
         calculate value, and update native_value attribute.
         """
         dependency_keys = self.get_dependency_keys()
+        optional = self.optional_dependencies()
         dep_values = {}
         missing = []
 
@@ -455,7 +471,8 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
             val = data.get(actual_key)
             scale = self.coordinator._scales.get(actual_key, 1)
             if val is None:
-                missing.append(alias)
+                if alias not in optional:
+                    missing.append(alias)
             else:
                 dep_values[alias] = float(val) * scale
 
@@ -551,6 +568,18 @@ class MarstekDerivedSensor(MarstekCalculatedSensor):
     What each one means is documented where it is computed, in
     `_derive_battery_power` and `_derive_pack_averages`.
     """
+
+    def optional_dependencies(self) -> set:
+        """All of them, because this sensor does not read any of them.
+
+        The dependencies are declared so the coordinator polls the registers
+        the derivation needs; the derivation then decides for itself what to do
+        with a value that is absent - `_derive_pack_averages` averages the
+        packs that answered, `_derive_battery_power` counts a missing string as
+        zero. Checking them again here only turns a case both already handle
+        into a blank sensor.
+        """
+        return set(self.get_dependency_keys())
 
     def calculate_value(self, dep_values: dict):
         value = self.coordinator.data.get(self._key)
@@ -724,21 +753,28 @@ class MarstekBmsBatteryPowerSensor(MarstekCalculatedSensor):
     per-pack current registers carry no scale code and are unaffected.
     """
 
+    def optional_dependencies(self) -> set:
+        """Every pack but not the voltage: a stack may be shorter than the map."""
+        return {alias for alias in self.get_dependency_keys() if alias != "voltage"}
+
     def calculate_value(self, dep_values: dict):
         voltage = dep_values.get("voltage")
         if voltage is None:
             return None
 
-        current = 0.0
-        for alias in self.get_dependency_keys():
-            if alias == "voltage":
-                continue
-            value = dep_values.get(alias)
-            if value is None:
-                return None
-            current += float(value)
+        # Packs the device does not have contribute nothing, so they are left
+        # out rather than blanking the sum - a three-pack stack reports the
+        # current of its three. Refusing unless all seven answered is what kept
+        # this sensor empty on every device with fewer than seven.
+        currents = [
+            float(dep_values[alias])
+            for alias in self.get_dependency_keys()
+            if alias != "voltage" and dep_values.get(alias) is not None
+        ]
+        if not currents:
+            return None
 
-        power = round(float(voltage) * current)
+        power = round(float(voltage) * sum(currents))
         self._attr_native_value = power
         return power
 

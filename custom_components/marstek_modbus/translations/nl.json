@@ -944,7 +944,7 @@
           "3": "Ontladen",
           "4": "Backup-modus",
           "5": "OTA-upgrade",
-          "6": "Bypass"
+          "6": "Backup-doorvoer"
         }
       },
       "fault_status": {

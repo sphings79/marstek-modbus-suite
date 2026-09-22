@@ -306,7 +306,7 @@ SENSOR_DEFINITIONS:
             3: Discharge
             4: Backup Mode
             5: OTA Upgrade
-            6: Bypass
+            6: Backup Passthrough
         scan_interval: high
     fault_status:
         register: 36100

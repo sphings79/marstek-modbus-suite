@@ -91,6 +91,7 @@ export const en: Record<string, string> = {
   "core.stored_of_total": "Stored / total",
   "core.usable": "Usable energy",
   "core.to_full": "Energy to full",
+  "core.pv_passthrough": "PV Passthrough",
   "core.runtime": "Runtime",
   "core.to_empty": "Until empty",
   "core.until_full": "Until full",
