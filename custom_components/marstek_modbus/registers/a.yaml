@@ -1,4 +1,4 @@
-# Venus A register map, adopted 1:1 from the Venus D map (d.yaml).
+# Venus A register map, adopted from the Venus D map (d.yaml).
 #
 # Basis: the Modbus descriptor table of the Venus A control firmware v149 was
 # unpacked statically and compared with the Venus D v150 table. Both expose the
@@ -6,14 +6,31 @@
 # size and count; only the SRAM source pointers differ. Every read register used
 # here exists in the Venus A table.
 #
-# Differences to d.yaml, and the only ones:
+# Differences to d.yaml:
 #   - 13 cells per pack instead of 16. The firmware declares 16 slots per pack
 #     on both models; the Venus A hardware has 13, so cells 14-16 would read 0.
-#   - no DEV register sections. Those are a research switch on the Venus D and
-#     nothing in them has been measured on a Venus A.
+#     Confirmed from the field, where those three read empty, and from the
+#     manual, which gives the pack as 41.6 V (13S).
+#   - the power registers stop at 1500 W rather than 2500: 44002 and 44003, the
+#     two setpoints, and the six schedule modes. Decompiled out of the A image
+#     against the D image, where the two registers turned out not even to
+#     enforce it the same way - 44002 accepts up to 2500 and then stores 1500
+#     silently, 44003 answers anything above 1500 with Modbus exception 3.
+#   - its own fault bit texts, read out of the Venus A inverter firmware
+#     (VA_inv_app). The A is a different code base from the D and shares none of
+#     its bit meanings, so the D texts named the wrong faults here.
 #
-# NOT verified on Venus A hardware. Comments claiming a measurement name the
-# model they were measured on.
+# The DEV register sections are carried as well. They were mapped on a Venus D
+# and nothing in them has been measured on an A, which is what the research
+# switch they sit behind is for.
+#
+# Read registers have since been exercised on Venus A hardware, on more than one
+# device: per-pack values on a three-pack stack, the MPPT strings, the cells, and
+# the figures derived from them. Nothing has been written to one. The power
+# limits above are the sharpest case of that - they are firmware evidence, and
+# no write has been tried against the hardware to confirm either behaviour.
+#
+# Comments claiming a measurement name the model they were measured on.
 
 MISSING:
     sensor:
