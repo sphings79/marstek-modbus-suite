@@ -38,6 +38,9 @@ export const de: Record<string, string> = {
   "control.device": "Gerät",
   "control.reset": "Gerät neu starten",
   "control.reset_confirm": "Wirklich neu starten",
+  "control.reset_title": "Gerät neu starten?",
+  "control.reset_message":
+    "Der Speicher trennt die Verbindung und startet neu. Bis er wieder da ist, kommen keine Werte an und steuern lässt er sich auch nicht. Die gesetzten Grenzen gelten danach weiter.",
   "control.cancel": "Abbrechen",
 
   "control.opt.manual": "Manuell",

@@ -46,6 +46,9 @@ export const en: Record<string, string> = {
   "control.device": "Device",
   "control.reset": "Restart device",
   "control.reset_confirm": "Really restart",
+  "control.reset_title": "Restart device?",
+  "control.reset_message":
+    "The battery drops the connection and restarts. Until it is back there are no readings, and it cannot be controlled either. The limits you set still apply afterwards.",
   "control.cancel": "Cancel",
 
   "control.opt.manual": "Manual",

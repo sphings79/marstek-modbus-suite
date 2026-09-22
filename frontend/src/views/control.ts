@@ -5,6 +5,7 @@ import { baseStyles } from "../styles";
 import type { DeviceControls } from "../controls";
 import type { ScheduleRow } from "../components/mk-schedule";
 import "../components/mk-slider";
+import "../components/mk-confirm";
 import "../components/mk-segment";
 import "../components/mk-toggle";
 import "../components/mk-schedule";
@@ -79,10 +80,6 @@ export class MkViewControl extends MkView {
       button.action:hover {
         border-color: var(--mk-warn);
         color: var(--mk-warn);
-      }
-      button.action.confirm {
-        border-color: var(--mk-crit);
-        color: var(--mk-crit);
       }
       button.action:focus-visible {
         outline: 2px solid var(--mk-accent);
@@ -281,27 +278,22 @@ export class MkViewControl extends MkView {
               <div class="panel">
                 <div class="head"><div class="label">${t("control.device")}</div></div>
                 <div class="danger">
-                  ${this.confirmReset
-                    ? html`
-                        <button
-                          class="action confirm"
-                          @click=${() => {
-                            this.controls.press("reset_device");
-                            this.confirmReset = false;
-                          }}
-                        >
-                          ${t("control.reset_confirm")}
-                        </button>
-                        <button class="action" @click=${() => (this.confirmReset = false)}>
-                          ${t("control.cancel")}
-                        </button>
-                      `
-                    : html`
-                        <button class="action" @click=${() => (this.confirmReset = true)}>
-                          ${t("control.reset")}
-                        </button>
-                      `}
+                  <button class="action" @click=${() => (this.confirmReset = true)}>
+                    ${t("control.reset")}
+                  </button>
                 </div>
+                <mk-confirm
+                  ?open=${this.confirmReset}
+                  heading=${t("control.reset_title")}
+                  message=${t("control.reset_message")}
+                  confirmLabel=${t("control.reset_confirm")}
+                  cancelLabel=${t("control.cancel")}
+                  .onConfirm=${() => {
+                    this.controls.press("reset_device");
+                    this.confirmReset = false;
+                  }}
+                  .onCancel=${() => (this.confirmReset = false)}
+                ></mk-confirm>
               </div>
             </div>
           `
