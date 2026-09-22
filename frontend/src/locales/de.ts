@@ -151,7 +151,7 @@ export const de: Record<string, string> = {
   "packs.none": "Dieser Speicher meldet keinen Ladezustand je Pack.",
   "packs.table_title": "Alle Packs im Detail",
   "packs.table_legend":
-    "Hervorgehobene Zeilen liegen {points} % oder weiter vom mittleren Pack entfernt. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
+    "Hervorgehoben wird erst, wenn die Spreizung oben {spread} % erreicht — und dann die Packs, die weiter als {points} % vom mittleren Pack entfernt liegen. Solange der Stack beisammen ist, bleiben Säulen und Zeilen ruhig. Ein Pack, das hohen SoC bei niedriger Zellspannung meldet, ist einen zweiten Blick wert — die beiden Angaben widersprechen sich.",
   "packs.conducting": "arbeitet gerade",
   "packs.col_soc": "SoC",
   "packs.col_energy": "kWh",

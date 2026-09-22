@@ -198,7 +198,9 @@ export class MkViewPacks extends MkView {
               <mk-pack-bars
                 .packs=${fills}
                 .floor=${this.floor}
-          .backupFloor=${this.backupFloor}
+                .backupFloor=${this.backupFloor}
+                .spread=${spread}
+                .spreadWarn=${this.spreadWarn}
                 packLabel=${t("common.pack")}
                 energyUnit=${r.unit("battery_total_energy") || "kWh"}
                 .formatNumber=${(v: number | null, d = 0) => f.num(v, d)}
@@ -302,7 +304,10 @@ export class MkViewPacks extends MkView {
           </table>
         </div>
         <div class="note">
-          ${t("packs.table_legend", { points: this.spreadWarn })}
+          ${t("packs.table_legend", {
+            spread: f.num(this.spreadWarn, 0),
+            points: f.num(this.spreadWarn / 2, 1),
+          })}
         </div>
       </div>
     `;

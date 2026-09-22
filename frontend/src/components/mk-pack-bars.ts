@@ -1,6 +1,7 @@
 import { LitElement, html, css, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { baseStyles } from "../styles";
+import { SPREAD_WARN_PP, packIsOutlier } from "../thresholds";
 
 export interface PackFill {
   index: number;
@@ -37,8 +38,15 @@ export class MkPackBars extends LitElement {
   @property({ attribute: false }) formatNumber: (v: number | null, d?: number) => string =
     (v) => (v === null ? "—" : String(v));
 
-  /** Percentage points away from the group before a pack is called out. */
-  @property({ type: Number }) tolerance = 5;
+  /**
+   * Spread across the whole stack, and where it starts to mean something.
+   *
+   * Passed in rather than judged here, so the columns, the spread tile and the
+   * table all call the same packs odd - a column outlined in warn while the
+   * tile above it reads green is how a reader learns to ignore both.
+   */
+  @property({ type: Number }) spread: number | null = null;
+  @property({ type: Number }) spreadWarn = SPREAD_WARN_PP;
 
   static styles = [
     baseStyles,
@@ -199,10 +207,12 @@ export class MkPackBars extends LitElement {
         style="grid-template-columns: repeat(${this.packs.length}, minmax(52px, 1fr))"
       >
         ${this.packs.map((pack) => {
-          const flagged =
-            median !== null &&
-            pack.soc !== null &&
-            Math.abs(pack.soc - median) > this.tolerance;
+          const flagged = packIsOutlier(
+            pack.soc,
+            median,
+            this.spread,
+            this.spreadWarn,
+          );
           const height = pack.soc === null ? 0 : Math.min(Math.max(pack.soc, 0), 100);
 
           return html`

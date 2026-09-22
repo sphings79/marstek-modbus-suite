@@ -159,7 +159,7 @@ export const en: Record<string, string> = {
   "packs.none": "This battery reports no per-pack state of charge.",
   "packs.table_title": "Every pack in detail",
   "packs.table_legend":
-    "Highlighted rows sit {points} % or further from the median pack. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
+    "Nothing is highlighted until the spread above reaches {spread} %; then the packs further than {points} % from the median pack are. While the stack stays together, columns and rows stay quiet. A pack that reports a high SOC at a low cell voltage is worth a second look: the two readings disagree.",
   "packs.conducting": "conducting now",
   "packs.col_soc": "SOC",
   "packs.col_energy": "kWh",
