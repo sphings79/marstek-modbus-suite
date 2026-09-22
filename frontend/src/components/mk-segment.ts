@@ -42,13 +42,23 @@ export class MkSegment extends LitElement {
         line-height: 1.5;
         margin: -3px 0 7px;
       }
+      /* Options that do not fit beside each other drop onto their own row
+         instead of pushing the bar - and the whole page with it - out past
+         the edge of a phone. The polling choice spells out what pausing does
+         to the entities, which is three sentences wide; the mode choice is
+         three words and stays on one line where it always was. */
       .bar {
         display: flex;
+        flex-wrap: wrap;
         border: 1px solid var(--mk-line);
         background: var(--mk-inset);
+        /* Clips each button's separator where it would land on the frame. */
+        overflow: hidden;
       }
       button {
-        flex: 1;
+        flex: 1 1 auto;
+        /* Without this a flex item refuses to shrink below its text. */
+        min-width: 0;
         font-family: var(--mk-mono);
         font-size: 10.5px;
         letter-spacing: 0.1em;
@@ -57,13 +67,13 @@ export class MkSegment extends LitElement {
         color: var(--mk-dim);
         background: none;
         border: 0;
-        border-right: 1px solid var(--mk-line);
         cursor: pointer;
         transition: color 0.15s, background 0.15s;
-        white-space: nowrap;
-      }
-      button:last-child {
-        border-right: 0;
+        overflow-wrap: break-word;
+        /* Drawn rather than bordered: a border only ever divides one way, and
+           these sit beside each other on a wide panel and above each other on
+           a narrow one. */
+        box-shadow: 1px 0 0 var(--mk-line), 0 1px 0 var(--mk-line);
       }
       button:hover:not(:disabled) {
         color: var(--mk-fg-2);
@@ -76,7 +86,8 @@ export class MkSegment extends LitElement {
       button.pending[aria-pressed="true"] {
         color: var(--mk-warn);
         background: transparent;
-        box-shadow: inset 0 -2px 0 var(--mk-warn);
+        box-shadow: inset 0 -2px 0 var(--mk-warn), 1px 0 0 var(--mk-line),
+          0 1px 0 var(--mk-line);
       }
       button:disabled {
         opacity: 0.4;

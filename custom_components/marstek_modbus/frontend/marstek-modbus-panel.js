@@ -327,14 +327,14 @@
         fill: var(--mk-magenta);
         font-size: 14px;
       }
-    `];ct([h({type:Number})],B.prototype,"soc",2);ct([h({type:Number})],B.prototype,"usable",2);ct([h({type:String})],B.prototype,"caption",2);ct([h({type:String})],B.prototype,"sub",2);B=ct([k("mk-gauge")],B);var vs=Object.defineProperty,bs=Object.getOwnPropertyDescriptor,I=(e,t,s,a)=>{for(var i=a>1?void 0:a?bs(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&vs(t,s,i),i};let E=class extends _{constructor(){super(...arguments),this.label="",this.value="—",this.unit="",this.foot="",this.tone="",this.bar=null,this.max=null}get fill(){return this.bar===null||this.max===null||this.max===0?null:Math.min(Math.max(this.bar/this.max*100,0),100)}render(){const e=this.fill;return o`
+    `];ct([h({type:Number})],B.prototype,"soc",2);ct([h({type:Number})],B.prototype,"usable",2);ct([h({type:String})],B.prototype,"caption",2);ct([h({type:String})],B.prototype,"sub",2);B=ct([k("mk-gauge")],B);var vs=Object.defineProperty,bs=Object.getOwnPropertyDescriptor,I=(e,t,s,a)=>{for(var i=a>1?void 0:a?bs(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&vs(t,s,i),i};let O=class extends _{constructor(){super(...arguments),this.label="",this.value="—",this.unit="",this.foot="",this.tone="",this.bar=null,this.max=null}get fill(){return this.bar===null||this.max===null||this.max===0?null:Math.min(Math.max(this.bar/this.max*100,0),100)}render(){const e=this.fill;return o`
       <div class="label">${this.label}</div>
       <div class="num ${this.tone}">
         ${this.value}${this.unit?o`<span class="unit">${this.unit}</span>`:p}
       </div>
       ${e===null?p:o`<div class="track"><i style="width:${e}%"></i></div>`}
       ${this.foot?o`<div class="foot">${this.foot}</div>`:p}
-    `}};E.styles=[b,v`
+    `}};O.styles=[b,v`
       :host {
         display: block;
         background: var(--mk-surface);
@@ -388,7 +388,7 @@
       :host([tone="magenta"]) .track > i {
         background: var(--mk-magenta);
       }
-    `];I([h({type:String})],E.prototype,"label",2);I([h({type:String})],E.prototype,"value",2);I([h({type:String})],E.prototype,"unit",2);I([h({type:String})],E.prototype,"foot",2);I([h({type:String})],E.prototype,"tone",2);I([h({type:Number})],E.prototype,"bar",2);I([h({type:Number})],E.prototype,"max",2);E=I([k("mk-stat")],E);const ks=.05,ye=.1;function we(e){return e===null?"":e>=ye?"crit":e>=ks?"warn":"ok"}function xe(e){const t=we(e);return t==="ok"?"":t}const dt=19,Ft=25,At=5,Ct=60,le=1;function $s(e){return e+5}function _s(e,t=dt,s=Ft){return e===null?"":e>=s?"crit":e>=t?"warn":"ok"}function Se(e,t,s,a=dt){return e===null||t===null||s===null||s<a?!1:Math.abs(e-t)>a/2}var ys=Object.getOwnPropertyDescriptor,ws=(e,t,s,a)=>{for(var i=a>1?void 0:a?ys(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const xs=30;let Pt=class extends S{render(){const e=this.reader,t=this.fmt,s=this.t,a=e.num("battery_soc"),i=e.num("battery_total_energy"),n=e.num("stored_energy"),r=e.num("battery_power"),l=e.num("usable_energy"),c=l!==null&&i?l/i*100:null,d=r!==null&&Math.abs(r)>xs,m=d&&r<0,u=e.packCount();return o`
+    `];I([h({type:String})],O.prototype,"label",2);I([h({type:String})],O.prototype,"value",2);I([h({type:String})],O.prototype,"unit",2);I([h({type:String})],O.prototype,"foot",2);I([h({type:String})],O.prototype,"tone",2);I([h({type:Number})],O.prototype,"bar",2);I([h({type:Number})],O.prototype,"max",2);O=I([k("mk-stat")],O);const ks=.05,ye=.1;function we(e){return e===null?"":e>=ye?"crit":e>=ks?"warn":"ok"}function xe(e){const t=we(e);return t==="ok"?"":t}const dt=19,Ft=25,At=5,Ct=60,le=1;function $s(e){return e+5}function _s(e,t=dt,s=Ft){return e===null?"":e>=s?"crit":e>=t?"warn":"ok"}function Se(e,t,s,a=dt){return e===null||t===null||s===null||s<a?!1:Math.abs(e-t)>a/2}var ys=Object.getOwnPropertyDescriptor,ws=(e,t,s,a)=>{for(var i=a>1?void 0:a?ys(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const xs=30;let Pt=class extends S{render(){const e=this.reader,t=this.fmt,s=this.t,a=e.num("battery_soc"),i=e.num("battery_total_energy"),n=e.num("stored_energy"),r=e.num("battery_power"),l=e.num("usable_energy"),c=l!==null&&i?l/i*100:null,d=r!==null&&Math.abs(r)>xs,m=d&&r<0,u=e.packCount();return o`
       <div class="top">
         <div class="panel">
           <div class="label" style="margin-bottom:12px">${s("core.electrical")}</div>
@@ -807,7 +807,7 @@
           grid-template-columns: 1fr;
         }
       }
-    `];Tt=Ps([k("mk-view-cells")],Tt);var Es=Object.defineProperty,Os=Object.getOwnPropertyDescriptor,R=(e,t,s,a)=>{for(var i=a>1?void 0:a?Os(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&Es(t,s,i),i};let P=class extends _{constructor(){super(...arguments),this.packs=[],this.floor=null,this.backupFloor=null,this.packLabel="PACK",this.energyUnit="kWh",this.formatNumber=e=>e===null?"—":String(e),this.spread=null,this.spreadWarn=dt}fill(e){if(e===null)return"var(--mk-track)";const t=Math.min(Math.max(e,0),100)/100,s=t<.5?4+41*(t/.5):45+95*((t-.5)/.5);return`linear-gradient(180deg, hsl(${s.toFixed(0)} 74% 56%), hsl(${s.toFixed(0)} 68% 43%))`}render(){if(!this.packs.length)return p;const e=this.packs.map(s=>s.soc).filter(s=>s!==null).sort((s,a)=>s-a),t=e.length?e[Math.floor(e.length/2)]:null;return o`
+    `];Tt=Ps([k("mk-view-cells")],Tt);var Os=Object.defineProperty,Es=Object.getOwnPropertyDescriptor,R=(e,t,s,a)=>{for(var i=a>1?void 0:a?Es(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&Os(t,s,i),i};let P=class extends _{constructor(){super(...arguments),this.packs=[],this.floor=null,this.backupFloor=null,this.packLabel="PACK",this.energyUnit="kWh",this.formatNumber=e=>e===null?"—":String(e),this.spread=null,this.spreadWarn=dt}fill(e){if(e===null)return"var(--mk-track)";const t=Math.min(Math.max(e,0),100)/100,s=t<.5?4+41*(t/.5):45+95*((t-.5)/.5);return`linear-gradient(180deg, hsl(${s.toFixed(0)} 74% 56%), hsl(${s.toFixed(0)} 68% 43%))`}render(){if(!this.packs.length)return p;const e=this.packs.map(s=>s.soc).filter(s=>s!==null).sort((s,a)=>s-a),t=e.length?e[Math.floor(e.length/2)]:null;return o`
       <div class="scroll">
       <div
         class="rack"
@@ -1117,7 +1117,7 @@
       .table-wrap {
         margin-top: var(--mk-gap);
       }
-    `];gt=Ns([k("mk-view-packs")],gt);var Ds=Object.getOwnPropertyDescriptor,Rs=(e,t,s,a)=>{for(var i=a>1?void 0:a?Ds(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const et=[1,2,3,4],ce=1;let Et=class extends S{render(){const e=this.reader,t=this.fmt,s=this.t,a=et.map(l=>e.num(`mppt${l}_power`)),i=e.sum(et.map(l=>`mppt${l}_power`)),n=Math.max(...a.map(l=>l??0),1),r=a.some(l=>l!==null&&l>ce);return et.some(l=>e.entityId(`mppt${l}_power`))?o`
+    `];gt=Ns([k("mk-view-packs")],gt);var Ds=Object.getOwnPropertyDescriptor,Rs=(e,t,s,a)=>{for(var i=a>1?void 0:a?Ds(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const et=[1,2,3,4],ce=1;let Ot=class extends S{render(){const e=this.reader,t=this.fmt,s=this.t,a=et.map(l=>e.num(`mppt${l}_power`)),i=e.sum(et.map(l=>`mppt${l}_power`)),n=Math.max(...a.map(l=>l??0),1),r=a.some(l=>l!==null&&l>ce);return et.some(l=>e.entityId(`mppt${l}_power`))?o`
       <div class="grid channels">
         ${et.map(l=>{const c=e.num(`mppt${l}_power`),d=c!==null&&c>ce;return o`
             <div class="panel">
@@ -1162,7 +1162,7 @@
           ${i===null?p:this.row(s("solar.channels_reporting"),`${a.filter(l=>l!==null).length} / ${et.length}`)}
         </div>
       </div>
-    `:o`<div class="panel"><div class="note">${s("solar.none")}</div></div>`}};Et.styles=[b,v`
+    `:o`<div class="panel"><div class="note">${s("solar.none")}</div></div>`}};Ot.styles=[b,v`
       .channels {
         grid-template-columns: repeat(4, 1fr);
       }
@@ -1218,7 +1218,7 @@
         display: block;
         background: var(--mk-accent);
       }
-    `];Et=Rs([k("mk-view-solar")],Et);var zs=Object.getOwnPropertyDescriptor,Ls=(e,t,s,a)=>{for(var i=a>1?void 0:a?zs(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const Ws=[{titleKey:"energy.today",charge:["total_daily_ac_input_energy","total_daily_charging_energy"],discharge:["total_daily_ac_output_energy","total_daily_discharging_energy"]},{titleKey:"energy.month",charge:["total_monthly_ac_input_energy","total_monthly_charging_energy"],discharge:["total_monthly_ac_output_energy","total_monthly_discharging_energy"],efficiency:"round_trip_efficiency_monthly"},{titleKey:"energy.lifetime",charge:["total_ac_input_energy","total_charging_energy"],discharge:["total_ac_output_energy","total_discharging_energy"],efficiency:"round_trip_efficiency_total"}];let Ot=class extends S{render(){const e=this.t;return o`
+    `];Ot=Rs([k("mk-view-solar")],Ot);var zs=Object.getOwnPropertyDescriptor,Ls=(e,t,s,a)=>{for(var i=a>1?void 0:a?zs(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const Ws=[{titleKey:"energy.today",charge:["total_daily_ac_input_energy","total_daily_charging_energy"],discharge:["total_daily_ac_output_energy","total_daily_discharging_energy"]},{titleKey:"energy.month",charge:["total_monthly_ac_input_energy","total_monthly_charging_energy"],discharge:["total_monthly_ac_output_energy","total_monthly_discharging_energy"],efficiency:"round_trip_efficiency_monthly"},{titleKey:"energy.lifetime",charge:["total_ac_input_energy","total_charging_energy"],discharge:["total_ac_output_energy","total_discharging_energy"],efficiency:"round_trip_efficiency_total"}];let Et=class extends S{render(){const e=this.t;return o`
       <div class="grid periods">${Ws.map(t=>this.period(t))}</div>
       <div class="grid below">
         ${this.efficiencyPanel()}
@@ -1282,7 +1282,7 @@
               ${s("energy.gap_hint",{value:t.num(Math.abs(r),1)})}
             </div>`}
       </div>
-    `}};Ot.styles=[b,v`
+    `}};Et.styles=[b,v`
       .periods {
         grid-template-columns: repeat(3, 1fr);
       }
@@ -1352,7 +1352,7 @@
         justify-content: space-between;
         align-items: baseline;
       }
-    `];Ot=Ls([k("mk-view-energy")],Ot);var Is=Object.getOwnPropertyDescriptor,Us=(e,t,s,a)=>{for(var i=a>1?void 0:a?Is(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const de=["alarm_status","fault_status","fault_status_low","fault_status_2","fault_status_2_low","mppt_error","mppt_warning"];let Mt=class extends S{render(){const e=this.reader,t=this.t,s=de.filter(a=>{const i=e.num(a);return i!==null&&i!==0});return o`
+    `];Et=Ls([k("mk-view-energy")],Et);var Is=Object.getOwnPropertyDescriptor,Us=(e,t,s,a)=>{for(var i=a>1?void 0:a?Is(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=r(i)||i);return i};const de=["alarm_status","fault_status","fault_status_low","fault_status_2","fault_status_2_low","mppt_error","mppt_warning"];let Mt=class extends S{render(){const e=this.reader,t=this.t,s=de.filter(a=>{const i=e.num(a);return i!==null&&i!==0});return o`
       <div class="banner ${s.length?"crit":"ok"}">
         <span class="dot"></span>
         ${s.length?t("system.faults_raised",{list:s.map(a=>e.label(a)).join(", ")}):t("system.no_faults")}
@@ -1548,7 +1548,7 @@
         justify-content: space-between;
         margin-top: 5px;
       }
-    `];C([h({type:String})],w.prototype,"label",2);C([h({type:Number})],w.prototype,"value",2);C([h({type:Number})],w.prototype,"min",2);C([h({type:Number})],w.prototype,"max",2);C([h({type:Number})],w.prototype,"step",2);C([h({type:String})],w.prototype,"unit",2);C([h({type:Boolean})],w.prototype,"disabled",2);C([h({attribute:!1})],w.prototype,"formatNumber",2);C([h({attribute:!1})],w.prototype,"onCommit",2);C([$()],w.prototype,"dragging",2);C([$()],w.prototype,"pending",2);w=C([k("mk-slider")],w);var Hs=Object.defineProperty,Vs=Object.getOwnPropertyDescriptor,U=(e,t,s,a)=>{for(var i=a>1?void 0:a?Vs(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&Hs(t,s,i),i};let O=class extends _{constructor(){super(...arguments),this.label="",this.hint="",this.options=[],this.value=null,this.disabled=!1,this.pending=null}willUpdate(e){e.has("value")&&this.pending!==null&&this.value===this.pending&&(this.pending=null)}render(){const e=this.pending??this.value;return o`
+    `];C([h({type:String})],w.prototype,"label",2);C([h({type:Number})],w.prototype,"value",2);C([h({type:Number})],w.prototype,"min",2);C([h({type:Number})],w.prototype,"max",2);C([h({type:Number})],w.prototype,"step",2);C([h({type:String})],w.prototype,"unit",2);C([h({type:Boolean})],w.prototype,"disabled",2);C([h({attribute:!1})],w.prototype,"formatNumber",2);C([h({attribute:!1})],w.prototype,"onCommit",2);C([$()],w.prototype,"dragging",2);C([$()],w.prototype,"pending",2);w=C([k("mk-slider")],w);var Hs=Object.defineProperty,Vs=Object.getOwnPropertyDescriptor,U=(e,t,s,a)=>{for(var i=a>1?void 0:a?Vs(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&Hs(t,s,i),i};let E=class extends _{constructor(){super(...arguments),this.label="",this.hint="",this.options=[],this.value=null,this.disabled=!1,this.pending=null}willUpdate(e){e.has("value")&&this.pending!==null&&this.value===this.pending&&(this.pending=null)}render(){const e=this.pending??this.value;return o`
       <span class="label">${this.label}</span>
       ${this.hint?o`<span class="hint">${this.hint}</span>`:p}
       <div class="bar" role="group" aria-label=${this.label}>
@@ -1563,7 +1563,7 @@
             </button>
           `)}
       </div>
-    `}pick(e){e!==this.value&&(this.pending=e,this.onSelect?.(e))}};O.styles=[b,v`
+    `}pick(e){e!==this.value&&(this.pending=e,this.onSelect?.(e))}};E.styles=[b,v`
       :host {
         display: block;
       }
@@ -1579,13 +1579,23 @@
         line-height: 1.5;
         margin: -3px 0 7px;
       }
+      /* Options that do not fit beside each other drop onto their own row
+         instead of pushing the bar - and the whole page with it - out past
+         the edge of a phone. The polling choice spells out what pausing does
+         to the entities, which is three sentences wide; the mode choice is
+         three words and stays on one line where it always was. */
       .bar {
         display: flex;
+        flex-wrap: wrap;
         border: 1px solid var(--mk-line);
         background: var(--mk-inset);
+        /* Clips each button's separator where it would land on the frame. */
+        overflow: hidden;
       }
       button {
-        flex: 1;
+        flex: 1 1 auto;
+        /* Without this a flex item refuses to shrink below its text. */
+        min-width: 0;
         font-family: var(--mk-mono);
         font-size: 10.5px;
         letter-spacing: 0.1em;
@@ -1594,13 +1604,13 @@
         color: var(--mk-dim);
         background: none;
         border: 0;
-        border-right: 1px solid var(--mk-line);
         cursor: pointer;
         transition: color 0.15s, background 0.15s;
-        white-space: nowrap;
-      }
-      button:last-child {
-        border-right: 0;
+        overflow-wrap: break-word;
+        /* Drawn rather than bordered: a border only ever divides one way, and
+           these sit beside each other on a wide panel and above each other on
+           a narrow one. */
+        box-shadow: 1px 0 0 var(--mk-line), 0 1px 0 var(--mk-line);
       }
       button:hover:not(:disabled) {
         color: var(--mk-fg-2);
@@ -1613,7 +1623,8 @@
       button.pending[aria-pressed="true"] {
         color: var(--mk-warn);
         background: transparent;
-        box-shadow: inset 0 -2px 0 var(--mk-warn);
+        box-shadow: inset 0 -2px 0 var(--mk-warn), 1px 0 0 var(--mk-line),
+          0 1px 0 var(--mk-line);
       }
       button:disabled {
         opacity: 0.4;
@@ -1623,7 +1634,7 @@
         outline: 2px solid var(--mk-accent);
         outline-offset: -2px;
       }
-    `];U([h({type:String})],O.prototype,"label",2);U([h({type:String})],O.prototype,"hint",2);U([h({attribute:!1})],O.prototype,"options",2);U([h({type:String})],O.prototype,"value",2);U([h({type:Boolean})],O.prototype,"disabled",2);U([h({attribute:!1})],O.prototype,"onSelect",2);U([$()],O.prototype,"pending",2);O=U([k("mk-segment")],O);var Bs=Object.defineProperty,Ks=Object.getOwnPropertyDescriptor,j=(e,t,s,a)=>{for(var i=a>1?void 0:a?Ks(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&Bs(t,s,i),i};let M=class extends _{constructor(){super(...arguments),this.label="",this.hint="",this.bare=!1,this.checked=null,this.disabled=!1,this.pending=null}willUpdate(e){e.has("checked")&&this.pending!==null&&this.checked===this.pending&&(this.pending=null)}render(){const e=this.pending??this.checked;return o`
+    `];U([h({type:String})],E.prototype,"label",2);U([h({type:String})],E.prototype,"hint",2);U([h({attribute:!1})],E.prototype,"options",2);U([h({type:String})],E.prototype,"value",2);U([h({type:Boolean})],E.prototype,"disabled",2);U([h({attribute:!1})],E.prototype,"onSelect",2);U([$()],E.prototype,"pending",2);E=U([k("mk-segment")],E);var Bs=Object.defineProperty,Ks=Object.getOwnPropertyDescriptor,j=(e,t,s,a)=>{for(var i=a>1?void 0:a?Ks(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&Bs(t,s,i),i};let M=class extends _{constructor(){super(...arguments),this.label="",this.hint="",this.bare=!1,this.checked=null,this.disabled=!1,this.pending=null}willUpdate(e){e.has("checked")&&this.pending!==null&&this.checked===this.pending&&(this.pending=null)}render(){const e=this.pending??this.checked;return o`
       ${this.bare?p:o`
             <div class="text">
               <div class="name">${this.label}</div>
@@ -2551,7 +2562,7 @@
         outline: 2px solid var(--mk-accent);
         outline-offset: 2px;
       }
-    `];x([h({attribute:!1})],y.prototype,"settings",2);x([h({attribute:!1})],y.prototype,"local",2);x([h({attribute:!1})],y.prototype,"tabs",2);x([h({attribute:!1})],y.prototype,"t",2);x([h({attribute:!1})],y.prototype,"onChange",2);x([h({attribute:!1})],y.prototype,"onChangeLocal",2);x([h({attribute:!1})],y.prototype,"onReset",2);x([h({type:Boolean})],y.prototype,"offline",2);x([h({type:Boolean})],y.prototype,"light",2);x([$()],y.prototype,"transferOpen",2);x([$()],y.prototype,"transferText",2);x([$()],y.prototype,"transferBad",2);y=x([k("mk-view-settings")],y);var fa=Object.defineProperty,ga=Object.getOwnPropertyDescriptor,N=(e,t,s,a)=>{for(var i=a>1?void 0:a?ga(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&fa(t,s,i),i};const wt=["core","cells","packs","solar","energy","control","system"],va={cells:"battery_1_max_cell_voltage",packs:"battery_soc_1",solar:"mppt1_power",control:"set_charge_power"},Ee="marstek-panel.device",Oe="marstek-panel.tab";let A=class extends _{constructor(){super(...arguments),this.narrow=!1,this.settings={...D},this.local=la(),this.settingsOffline=!1,this.tab="core",this.showSettings=!1,this.strings=rt,this.deviceId=ka(),this.catalogueFor="",this.appearanceFor="",this.layoutFor="",this.sharedRequested=!1,this.formatter=new oe("en"),this.markTabEdges=()=>{const e=this.renderRoot.querySelector("nav");if(!e)return;e.dataset.bound||(e.dataset.bound="1",e.addEventListener("scroll",this.markTabEdges,{passive:!0}),new ResizeObserver(this.markTabEdges).observe(e));const t=e.scrollLeft>1,s=e.scrollLeft+e.clientWidth<e.scrollWidth-1;e.dataset.edge=t&&s?"both":t?"left":s?"right":"none"},this.t=(e,t)=>ps(this.strings,e,t)}connectedCallback(){super.connectedCallback(),this.tab=this.startingTab()}willUpdate(e){if(this.applyLayout(),!this.hass||(this.loadShared(),!e.has("hass")&&!e.has("settings")))return;this.applyAppearance();const t=this.hass.language||"en",s=this.settings.extraDigits?1:0;(t!==this.catalogueFor||this.formatter.extraDigits!==s)&&(this.formatter=new oe(t,s)),t!==this.catalogueFor&&(this.catalogueFor=t,ds(t).then(a=>{this.catalogueFor===t&&(this.strings=a)}))}applyAppearance(){const e=this.settings.mode,t=e==="auto"?!this.hass.themes?.darkMode:e==="light",s=`${this.settings.scheme}/${t}`;s!==this.appearanceFor&&(this.appearanceFor=s,this.toggleAttribute("light",t),Qs(this,this.settings.scheme,t))}applyLayout(){const{fontScale:e,maxWidth:t}=this.local,s=`${e}/${t}`;if(s===this.layoutFor)return;this.layoutFor=s;const a=e/100;this.style.setProperty("--mk-zoom",String(a)),this.style.setProperty("--mk-max-width",t==="full"?"none":`${t/a}px`)}loadShared(){this.sharedRequested||(this.sharedRequested=!0,pa(this.hass).then(e=>{if(e===null){this.settingsOffline=!0;return}this.settings=e,this.tab=this.startingTab()}))}startingTab(){const e=this.settings.startTab==="last"?ba():this.settings.startTab;return wt.includes(e)?e:"core"}update_(e){this.settings={...this.settings,...e},Dt(this.hass,this.settings)}updateLocal(e){this.local={...this.local,...e},ca(this.local)}resetSettings(){this.settings={...D},Dt(this.hass,this.settings),da(),this.local={...ot}}openTab(e){this.tab=e,this.showSettings=!1;try{localStorage.setItem(Oe,e)}catch{}}updated(){this.markTabEdges()}selectDevice(e){this.deviceId=e;try{localStorage.setItem(Ee,e)}catch{}}tabsFor(e){return wt.filter(t=>this.supports(e,t)&&(t==="core"||!this.settings.hiddenTabs.includes(t)))}supports(e,t){const s=va[t];return!s||e.entityId(s)!==void 0}tabChoices(e){return wt.map(t=>({id:t,label:this.t(`tab.${t}`),available:this.supports(e,t)}))}get devices(){return this.hass?as(this.hass):[]}get device(){const e=this.devices;return e.length?e.find(t=>t.deviceId===this.deviceId)??e[0]:null}render(){if(!this.hass)return p;const e=this.device;if(!e)return o`
+    `];x([h({attribute:!1})],y.prototype,"settings",2);x([h({attribute:!1})],y.prototype,"local",2);x([h({attribute:!1})],y.prototype,"tabs",2);x([h({attribute:!1})],y.prototype,"t",2);x([h({attribute:!1})],y.prototype,"onChange",2);x([h({attribute:!1})],y.prototype,"onChangeLocal",2);x([h({attribute:!1})],y.prototype,"onReset",2);x([h({type:Boolean})],y.prototype,"offline",2);x([h({type:Boolean})],y.prototype,"light",2);x([$()],y.prototype,"transferOpen",2);x([$()],y.prototype,"transferText",2);x([$()],y.prototype,"transferBad",2);y=x([k("mk-view-settings")],y);var fa=Object.defineProperty,ga=Object.getOwnPropertyDescriptor,N=(e,t,s,a)=>{for(var i=a>1?void 0:a?ga(t,s):t,n=e.length-1,r;n>=0;n--)(r=e[n])&&(i=(a?r(t,s,i):r(i))||i);return a&&i&&fa(t,s,i),i};const wt=["core","cells","packs","solar","energy","control","system"],va={cells:"battery_1_max_cell_voltage",packs:"battery_soc_1",solar:"mppt1_power",control:"set_charge_power"},Oe="marstek-panel.device",Ee="marstek-panel.tab";let A=class extends _{constructor(){super(...arguments),this.narrow=!1,this.settings={...D},this.local=la(),this.settingsOffline=!1,this.tab="core",this.showSettings=!1,this.strings=rt,this.deviceId=ka(),this.catalogueFor="",this.appearanceFor="",this.layoutFor="",this.sharedRequested=!1,this.formatter=new oe("en"),this.markTabEdges=()=>{const e=this.renderRoot.querySelector("nav");if(!e)return;e.dataset.bound||(e.dataset.bound="1",e.addEventListener("scroll",this.markTabEdges,{passive:!0}),new ResizeObserver(this.markTabEdges).observe(e));const t=e.scrollLeft>1,s=e.scrollLeft+e.clientWidth<e.scrollWidth-1;e.dataset.edge=t&&s?"both":t?"left":s?"right":"none"},this.t=(e,t)=>ps(this.strings,e,t)}connectedCallback(){super.connectedCallback(),this.tab=this.startingTab()}willUpdate(e){if(this.applyLayout(),!this.hass||(this.loadShared(),!e.has("hass")&&!e.has("settings")))return;this.applyAppearance();const t=this.hass.language||"en",s=this.settings.extraDigits?1:0;(t!==this.catalogueFor||this.formatter.extraDigits!==s)&&(this.formatter=new oe(t,s)),t!==this.catalogueFor&&(this.catalogueFor=t,ds(t).then(a=>{this.catalogueFor===t&&(this.strings=a)}))}applyAppearance(){const e=this.settings.mode,t=e==="auto"?!this.hass.themes?.darkMode:e==="light",s=`${this.settings.scheme}/${t}`;s!==this.appearanceFor&&(this.appearanceFor=s,this.toggleAttribute("light",t),Qs(this,this.settings.scheme,t))}applyLayout(){const{fontScale:e,maxWidth:t}=this.local,s=`${e}/${t}`;if(s===this.layoutFor)return;this.layoutFor=s;const a=e/100;this.style.setProperty("--mk-zoom",String(a)),this.style.setProperty("--mk-max-width",t==="full"?"none":`${t/a}px`)}loadShared(){this.sharedRequested||(this.sharedRequested=!0,pa(this.hass).then(e=>{if(e===null){this.settingsOffline=!0;return}this.settings=e,this.tab=this.startingTab()}))}startingTab(){const e=this.settings.startTab==="last"?ba():this.settings.startTab;return wt.includes(e)?e:"core"}update_(e){this.settings={...this.settings,...e},Dt(this.hass,this.settings)}updateLocal(e){this.local={...this.local,...e},ca(this.local)}resetSettings(){this.settings={...D},Dt(this.hass,this.settings),da(),this.local={...ot}}openTab(e){this.tab=e,this.showSettings=!1;try{localStorage.setItem(Ee,e)}catch{}}updated(){this.markTabEdges()}selectDevice(e){this.deviceId=e;try{localStorage.setItem(Oe,e)}catch{}}tabsFor(e){return wt.filter(t=>this.supports(e,t)&&(t==="core"||!this.settings.hiddenTabs.includes(t)))}supports(e,t){const s=va[t];return!s||e.entityId(s)!==void 0}tabChoices(e){return wt.map(t=>({id:t,label:this.t(`tab.${t}`),available:this.supports(e,t)}))}get devices(){return this.hass?as(this.hass):[]}get device(){const e=this.devices;return e.length?e.find(t=>t.deviceId===this.deviceId)??e[0]:null}render(){if(!this.hass)return p;const e=this.device;if(!e)return o`
         <div class="shell">
           <div class="empty">
             <h2>${this.t("empty.no_device")}</h2>
@@ -2889,4 +2900,4 @@
         color: var(--mk-dim);
         letter-spacing: 0.1em;
       }
-    `];N([h({attribute:!1})],A.prototype,"hass",2);N([h({type:Boolean})],A.prototype,"narrow",2);N([$()],A.prototype,"settings",2);N([$()],A.prototype,"local",2);N([$()],A.prototype,"settingsOffline",2);N([$()],A.prototype,"tab",2);N([$()],A.prototype,"showSettings",2);N([$()],A.prototype,"strings",2);N([$()],A.prototype,"deviceId",2);A=N([k("marstek-modbus-panel")],A);function ba(){try{return localStorage.getItem(Oe)}catch{return null}}function ka(){try{return localStorage.getItem(Ee)}catch{return null}}
+    `];N([h({attribute:!1})],A.prototype,"hass",2);N([h({type:Boolean})],A.prototype,"narrow",2);N([$()],A.prototype,"settings",2);N([$()],A.prototype,"local",2);N([$()],A.prototype,"settingsOffline",2);N([$()],A.prototype,"tab",2);N([$()],A.prototype,"showSettings",2);N([$()],A.prototype,"strings",2);N([$()],A.prototype,"deviceId",2);A=N([k("marstek-modbus-panel")],A);function ba(){try{return localStorage.getItem(Ee)}catch{return null}}function ka(){try{return localStorage.getItem(Oe)}catch{return null}}
