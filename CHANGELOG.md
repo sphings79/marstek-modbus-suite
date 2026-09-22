@@ -5,6 +5,29 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.0.0-rc.1
+
+[beta.13](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0-beta.13)
+with one correction on top of it.
+
+### PV passthrough now needs the strings to be producing
+
+beta.13 renamed the derived state to PV passthrough and reserved the word
+Bypass for what the register actually means. The condition behind the derived
+one was still only "charging and delivering at once", which is a claim about
+where the energy comes from that nothing checked.
+
+On a Venus A or D it makes no difference: `battery_power` is the DC measurement
+point plus the strings, and delivering to the house drives that point negative,
+so the two forms agree - 72 firings either way across eleven minutes of real
+readings, not one of them different.
+
+It matters on the two Venus E generations. They have no PV input and no
+`solar_power_total` at all, so the old condition would have labelled any
+overlap of charging and delivering as PV passthrough on a device whose DC bus
+carries nothing but its packs. The label now needs a reading only a model with
+strings has, and an E falls through to whatever the register says.
+
 ## 3.0.0-beta.13
 
 Mostly the panel, plus two sensors that were never going to work on a stack
