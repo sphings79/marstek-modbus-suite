@@ -16,6 +16,8 @@ export const en: Record<string, string> = {
 
   // ---- control ----
   "tab.control": "CONTROL",
+  "update.available": "A new version of the integration is installed. This page still runs the old one.",
+  "update.reload": "Reload",
   "control.power": "Power now",
   "control.power_hint":
     "These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.",

@@ -1,5 +1,6 @@
 import { html, css, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
+import { customElement } from "../define";
 import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
 import type { DeviceControls } from "../controls";

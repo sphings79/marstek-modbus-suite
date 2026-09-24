@@ -8,6 +8,8 @@ export const de: Record<string, string> = {
 
   // ---- Steuerung ----
   "tab.control": "STEUERUNG",
+  "update.available": "Eine neue Version der Integration ist installiert. Diese Seite läuft noch mit der alten.",
+  "update.reload": "Neu laden",
   "control.power": "Leistung jetzt",
   "control.power_hint":
     "Diese beiden setzen den Betriebspunkt direkt. Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager — schreibt dieselben Register und gewinnt innerhalb von Sekunden.",

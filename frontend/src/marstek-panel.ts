@@ -1,5 +1,11 @@
 import { LitElement, html, css, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
+import {
+  customElement,
+  BUNDLE_VERSION,
+  BUNDLE_LOADED_EVENT,
+  latestBundleVersion,
+} from "./define";
 import { themeStyles, baseStyles } from "./styles";
 import { findDevices, DeviceReader, type MarstekDevice } from "./entities";
 import type { HassEntity } from "./types";
@@ -75,6 +81,8 @@ export class MarstekPanel extends LitElement {
   @state() private showSettings = false;
   @state() private strings: Strings = en;
   @state() private deviceId: string | null = readStoredDevice();
+  /** Set once a newer bundle has been loaded into this window. */
+  @state() private updateReady = false;
 
   private catalogueFor = "";
   private appearanceFor = "";
@@ -291,6 +299,35 @@ export class MarstekPanel extends LitElement {
         }
       }
 
+      .update {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        padding: 9px 13px;
+        border: 1px solid var(--mk-accent);
+        background: var(--mk-accent-wash);
+        font-family: var(--mk-mono);
+        font-size: 11.5px;
+        color: var(--mk-fg);
+      }
+      .update button {
+        font-family: var(--mk-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 6px 12px;
+        color: var(--mk-accent);
+        background: var(--mk-inset);
+        border: 1px solid var(--mk-accent);
+        cursor: pointer;
+      }
+      .update button:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 2px;
+      }
+
       .empty {
         margin-top: 80px;
         text-align: center;
@@ -322,6 +359,28 @@ export class MarstekPanel extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.tab = this.startingTab();
+    window.addEventListener(BUNDLE_LOADED_EVENT, this.onBundleLoaded);
+    this.onBundleLoaded();
+  }
+
+  disconnectedCallback(): void {
+    window.removeEventListener(BUNDLE_LOADED_EVENT, this.onBundleLoaded);
+    super.disconnectedCallback();
+  }
+
+  /** This instance runs the code it was loaded with; a newer one needs a reload. */
+  private onBundleLoaded = () => {
+    this.updateReady = latestBundleVersion() !== BUNDLE_VERSION;
+  };
+
+  private updateNote() {
+    if (!this.updateReady) return nothing;
+    return html`
+      <div class="update" role="status">
+        <span>${this.t("update.available")}</span>
+        <button @click=${() => location.reload()}>${this.t("update.reload")}</button>
+      </div>
+    `;
   }
 
   protected willUpdate(changed: Map<string, unknown>): void {
@@ -539,6 +598,7 @@ export class MarstekPanel extends LitElement {
 
     return html`
       <div class="shell">
+        ${this.updateNote()}
         <header>
           <div class="brand">
             ${/^marstek/i.test(device.name)
