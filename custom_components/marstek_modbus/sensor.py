@@ -1102,16 +1102,11 @@ class MarstekRuntimeSensor(MarstekWindowSensor):
                 # shows the cap in the power itself.
                 changed |= self._learner.observe_cap(bms_version(active), active_soc, power)
 
-        finished = self._tracker.update(
-            dt_util.utcnow().timestamp(),
-            active,
-            socs[active] if active is not None else None,
-            power,
-        )
-        if finished is not None and active is not None:
-            band, energy = finished
+        finished = self._tracker.update(dt_util.utcnow().timestamp(), active, socs, power)
+        if finished is not None:
+            pack, band, energy = finished
             changed |= self._learner.observe_band_energy(
-                bms_version(active), band, energy, pack_wh_per_percent
+                bms_version(pack), band, energy, pack_wh_per_percent
             )
         if changed:
             self._save_learned()
@@ -1120,7 +1115,8 @@ class MarstekRuntimeSensor(MarstekWindowSensor):
             self._forecast_attrs = {}
             return 0.0
 
-        limits = [x for x in (live_cap, ac_limit) if x]
+        # The cap clamps the inverter setpoint; the battery sees it after losses.
+        limits = [x for x in (live_cap * self._efficiency if live_cap else None, ac_limit) if x]
         available, source, self._last_free_w = charge_forecast.available_power(
             power, min(limits) if limits else None, forced, self._last_free_w
         )
@@ -1133,7 +1129,7 @@ class MarstekRuntimeSensor(MarstekWindowSensor):
         )
         result = charge_forecast.simulate(
             socs, active, target, pack_wh_per_percent, models,
-            available, ac_limit, live_cap, delivered,
+            available, ac_limit, live_cap, delivered, self._efficiency,
         )
 
         versions = sorted({v for v in (bms_version(i) for i in range(len(socs))) if v})

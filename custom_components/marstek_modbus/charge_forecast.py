@@ -9,9 +9,9 @@ a table indexed by the pack's own state of charge and temperature, and the
 control firmware turns that current into a power cap: charge power limit =
 BMS voltage (32100) x BMS charge current limit (32106).
 
-Above 90 % that table steps the power down twice. Measured on a seven-pack
-Venus D: about 1270 W from 90 to 95 %, about 485 W from 95 to 100 %, per pack,
-one pack after the other. A countdown that divides the missing energy by the
+Above 90 % that table steps the current down twice. Measured on a seven-pack
+Venus D: 25 A from 90 to 95 %, 10 A from 95 to 100 %, which the battery sees as
+about 1250 W and 490 W, per pack, one pack after the other. A countdown that divides the missing energy by the
 current power therefore swings between far too short and far too long.
 
 The top band also takes far less energy than its five percent suggest: the BMS
@@ -36,10 +36,13 @@ BAND_EDGES = (90.0, 95.0)
 BANDS = ("bulk", "stage1", "stage2")
 TAPER_BANDS = ("stage1", "stage2")
 
-# Battery-side watts measured on a seven-pack Venus D (BMS 118, 22.09.2026).
-# Only used until a band has been observed on the device itself. The bulk
-# figure is the BMS cap (50 A at ~53 V); the AC limit usually binds below it.
-DEFAULT_BAND_CAPS_W = {"bulk": 2650.0, "stage1": 1270.0, "stage2": 485.0}
+# The charge power cap per band as the control firmware computes it: BMS
+# voltage times the BMS charge current limit, read on a seven-pack Venus D
+# (BMS 118, 24.09.2026) - 50 A, 25 A and 10 A at about 54-55 V. The control
+# clamps its inverter setpoint to this, so the battery sees it times the
+# conversion efficiency: ~1250 W and ~490 W in the two taper bands. Only used
+# until a band has been observed on the device itself.
+DEFAULT_BAND_CAPS_W = {"bulk": 2700.0, "stage1": 1375.0, "stage2": 550.0}
 
 # Energy a band really takes, as a share of its nominal energy (band width x
 # pack energy per percent). Same measurement: 82-135 Wh in the middle band and
@@ -123,6 +126,7 @@ def simulate(
     ac_limit_w: float | None,
     live_cap_w: float | None = None,
     active_band_delivered_wh: float = 0.0,
+    cap_efficiency: float = 1.0,
 ) -> ForecastResult | None:
     """Replay the charge sequence and time it.
 
@@ -137,6 +141,9 @@ def simulate(
     active_band_delivered_wh: energy the active pack has already taken in the
                               band it is in; the top band's state of charge is
                               too unreliable to say how much is left
+    cap_efficiency:           battery power over inverter power. The caps are
+                              the control's clamp on its inverter setpoint, so
+                              the battery sees them times this
 
     Returns None when nothing can be forecast - no power, no packs.
     """
@@ -191,6 +198,7 @@ def simulate(
                     band_wh = (high - low) * pack_wh_per_percent * ratio
                     energy_wh = max(band_wh - active_band_delivered_wh, 0.05 * band_wh)
 
+            cap *= cap_efficiency
             power = min(available_w, cap, ac_limit_w or cap)
             if power <= 0:
                 return None
@@ -333,12 +341,12 @@ class BandLearner:
         if not 0.05 <= ratio <= 1.5:
             return False
 
+        # Unlike a cap, one pass is not representative: the top band took 24 Wh
+        # on one pack and 118 Wh on another. The first reading therefore moves
+        # the default rather than replacing it.
         entry = self._entry(bms_version, band)
-        previous = entry.get("r")
-        if not previous:
-            entry["r"] = round(ratio, 3)
-            return True
-        entry["r"] = round(float(previous) + self.ENERGY_ALPHA * (ratio - float(previous)), 3)
+        previous = float(entry.get("r") or DEFAULT_BAND_ENERGY_RATIO[band])
+        entry["r"] = round(previous + self.ENERGY_ALPHA * (ratio - previous), 3)
         return True
 
 
@@ -363,10 +371,16 @@ class BandEnergyTracker:
         return 0.0
 
     def update(
-        self, ts: float, pack: int | None, soc: float | None, power_w: float
-    ) -> tuple[str, float] | None:
-        """Advance by one reading. Returns (band, energy) when a clean band ends."""
-        if pack is None or soc is None:
+        self, ts: float, pack: int | None, socs: list[float], power_w: float
+    ) -> tuple[int, str, float] | None:
+        """Advance by one reading. Returns (pack, band, energy) when a clean band ends.
+
+        Takes every pack's state of charge, not just the active one's: the top
+        band usually ends in the same reading as the handover, so the pack that
+        just finished is only visible as the one that is no longer active.
+        """
+        soc = socs[pack] if pack is not None and 0 <= pack < len(socs) else None
+        if soc is None:
             self._reset(None, None, ts, clean=False)
             return None
 
@@ -381,7 +395,7 @@ class BandEnergyTracker:
             # The top band ends at 100 %, before the handover pause; a stop
             # anywhere below that breaks the pass.
             if band == "stage2" and soc >= FULL_SOC - 0.05:
-                finished = ("stage2", self.energy_wh) if self.clean else None
+                finished = (pack, "stage2", self.energy_wh) if self.clean else None
                 self.clean = False
                 return finished
             if not charging:
@@ -395,7 +409,17 @@ class BandEnergyTracker:
             and BANDS.index(band) == BANDS.index(self.band) + 1
         )
         if self.clean and moved_up and self.band == "stage1":
-            finished = ("stage1", self.energy_wh)
+            finished = (pack, "stage1", self.energy_wh)
+        elif (
+            self.clean
+            and self.band == "stage2"
+            and self.pack is not None
+            and pack != self.pack
+            and 0 <= self.pack < len(socs)
+            and socs[self.pack] >= FULL_SOC - 0.05
+        ):
+            # Handed over in the same reading that saw the pack reach full.
+            finished = (self.pack, "stage2", self.energy_wh)
 
         # Clean from here on only if the pack starts this band at its lower
         # edge: either it just crossed into it, or it was just picked there.
