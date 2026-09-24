@@ -1394,5 +1394,13 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "schedule_window": {
+      "message": "Zeitplan {slot}: Der Start muss vor dem Ende liegen. Ein Fenster über Mitternacht führt das Gerät nie aus – auf zwei Zeitpläne aufteilen."
+    },
+    "schedule_overlap": {
+      "message": "Zeitplan {slot} würde sich an einem gemeinsamen Tag mit Zeitplan {other} überschneiden. Das Gerät führt nur den ersten passenden Zeitplan aus, deshalb werden Überschneidungen abgelehnt."
+    }
   }
 }

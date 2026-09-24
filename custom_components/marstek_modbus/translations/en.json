@@ -1394,5 +1394,13 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "schedule_window": {
+      "message": "Schedule {slot}: the start has to be before the end. The device never runs a window across midnight - split it into two schedules."
+    },
+    "schedule_overlap": {
+      "message": "Schedule {slot} would overlap schedule {other} on a shared day. The device runs only the first matching schedule, so overlapping windows are refused."
+    }
   }
 }

@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN
-from .schedule_days import async_register_schedule_days_api
+from .schedules import async_register_schedule_api
 from .panel_settings import (
     DATA_COMMANDS_REGISTERED,
     DATA_STORE,
@@ -81,7 +81,7 @@ async def async_register_panel(hass: HomeAssistant) -> None:
     # the panel reads its colours and tabs from, and registering them costs
     # nothing when there is no bundle to serve.
     async_register_settings_api(hass)
-    async_register_schedule_days_api(hass)
+    async_register_schedule_api(hass)
 
     frontend_dir = Path(__file__).parent / "frontend"
 

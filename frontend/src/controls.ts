@@ -20,26 +20,34 @@ export class DeviceControls {
     if (!entity_id) return;
     // Failures surface as the value simply not changing: the control shows
     // pending until the state comes back, and stays there if it never does.
-    void this.hass.callService(domain, service, { entity_id, ...data });
+    // The promise is returned for the callers that report a refusal.
+    return this.hass.callService(domain, service, { entity_id, ...data });
   }
 
   setNumber(key: string, value: number) {
-    this.call("number", "set_value", key, { value });
+    return this.call("number", "set_value", key, { value });
   }
 
   selectOption(key: string, option: string) {
-    this.call("select", "select_option", key, { option });
+    return this.call("select", "select_option", key, { option });
   }
 
-  /** The days of a schedule slot; the select entity alone can hold only one. */
-  setScheduleDays(key: string, days: string[]) {
+  /**
+   * Days and/or window of a schedule slot in one step. `key` is any entity
+   * of the slot. The integration validates the slot as a whole and rejects
+   * a dead window or an overlap with the error's translation key.
+   */
+  setSchedule(
+    key: string,
+    data: { days?: string[]; start?: number; end?: number },
+  ) {
     const entity_id = this.reader.entityId(key);
-    if (!entity_id) return;
-    void this.hass.callWS({ type: "marstek_modbus/schedule/set_days", entity_id, days });
+    if (!entity_id) return Promise.resolve();
+    return this.hass.callWS({ type: "marstek_modbus/schedule/set", entity_id, ...data });
   }
 
   setSwitch(key: string, on: boolean) {
-    this.call("switch", on ? "turn_on" : "turn_off", key, {});
+    return this.call("switch", on ? "turn_on" : "turn_off", key, {});
   }
 
   press(key: string) {

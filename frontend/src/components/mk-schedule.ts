@@ -55,11 +55,13 @@ export class MkSchedule extends LitElement {
   @property({ attribute: false }) formatNumber: (v: number | null) => string = (v) =>
     v === null ? "—" : String(v);
 
-  @property({ attribute: false }) onEnable?: (index: number, on: boolean) => void;
-  @property({ attribute: false }) onTime?: (
+  /** Resolves to false when the device side refused the change. */
+  @property({ attribute: false }) onEnable?: (index: number, on: boolean) => unknown;
+  /** Start and end together, so the slot is never checked half-edited. */
+  @property({ attribute: false }) onWindow?: (
     index: number,
-    which: "start" | "end",
-    hhmm: number,
+    start: number,
+    end: number,
   ) => void;
   @property({ attribute: false }) onPower?: (index: number, watts: number) => void;
   @property({ attribute: false }) onDays?: (index: number, days: string[]) => void;
@@ -226,14 +228,14 @@ export class MkSchedule extends LitElement {
                 type="time"
                 .value=${this.toClock(row.start)}
                 aria-label=${`${l.window} ${row.index}`}
-                @change=${(e: Event) => this.time(row.index, "start", e)}
+                @change=${(e: Event) => this.time(row, "start", e)}
               />
               <span class="dash">–</span>
               <input
                 type="time"
                 .value=${this.toClock(row.end)}
                 aria-label=${`${l.window} ${row.index}`}
-                @change=${(e: Event) => this.time(row.index, "end", e)}
+                @change=${(e: Event) => this.time(row, "end", e)}
               />
             </div>
 
@@ -284,9 +286,16 @@ export class MkSchedule extends LitElement {
     );
   }
 
-  private time(index: number, which: "start" | "end", event: Event) {
-    const hhmm = this.fromClock((event.target as HTMLInputElement).value);
-    if (hhmm !== null) this.onTime?.(index, which, hhmm);
+  private time(row: ScheduleRow, which: "start" | "end", event: Event) {
+    const input = event.target as HTMLInputElement;
+    const hhmm = this.fromClock(input.value);
+    const other = which === "start" ? row.end : row.start;
+    if (hhmm === null || other === null) return;
+    // Show the device's value until it confirms the new one: a refused
+    // window must not stay in the field as if it had been taken.
+    input.value = this.toClock(row[which]);
+    if (which === "start") this.onWindow?.(row.index, hhmm, other);
+    else this.onWindow?.(row.index, other, hhmm);
   }
 
   private power(index: number, event: Event) {

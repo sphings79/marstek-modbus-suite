@@ -18,9 +18,9 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from .const import (DOMAIN, MANUFACTURER, MODEL, POLLING_MODE_KEY,
                     POLLING_MODES)
 from .coordinator import MarstekCoordinator
-from .schedule_days import (DAY_BITS, OPTION_CUSTOM, OPTION_NONE,
-                            days_from_mask, option_from_mask,
-                            track_day_select, untrack_day_select)
+from .schedules import (DAY_BITS, OPTION_CUSTOM, OPTION_NONE,
+                        async_write_slot, days_from_mask, option_from_mask,
+                        parse_key)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -196,18 +196,6 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
             return None
         return {"days_mask": mask, "days": days_from_mask(mask)}
 
-    async def async_added_to_hass(self) -> None:
-        """Register a bit mask select for the panel's day editor."""
-        await super().async_added_to_hass()
-        if self._bitmask:
-            track_day_select(self.hass, self.entity_id, self)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Unregister it again."""
-        if self._bitmask:
-            untrack_day_select(self.hass, self.entity_id)
-        await super().async_will_remove_from_hass()
-
     @property
     def current_option(self) -> str | None:
         """
@@ -250,7 +238,13 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
             if option != OPTION_NONE and option not in DAY_BITS:
                 _LOGGER.warning("Invalid option '%s' for %s", option, self._key)
                 return
-            await self.async_write_mask(DAY_BITS.get(option, 0))
+            slot = parse_key(self._key)
+            if slot is None:
+                _LOGGER.warning("%s is not a schedule day register", self._key)
+                return
+            await async_write_slot(
+                self.coordinator, slot[0], {"days": DAY_BITS.get(option, 0)}
+            )
             return
 
         options_map = self.definition.get("options", {})
@@ -273,23 +267,6 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
             unit=self.definition.get("unit"),
             entity_type=self.entity_type,
         )
-
-    async def async_write_mask(self, mask: int) -> bool:
-        """Write a whole day mask; used by the select and the panel."""
-        previous = self.coordinator.data.get(self._key)
-        self.coordinator.data[self._key] = mask
-        self.async_write_ha_state()
-
-        written = await self.coordinator.async_write_value(
-            register=self._register,
-            value=mask,
-            key=self._key,
-            entity_type=self.entity_type,
-        )
-        if not written:
-            self.coordinator.data[self._key] = previous
-            self.async_write_ha_state()
-        return bool(written)
 
     @property
     def device_info(self) -> dict:

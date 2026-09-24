@@ -1394,5 +1394,13 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "schedule_window": {
+      "message": "Schema {slot}: de start moet vóór het einde liggen. Een venster over middernacht voert het apparaat nooit uit - verdeel het over twee schema's."
+    },
+    "schedule_overlap": {
+      "message": "Schema {slot} zou op een gedeelde dag overlappen met schema {other}. Het apparaat voert alleen het eerste passende schema uit, daarom worden overlappingen geweigerd."
+    }
   }
 }

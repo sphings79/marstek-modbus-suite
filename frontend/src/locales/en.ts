@@ -36,7 +36,11 @@ export const en: Record<string, string> = {
   "control.schedules": "Schedules",
   "control.schedules_axis": "times are the device's own, in its local time",
   "control.schedules_hint":
-    "A schedule needs a window, a power and at least one day before switching it on does anything. Power is signed: the sign decides the direction.",
+    "A schedule needs a window, a power and at least one day before switching it on does anything. Positive power discharges, negative charges; −1 W runs self-consumption for the window. The end is not part of the window, and a window across midnight never runs - use two schedules. Enabled schedules may not overlap.",
+  "control.err.schedule_window":
+    "Schedule {slot}: the start has to be before the end. Split a window across midnight into two schedules.",
+  "control.err.schedule_overlap":
+    "Schedule {slot} would overlap schedule {other} on a shared day. The device runs only the first match.",
   "control.no_schedules": "This battery exposes no schedules.",
   "control.window": "Window",
   "control.sched_power": "Power",

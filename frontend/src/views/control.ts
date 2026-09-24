@@ -24,6 +24,8 @@ export class MkViewControl extends MkView {
   /** Keys this panel wrote to, and when, to notice when something else wins. */
   @state() private wrote: Record<string, number> = {};
   @state() private confirmReset = false;
+  /** Why the last schedule change was refused; empty once one goes through. */
+  @state() private scheduleError = "";
 
   static styles = [
     baseStyles,
@@ -59,6 +61,9 @@ export class MkViewControl extends MkView {
       .warn-note b {
         color: var(--mk-warn);
         flex: none;
+      }
+      .sched-error {
+        margin: 12px 0 0;
       }
       .danger {
         display: flex;
@@ -106,6 +111,25 @@ export class MkViewControl extends MkView {
     if (!changed) return false;
     const delta = (new Date(changed).getTime() - at) / 1000;
     return delta > 0.5 && delta < OVERWRITE_WINDOW_S;
+  }
+
+  /** Run a schedule write and keep its refusal on screen. */
+  private async schedule(write: Promise<unknown> | undefined): Promise<boolean> {
+    try {
+      await write;
+      this.scheduleError = "";
+      return true;
+    } catch (err) {
+      const e = err as {
+        translation_key?: string;
+        translation_placeholders?: Record<string, string>;
+        message?: string;
+      };
+      this.scheduleError = e.translation_key?.startsWith("schedule_")
+        ? this.t(`control.err.${e.translation_key}`, e.translation_placeholders)
+        : (e.message ?? String(err));
+      return false;
+    }
   }
 
   private slider(key: string) {
@@ -256,16 +280,25 @@ export class MkViewControl extends MkView {
                   .dayLabel=${(d: string) => t(`control.day.${d}`)}
                   .formatNumber=${(v: number | null) => this.fmt.num(v, 0)}
                   .onEnable=${(i: number, on: boolean) =>
-                    this.controls.setSwitch(`schedule_${i}_enabled`, on)}
-                  .onTime=${(i: number, which: "start" | "end", hhmm: number) =>
-                    this.controls.setNumber(`schedule_${i}_${which}`, hhmm)}
+                    this.schedule(this.controls.setSwitch(`schedule_${i}_enabled`, on))}
+                  .onWindow=${(i: number, start: number, end: number) =>
+                    this.schedule(
+                      this.controls.setSchedule(`schedule_${i}_start`, { start, end }),
+                    )}
                   .onPower=${(i: number, watts: number) =>
-                    this.controls.setNumber(`schedule_${i}_mode`, watts)}
+                    this.schedule(this.controls.setNumber(`schedule_${i}_mode`, watts))}
                   .onDays=${(i: number, days: string[]) =>
-                    this.controls.setScheduleDays(`schedule_${i}_days`, days)}
+                    this.schedule(
+                      this.controls.setSchedule(`schedule_${i}_start`, { days }),
+                    )}
                 ></mk-schedule>
               `
             : html`<div class="note">${t("control.no_schedules")}</div>`}
+          ${this.scheduleError
+            ? html`<div class="warn-note sched-error" role="alert">
+                <b>!</b><span>${this.scheduleError}</span>
+              </div>`
+            : nothing}
           <div class="note">${t("control.schedules_hint")}</div>
         </div>
       </div>

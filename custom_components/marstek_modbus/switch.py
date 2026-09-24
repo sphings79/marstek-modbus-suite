@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import MarstekCoordinator
 from .const import DOMAIN, MANUFACTURER, MODEL
+from .schedules import async_write_slot, parse_key
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -132,6 +133,12 @@ class MarstekSwitch(CoordinatorEntity, SwitchEntity):
             _LOGGER.error("No command_on value defined for switch %s", self._key)
             return
 
+        # Schedule slots are validated and written as a whole; see schedules.py.
+        slot = parse_key(self._key)
+        if slot is not None:
+            await async_write_slot(self.coordinator, slot[0], {slot[1]: value})
+            return
+
         # Optimistically update the coordinator data so HA shows the new state immediately
         self.coordinator.data[self._key] = value
         self.async_write_ha_state()
@@ -154,6 +161,12 @@ class MarstekSwitch(CoordinatorEntity, SwitchEntity):
         value = self.definition.get("command_off")
         if value is None:
             _LOGGER.error("No command_off value defined for switch %s", self._key)
+            return
+
+        # Schedule slots are validated and written as a whole; see schedules.py.
+        slot = parse_key(self._key)
+        if slot is not None:
+            await async_write_slot(self.coordinator, slot[0], {slot[1]: value})
             return
 
         # Optimistically update the coordinator data so HA shows the new state immediately

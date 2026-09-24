@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import MarstekCoordinator
 from .const import DOMAIN, MANUFACTURER, MODEL
+from .schedules import async_write_slot, parse_key
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -132,7 +133,13 @@ class MarstekNumber(CoordinatorEntity, NumberEntity):
         """
         # Convert the float value to an integer for Modbus
         raw_value = int(value / self._scale)
-        
+
+        # Schedule slots are validated and written as a whole; see schedules.py.
+        slot = parse_key(self._key)
+        if slot is not None:
+            await async_write_slot(self.coordinator, slot[0], {slot[1]: raw_value})
+            return
+
         # Optimistically update the coordinator data so HA shows the new state immediately
         if not isinstance(self.coordinator.data, dict):
             self.coordinator.data = {}

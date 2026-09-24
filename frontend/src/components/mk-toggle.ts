@@ -18,7 +18,8 @@ export class MkToggle extends LitElement {
   /** Null when the entity is missing or unavailable. */
   @property({ type: Boolean }) checked: boolean | null = null;
   @property({ type: Boolean }) disabled = false;
-  @property({ attribute: false }) onToggle?: (on: boolean) => void;
+  /** May resolve to false when the change was refused, to drop the pending state. */
+  @property({ attribute: false }) onToggle?: (on: boolean) => unknown;
 
   @state() private pending: boolean | null = null;
 
@@ -137,7 +138,9 @@ export class MkToggle extends LitElement {
   private flip() {
     const next = !(this.pending ?? this.checked);
     this.pending = next;
-    this.onToggle?.(next);
+    void Promise.resolve(this.onToggle?.(next)).then((result) => {
+      if (result === false) this.pending = null;
+    });
   }
 }
 
