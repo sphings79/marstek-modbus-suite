@@ -1176,73 +1176,85 @@
       "schedule_1_days": {
         "name": "Schedule 1 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_2_days": {
         "name": "Schedule 2 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_3_days": {
         "name": "Schedule 3 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_4_days": {
         "name": "Schedule 4 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_5_days": {
         "name": "Schedule 5 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_6_days": {
         "name": "Schedule 6 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "modbus_device_polling": {

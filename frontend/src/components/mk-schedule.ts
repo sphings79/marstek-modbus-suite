@@ -14,8 +14,8 @@ export interface ScheduleRow {
   powerMin: number;
   powerMax: number;
   powerStep: number;
-  days: string | null;
-  dayOptions: string[];
+  /** Days set in the slot, Monday first; null while the mask is unknown. */
+  days: string[] | null;
 }
 
 export interface ScheduleLabels {
@@ -23,8 +23,18 @@ export interface ScheduleLabels {
   power: string;
   days: string;
   active: string;
-  unset: string;
 }
+
+/** Monday first, the order the day mask attribute uses. */
+const WEEK = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+];
 
 /**
  * The six schedule slots, editable.
@@ -34,9 +44,8 @@ export interface ScheduleLabels {
  * here. The power range is read from the entity, which is what makes the same
  * editor correct on a 1500 W Venus A and a 2500 W Venus D.
  *
- * The day picker offers one day at a time. The register is a bit mask that
- * could hold several, but the integration exposes it as a single choice; this
- * card does not pretend otherwise.
+ * The days are a bit mask on the device, so each day is its own chip and any
+ * combination - including none, which leaves the slot unused - can be set.
  */
 @customElement("mk-schedule")
 export class MkSchedule extends LitElement {
@@ -53,7 +62,7 @@ export class MkSchedule extends LitElement {
     hhmm: number,
   ) => void;
   @property({ attribute: false }) onPower?: (index: number, watts: number) => void;
-  @property({ attribute: false }) onDays?: (index: number, day: string) => void;
+  @property({ attribute: false }) onDays?: (index: number, days: string[]) => void;
 
   static styles = [
     baseStyles,
@@ -64,12 +73,12 @@ export class MkSchedule extends LitElement {
         overflow-x: auto;
       }
       .inner {
-        min-width: 560px;
+        min-width: 660px;
       }
       .head-row,
       .row {
         display: grid;
-        grid-template-columns: 60px 52px 200px 1fr 128px;
+        grid-template-columns: 60px 52px 200px 1fr 232px;
         align-items: center;
         gap: 12px;
       }
@@ -102,8 +111,7 @@ export class MkSchedule extends LitElement {
         color: var(--mk-dim);
       }
       input[type="time"],
-      input[type="number"],
-      select {
+      input[type="number"] {
         font-family: var(--mk-mono);
         font-size: 11px;
         color: var(--mk-fg);
@@ -121,16 +129,35 @@ export class MkSchedule extends LitElement {
         width: 78px;
         text-align: right;
       }
-      select {
-        width: 100%;
+      .days {
+        display: flex;
+        gap: 3px;
+      }
+      .day {
+        flex: 1;
+        font-family: var(--mk-mono);
+        font-size: 10.5px;
+        color: var(--mk-dim);
+        background: var(--mk-inset);
+        border: 1px solid var(--mk-line);
+        padding: 5px 0;
+        cursor: pointer;
+      }
+      .day.on {
+        color: var(--mk-bg);
+        background: var(--mk-accent);
+        border-color: var(--mk-accent);
+      }
+      .day:disabled {
+        opacity: 0.45;
+        cursor: default;
       }
       input:focus-visible,
-      select:focus-visible {
+      .day:focus-visible {
         outline: 2px solid var(--mk-accent);
         outline-offset: 1px;
       }
-      input:disabled,
-      select:disabled {
+      input:disabled {
         opacity: 0.45;
       }
       .power {
@@ -223,28 +250,38 @@ export class MkSchedule extends LitElement {
               <span class="unit">W</span>
             </div>
 
-            <select
-              aria-label=${`${l.days} ${row.index}`}
-              @change=${(e: Event) =>
-                this.onDays?.(row.index, (e.target as HTMLSelectElement).value)}
-            >
-              ${row.days === null
-                ? html`<option value="" selected>${l.unset}</option>`
-                : nothing}
-              ${row.dayOptions.map(
-                (d) => html`
-                  <option value=${d} ?selected=${row.days === d}>
+            <div class="days" role="group" aria-label=${`${l.days} ${row.index}`}>
+              ${WEEK.map((d) => {
+                const on = row.days?.includes(d) ?? false;
+                return html`
+                  <button
+                    class="day ${on ? "on" : ""}"
+                    aria-pressed=${on ? "true" : "false"}
+                    ?disabled=${row.days === null}
+                    @click=${() => this.toggleDay(row, d)}
+                  >
                     ${this.dayLabel(d)}
-                  </option>
-                `,
-              )}
-            </select>
+                  </button>
+                `;
+              })}
+            </div>
           </div>
         `;
       })}
       </div>
       </div>
     `;
+  }
+
+  private toggleDay(row: ScheduleRow, day: string) {
+    if (row.days === null) return;
+    const next = row.days.includes(day)
+      ? row.days.filter((d) => d !== day)
+      : [...row.days, day];
+    this.onDays?.(
+      row.index,
+      WEEK.filter((d) => next.includes(d)),
+    );
   }
 
   private time(index: number, which: "start" | "end", event: Event) {

@@ -1176,73 +1176,85 @@
       "schedule_1_days": {
         "name": "Zeitplan 1 Tage",
         "state": {
+          "none": "Kein Tag",
           "sunday": "Sonntag",
           "monday": "Montag",
           "tuesday": "Dienstag",
           "wednesday": "Mittwoch",
           "thursday": "Donnerstag",
           "friday": "Freitag",
-          "saturday": "Samstag"
+          "saturday": "Samstag",
+          "custom": "Mehrere Tage"
         }
       },
       "schedule_2_days": {
         "name": "Zeitplan 2 Tage",
         "state": {
+          "none": "Kein Tag",
           "sunday": "Sonntag",
           "monday": "Montag",
           "tuesday": "Dienstag",
           "wednesday": "Mittwoch",
           "thursday": "Donnerstag",
           "friday": "Freitag",
-          "saturday": "Samstag"
+          "saturday": "Samstag",
+          "custom": "Mehrere Tage"
         }
       },
       "schedule_3_days": {
         "name": "Zeitplan 3 Tage",
         "state": {
+          "none": "Kein Tag",
           "sunday": "Sonntag",
           "monday": "Montag",
           "tuesday": "Dienstag",
           "wednesday": "Mittwoch",
           "thursday": "Donnerstag",
           "friday": "Freitag",
-          "saturday": "Samstag"
+          "saturday": "Samstag",
+          "custom": "Mehrere Tage"
         }
       },
       "schedule_4_days": {
         "name": "Zeitplan 4 Tage",
         "state": {
+          "none": "Kein Tag",
           "sunday": "Sonntag",
           "monday": "Montag",
           "tuesday": "Dienstag",
           "wednesday": "Mittwoch",
           "thursday": "Donnerstag",
           "friday": "Freitag",
-          "saturday": "Samstag"
+          "saturday": "Samstag",
+          "custom": "Mehrere Tage"
         }
       },
       "schedule_5_days": {
         "name": "Zeitplan 5 Tage",
         "state": {
+          "none": "Kein Tag",
           "sunday": "Sonntag",
           "monday": "Montag",
           "tuesday": "Dienstag",
           "wednesday": "Mittwoch",
           "thursday": "Donnerstag",
           "friday": "Freitag",
-          "saturday": "Samstag"
+          "saturday": "Samstag",
+          "custom": "Mehrere Tage"
         }
       },
       "schedule_6_days": {
         "name": "Zeitplan 6 Tage",
         "state": {
+          "none": "Kein Tag",
           "sunday": "Sonntag",
           "monday": "Montag",
           "tuesday": "Dienstag",
           "wednesday": "Mittwoch",
           "thursday": "Donnerstag",
           "friday": "Freitag",
-          "saturday": "Samstag"
+          "saturday": "Samstag",
+          "custom": "Mehrere Tage"
         }
       },
       "modbus_device_polling": {

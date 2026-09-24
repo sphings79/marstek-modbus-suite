@@ -183,8 +183,7 @@ export class MkViewControl extends MkView {
         powerMin: r.attr(modeKey, "min", -2500),
         powerMax: r.attr(modeKey, "max", 2500),
         powerStep: r.attr(modeKey, "step", 1),
-        days: r.rawState(`schedule_${i}_days`)?.state ?? null,
-        dayOptions: r.attr<string[]>(`schedule_${i}_days`, "options", []),
+        days: r.attr<string[] | null>(`schedule_${i}_days`, "days", null),
       };
     });
   }
@@ -253,7 +252,6 @@ export class MkViewControl extends MkView {
                     power: t("control.sched_power"),
                     days: t("control.days"),
                     active: t("control.active"),
-                    unset: t("control.unset"),
                   }}
                   .dayLabel=${(d: string) => t(`control.day.${d}`)}
                   .formatNumber=${(v: number | null) => this.fmt.num(v, 0)}
@@ -263,8 +261,8 @@ export class MkViewControl extends MkView {
                     this.controls.setNumber(`schedule_${i}_${which}`, hhmm)}
                   .onPower=${(i: number, watts: number) =>
                     this.controls.setNumber(`schedule_${i}_mode`, watts)}
-                  .onDays=${(i: number, day: string) =>
-                    this.controls.selectOption(`schedule_${i}_days`, day)}
+                  .onDays=${(i: number, days: string[]) =>
+                    this.controls.setScheduleDays(`schedule_${i}_days`, days)}
                 ></mk-schedule>
               `
             : html`<div class="note">${t("control.no_schedules")}</div>`}

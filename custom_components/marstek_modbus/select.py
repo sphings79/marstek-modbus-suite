@@ -9,6 +9,7 @@ from typing import Any
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -17,6 +18,9 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from .const import (DOMAIN, MANUFACTURER, MODEL, POLLING_MODE_KEY,
                     POLLING_MODES)
 from .coordinator import MarstekCoordinator
+from .schedule_days import (DAY_BITS, OPTION_CUSTOM, OPTION_NONE,
+                            days_from_mask, option_from_mask,
+                            track_day_select, untrack_day_select)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -138,8 +142,13 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         # This ensures English entity_ids while friendly_name follows user language
         self._attr_suggested_object_id = definition["key"]
 
+        # A bit mask register (the schedule days) holds any combination of its
+        # options. Single days keep their names; "none" and "custom" cover an
+        # empty mask and a combination.
+        self._bitmask = bool(definition.get("bitmask"))
+
         # You can rely on the property below, but pre-fill for HA caching behavior
-        self._attr_options = list(self.definition.get("options", {}).keys())
+        self._attr_options = self.options
 
     @property
     def entity_type(self) -> str:
@@ -164,7 +173,40 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         """
         Return a list of available options for selection.
         """
+        if self._bitmask:
+            return [OPTION_NONE, *DAY_BITS, OPTION_CUSTOM]
         return list(self.definition.get("options", {}).keys())
+
+    def _mask(self) -> int | None:
+        """Return the register value of a bit mask select, or None."""
+        data = self.coordinator.data
+        value = data.get(self._key) if data is not None else None
+        try:
+            return int(value) & 0x7F if value is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the full set of days, which the state alone cannot show."""
+        if not self._bitmask:
+            return None
+        mask = self._mask()
+        if mask is None:
+            return None
+        return {"days_mask": mask, "days": days_from_mask(mask)}
+
+    async def async_added_to_hass(self) -> None:
+        """Register a bit mask select for the panel's day editor."""
+        await super().async_added_to_hass()
+        if self._bitmask:
+            track_day_select(self.hass, self.entity_id, self)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unregister it again."""
+        if self._bitmask:
+            untrack_day_select(self.hass, self.entity_id)
+        await super().async_will_remove_from_hass()
 
     @property
     def current_option(self) -> str | None:
@@ -182,6 +224,10 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         if value is None:
             return None
 
+        if self._bitmask:
+            mask = self._mask()
+            return option_from_mask(mask) if mask is not None else None
+
         options_map = self.definition.get("options", {})
         # Reverse the mapping: {int_value: option_name}
         try:
@@ -195,6 +241,18 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         """
         Change the selected option by writing to the device register.
         """
+        if self._bitmask:
+            if option == OPTION_CUSTOM:
+                raise ServiceValidationError(
+                    "'custom' describes several days and cannot be selected; "
+                    "set the days in the Marstek Modbus panel"
+                )
+            if option != OPTION_NONE and option not in DAY_BITS:
+                _LOGGER.warning("Invalid option '%s' for %s", option, self._key)
+                return
+            await self.async_write_mask(DAY_BITS.get(option, 0))
+            return
+
         options_map = self.definition.get("options", {})
         if option not in options_map:
             _LOGGER.warning("Invalid option '%s' for %s", option, self._key)
@@ -215,6 +273,23 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
             unit=self.definition.get("unit"),
             entity_type=self.entity_type,
         )
+
+    async def async_write_mask(self, mask: int) -> bool:
+        """Write a whole day mask; used by the select and the panel."""
+        previous = self.coordinator.data.get(self._key)
+        self.coordinator.data[self._key] = mask
+        self.async_write_ha_state()
+
+        written = await self.coordinator.async_write_value(
+            register=self._register,
+            value=mask,
+            key=self._key,
+            entity_type=self.entity_type,
+        )
+        if not written:
+            self.coordinator.data[self._key] = previous
+            self.async_write_ha_state()
+        return bool(written)
 
     @property
     def device_info(self) -> dict:

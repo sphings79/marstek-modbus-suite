@@ -77,11 +77,11 @@ carrying the current right now — the device works one at a time.
 ### Control
 
 <div align="center">
-<img src="assets/ui-control.svg" alt="Control tab: charge and discharge power, limits, work and forced mode, backup and RS485 switches, and the six schedules with times, power and day" width="100%">
+<img src="assets/ui-control.svg" alt="Control tab: charge and discharge power, limits, work and forced mode, backup and RS485 switches, and the six schedules with times, power and days" width="100%">
 </div>
 
 Charge and discharge power, the limits, work and forced mode, the backup and RS485 switches, and
-all six schedules — times, power, day, on and off.
+all six schedules — times, power, any set of weekdays, on and off.
 
 Every control reads its own bounds from the entity rather than hard-coding them, so the same editor
 is correct on a **1500 W** Venus A and a **2500 W** Venus D. Times are converted between the HHMM

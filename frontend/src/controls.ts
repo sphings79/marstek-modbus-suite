@@ -31,6 +31,13 @@ export class DeviceControls {
     this.call("select", "select_option", key, { option });
   }
 
+  /** The days of a schedule slot; the select entity alone can hold only one. */
+  setScheduleDays(key: string, days: string[]) {
+    const entity_id = this.reader.entityId(key);
+    if (!entity_id) return;
+    void this.hass.callWS({ type: "marstek_modbus/schedule/set_days", entity_id, days });
+  }
+
   setSwitch(key: string, on: boolean) {
     this.call("switch", on ? "turn_on" : "turn_off", key, {});
   }

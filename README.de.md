@@ -79,11 +79,11 @@ markierte Pack ist das, das gerade Strom führt — das Gerät arbeitet eines na
 ### Steuerung
 
 <div align="center">
-<img src="assets/ui-control.svg" alt="Steuerung: Lade- und Entladeleistung, Grenzwerte, Benutzer- und erzwungener Modus, Notstrom- und RS485-Schalter sowie die sechs Zeitpläne mit Zeiten, Leistung und Tag" width="100%">
+<img src="assets/ui-control.svg" alt="Steuerung: Lade- und Entladeleistung, Grenzwerte, Benutzer- und erzwungener Modus, Notstrom- und RS485-Schalter sowie die sechs Zeitpläne mit Zeiten, Leistung und Tagen" width="100%">
 </div>
 
 Lade- und Entladeleistung, die Grenzwerte, Benutzer- und erzwungener Modus, die Schalter für
-Notstrom und RS485 — und alle sechs Zeitpläne mit Zeiten, Leistung, Tag und An/Aus.
+Notstrom und RS485 — und alle sechs Zeitpläne mit Zeiten, Leistung, beliebigen Wochentagen und An/Aus.
 
 Jeder Regler liest seine Grenzen aus der Entität, statt sie fest zu verdrahten. Derselbe Editor ist
 damit auf einem **1500-W**-Venus-A genauso richtig wie auf einem **2500-W**-Venus-D. Zeiten werden
