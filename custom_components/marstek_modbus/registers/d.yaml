@@ -2679,6 +2679,22 @@ SENSOR_DEFINITIONS:
         precision: 2
         enabled_by_default: true
         scan_interval: high
+    # Charge current the BMS accepts right now (control FW 150: u16@0x20014FA0,
+    # also served at 35111). It comes from a BMS table indexed by the active
+    # pack's state of charge and temperature, and the control firmware caps the
+    # charge power at this current times bms_battery_voltage (Power_Limit_Clamp).
+    # Reads 0 once the active pack is full.
+    bms_charge_current_limit:
+        register: 32106
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
     # --- Network configuration (30400-30403, decoded from the device IP block) ---
     device_ip_address:
         register: 30400
@@ -3327,10 +3343,25 @@ RUNTIME_SENSOR_DEFINITIONS:
         icon: "mdi:battery-clock"
         enabled_by_default: true
         mode: to_full
+        # soc, capacity and power are required; the rest feed the forecast that
+        # follows the BMS pack sequence (charge_forecast.py) and are optional -
+        # without them the sensor falls back to the plain linear estimate.
         dependency_keys:
             soc: battery_soc
             capacity: battery_total_energy
             power: battery_power
+            ac_power: ac_power
+            pack_count: bms_pack_count
+            active_pack: bms_active_pack_index
+            bms_voltage: bms_battery_voltage
+            bms_current_limit: bms_charge_current_limit
+            pack1: battery_soc_1
+            pack2: battery_soc_2
+            pack3: battery_soc_3
+            pack4: battery_soc_4
+            pack5: battery_soc_5
+            pack6: battery_soc_6
+            pack7: battery_soc_7
 
 BATTERY_LIFE_SENSOR_DEFINITIONS:
 
@@ -3743,6 +3774,21 @@ BMS_POWER_SENSOR_DEFINITIONS:
             p5: battery_5_current
             p6: battery_6_current
             p7: battery_7_current
+    bms_charge_power_limit:
+        key: bms_charge_power_limit
+        unit: W
+        device_class: power
+        state_class: measurement
+        precision: 0
+        icon: "mdi:battery-arrow-up-outline"
+        category: diagnostic
+        enabled_by_default: true
+        # The charge power cap as the control firmware computes it
+        # (Power_Limit_Clamp): BMS voltage times the BMS charge current limit.
+        # Same arithmetic as battery_power_bms, voltage times the other inputs.
+        dependency_keys:
+            voltage: bms_battery_voltage
+            limit: bms_charge_current_limit
 
 # ---------------------------------------------------------------------------
 # DEV_UNKNOWN_SENSOR_DEFINITIONS — Option 'DEV-Register: unbekannt'

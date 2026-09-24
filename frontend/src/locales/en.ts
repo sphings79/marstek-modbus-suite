@@ -103,6 +103,7 @@ export const en: Record<string, string> = {
   "core.runtime": "Runtime",
   "core.to_empty": "Until empty",
   "core.until_full": "Until full",
+  "core.until_pct": "Until {value} %",
   "core.packs": "Packs",
   "core.soc_bms": "SOC · BMS",
   "core.soc_usable": "usable {value} %",

@@ -12,10 +12,13 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
+from . import charge_forecast
 from .coordinator import MarstekCoordinator
-from .const import DOMAIN, MANUFACTURER, MODEL
+from .const import DOMAIN, MANUFACTURER, MODEL, RS485_CONTROL_MODE_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -899,12 +902,15 @@ class MarstekWindowSensor(MarstekCalculatedSensor):
 
 class MarstekRuntimeSensor(MarstekWindowSensor):
     """
-    Hours until the battery reaches the end of its usable window at the
-    current power.
+    Hours until the battery reaches the end of its usable window.
 
     Mode is determined by 'mode' in the sensor definition:
-    - "to_empty": time down to the configured floor, counts while discharging
-    - "to_full":  time up to the charge ceiling, counts while charging
+    - "to_empty": time down to the configured floor at the current power,
+      counts while discharging
+    - "to_full":  time up to the charge ceiling, counts while charging. Where
+      the device reports its packs, this follows the BMS charge sequence and
+      its taper above 90 % (charge_forecast.py); otherwise it is the missing
+      energy over the current power.
 
     Idle, or flow in the other direction, yields 0 rather than None. The value
     is a countdown; an unknown state would read as a broken sensor on a
@@ -920,6 +926,47 @@ class MarstekRuntimeSensor(MarstekWindowSensor):
     # instead of a figure that invites false precision.
     MAX_HOURS = 48
 
+    REQUIRED = ("soc", "capacity", "power")
+    PACK_ALIASES = tuple(f"pack{i}" for i in range(1, 8))
+
+    # force_mode 42010 = 1 is a forced charge, whose power is set_charge_power.
+    FORCE_MODE_CHARGE = 1
+
+    # Below this AC power the ratio of battery to AC power is mostly the
+    # device's own consumption and says nothing about conversion losses.
+    MIN_EFFICIENCY_SAMPLE_W = 300
+
+    STORAGE_VERSION = 1
+
+    def __init__(self, coordinator, definition):
+        super().__init__(coordinator, definition)
+        self._forecasting = definition.get("mode") == "to_full"
+        self._learner = charge_forecast.BandLearner()
+        self._tracker = charge_forecast.BandEnergyTracker()
+        self._last_free_w: float | None = None
+        self._efficiency = charge_forecast.DEFAULT_CHARGE_EFFICIENCY
+        self._store: Store | None = None
+        self._forecast_attrs: dict = {}
+
+    async def async_added_to_hass(self) -> None:
+        """Load what earlier runs learned about the band caps."""
+        if self._forecasting:
+            self._store = Store(
+                self.hass,
+                self.STORAGE_VERSION,
+                f"{DOMAIN}.charge_forecast.{self.coordinator.config_entry.entry_id}",
+            )
+            self._learner = charge_forecast.BandLearner(await self._store.async_load())
+        await super().async_added_to_hass()
+
+    def optional_dependencies(self) -> set:
+        """Everything the forecast adds on top of the linear estimate."""
+        return {alias for alias in self.get_dependency_keys() if alias not in self.REQUIRED}
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return self._forecast_attrs
+
     def calculate_value(self, dep_values: dict):
         soc = dep_values.get("soc")
         capacity = dep_values.get("capacity")
@@ -933,15 +980,187 @@ class MarstekRuntimeSensor(MarstekWindowSensor):
                 return 0.0
             energy = capacity * max(soc - self._floor(), 0.0) / 100
         elif mode == "to_full":
-            if power <= self.IDLE_POWER_W:
-                return 0.0
-            energy = capacity * max(self._ceiling() - soc, 0.0) / 100
+            return self._time_to_full(dep_values, soc, capacity, power)
         else:
             _LOGGER.warning("%s unknown runtime mode '%s'", self._key, mode)
             return None
 
         hours = energy / (abs(power) / 1000)
         return round(min(hours, self.MAX_HOURS), 2)
+
+    # --- to_full -----------------------------------------------------------
+
+    def _raw(self, key: str) -> float | None:
+        """A register the forecast reads without depending on it.
+
+        Controls (force mode, setpoints, the RS485 switch) belong to other
+        platforms; declaring them as dependencies would file them as sensors.
+        They are polled anyway, and their raw words need no scaling.
+        """
+        data = self.coordinator.data if isinstance(self.coordinator.data, dict) else {}
+        try:
+            return float(data.get(key))
+        except (TypeError, ValueError):
+            return None
+
+    def _version(self, key: str) -> str | None:
+        value = self._raw(key)
+        return None if value is None else str(int(value))
+
+    def _pack_socs(self, dep_values: dict) -> list[float]:
+        """State of charge of each fitted pack, in pack order.
+
+        Empty when the packs cannot be told apart reliably. The active pack
+        index counts from the first slot, so a gap in the middle would shift
+        every pack after it.
+        """
+        socs = [dep_values.get(alias) for alias in self.PACK_ALIASES]
+        count = dep_values.get("pack_count")
+        if count and count > 0:
+            socs = socs[: int(count)]
+        else:
+            # A slot without a pack is not polled (None) or answers zeros.
+            fitted = []
+            for soc in socs:
+                if soc is None or soc <= 0:
+                    break
+                fitted.append(soc)
+            socs = fitted
+        if not socs or any(soc is None or soc <= 0 for soc in socs):
+            return []
+        return socs
+
+    def _forced_setpoint_w(self) -> float | None:
+        """Battery-side power a forced charge asks for, if one is running."""
+        definition = self.coordinator._rs485_control_mode_definition()
+        rs485 = self._raw(RS485_CONTROL_MODE_KEY)
+        if definition is None or rs485 is None or rs485 != definition.get("command_on"):
+            return None
+        if self._raw("force_mode") != self.FORCE_MODE_CHARGE:
+            return None
+        setpoint = self._raw("set_charge_power")
+        if not setpoint or setpoint <= 0:
+            return None
+        return setpoint * self._efficiency
+
+    def _track_efficiency(self, power: float, ac_power: float | None) -> None:
+        """Battery power over AC power while charging from the grid side."""
+        if ac_power is None or -ac_power < self.MIN_EFFICIENCY_SAMPLE_W or power <= 0:
+            return
+        ratio = power / -ac_power
+        if 0.7 <= ratio <= 1.0:
+            self._efficiency += 0.05 * (ratio - self._efficiency)
+
+    def _save_learned(self) -> None:
+        if self._store is not None:
+            self._store.async_delay_save(self._learner.to_dict, 60)
+
+    def _time_to_full(self, dep_values: dict, soc: float, capacity: float, power: float):
+        target = self._ceiling()
+        linear_hours = None
+        if power > self.IDLE_POWER_W:
+            linear_hours = capacity * max(target - soc, 0.0) / 100 / (power / 1000)
+
+        if not self._forecasting:
+            return self._finish(linear_hours, {"method": "linear"})
+
+        changed = self._learner.sync_control_firmware(self._version("ems_version"))
+
+        socs = self._pack_socs(dep_values)
+        single = not socs
+        if single:
+            socs = [soc]
+        active_raw = dep_values.get("active_pack")
+        active = 0 if single else (int(active_raw) - 1 if active_raw else None)
+        if active is not None and not 0 <= active < len(socs):
+            active = None
+
+        def bms_version(index: int) -> str | None:
+            if single:
+                return self._version("bms_version") or self._version("battery_1_bms_version")
+            return self._version(f"battery_{index + 1}_bms_version")
+
+        pack_wh_per_percent = capacity * 1000 / len(socs) / 100
+
+        # The cap in force now: BMS voltage times the BMS charge current limit.
+        voltage = dep_values.get("bms_voltage")
+        current_limit = dep_values.get("bms_current_limit")
+        live_cap = voltage * current_limit if voltage and current_limit else None
+
+        self._track_efficiency(power, dep_values.get("ac_power"))
+        max_charge = self._raw("max_charge_power") or 2500.0
+        ac_limit = max_charge * self._efficiency
+        forced = self._forced_setpoint_w()
+
+        # Learn only from what the active pack is doing right now.
+        if active is not None and power > self.IDLE_POWER_W:
+            active_soc = socs[active]
+            if live_cap:
+                changed |= self._learner.observe_cap(bms_version(active), active_soc, live_cap)
+            elif forced and forced > power + 50 and power < 0.95 * ac_limit:
+                # No limit register: a forced charge the device does not follow
+                # shows the cap in the power itself.
+                changed |= self._learner.observe_cap(bms_version(active), active_soc, power)
+
+        finished = self._tracker.update(
+            dt_util.utcnow().timestamp(),
+            active,
+            socs[active] if active is not None else None,
+            power,
+        )
+        if finished is not None and active is not None:
+            band, energy = finished
+            changed |= self._learner.observe_band_energy(
+                bms_version(active), band, energy, pack_wh_per_percent
+            )
+        if changed:
+            self._save_learned()
+
+        if power <= self.IDLE_POWER_W:
+            self._forecast_attrs = {}
+            return 0.0
+
+        limits = [x for x in (live_cap, ac_limit) if x]
+        available, source, self._last_free_w = charge_forecast.available_power(
+            power, min(limits) if limits else None, forced, self._last_free_w
+        )
+
+        models = [self._learner.model_for(bms_version(i)) for i in range(len(socs))]
+        delivered = (
+            self._tracker.delivered_wh(active, charge_forecast.band_of(socs[active]))
+            if active is not None
+            else 0.0
+        )
+        result = charge_forecast.simulate(
+            socs, active, target, pack_wh_per_percent, models,
+            available, ac_limit, live_cap, delivered,
+        )
+
+        versions = sorted({v for v in (bms_version(i) for i in range(len(socs))) if v})
+        attrs = {
+            "method": "single_pack" if single else "pack_sequence",
+            "target_soc": target,
+            "available_power_w": round(available),
+            "available_power_source": source,
+            "charge_power_limit_w": round(live_cap) if live_cap else None,
+            "control_firmware": self._learner.control_firmware,
+            "bms_firmware": versions,
+            "learned": self._learner.summary(),
+        }
+        if result is None or result.hours_to_target is None:
+            attrs["method"] = "linear"
+            return self._finish(linear_hours, attrs)
+
+        attrs["hours_to_90"] = self._cap_hours(result.hours_to_90)
+        attrs["hours_to_95"] = self._cap_hours(result.hours_to_95)
+        return self._finish(result.hours_to_target, attrs)
+
+    def _cap_hours(self, hours: float | None) -> float | None:
+        return None if hours is None else round(min(hours, self.MAX_HOURS), 2)
+
+    def _finish(self, hours: float | None, attrs: dict):
+        self._forecast_attrs = attrs if hours is not None else {}
+        return 0.0 if hours is None else self._cap_hours(hours)
 
 
 class MarstekEnergyWindowSensor(MarstekWindowSensor):

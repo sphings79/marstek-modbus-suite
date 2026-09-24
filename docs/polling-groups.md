@@ -12,7 +12,7 @@ disabled entity is not read at all.
 | Default | 10 s | 60 s | 300 s |
 | Minimum | 3 s | 10 s | 60 s |
 
-**76 readings on the fast rate**, 67 of them on by default. 58 are on
+**77 readings on the fast rate**, 68 of them on by default. 58 are on
 the ultra-low rate and the remaining 216 on the slow one.
 
 An empty cell means that model does not have the reading.
@@ -130,6 +130,7 @@ An empty cell means that model does not have the reading.
 
 | Reading | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Default |
 |---|---|---|---|---|---|
+| `bms_charge_current_limit` | 32106 | 32106 |  |  | on |
 | `charging_cutoff_capacity` |  |  |  | 44000 | off |
 | `discharge_limit_mode` |  |  |  | 41010 | off |
 | `discharging_cutoff_capacity` |  |  |  | 44001 | off |

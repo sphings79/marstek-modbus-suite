@@ -1124,6 +1124,12 @@
       },
       "battery_power_bms": {
         "name": "Battery Power (BMS)"
+      },
+      "bms_charge_current_limit": {
+        "name": "BMS Charge Current Limit"
+      },
+      "bms_charge_power_limit": {
+        "name": "BMS Charge Power Limit"
       }
     },
     "binary_sensor": {

@@ -317,7 +317,9 @@ meldet:
 |---|---|
 | `usable_energy` | was oberhalb der Entladegrenze liegt |
 | `energy_to_full` | was bis zur Ladeobergrenze fehlt |
-| `runtime_to_empty` / `runtime_to_full` | Stunden bei aktueller Leistung, jeweils nur in ihrer Richtung |
+| `runtime_to_empty` | Stunden bis zur Entladegrenze bei aktueller Leistung, zählt nur beim Entladen |
+| `runtime_to_full` | Stunden bis zur Ladegrenze, zählt nur beim Laden. Beim A und D folgt die Rechnung der Reihenfolge, in der das BMS die Packs lädt, und den zwei Leistungsstufen über 90 %, die sie pro BMS-Firmware lernt; die Attribute `hours_to_90` und `hours_to_95` liefern die Zwischenmarken |
+| `bms_charge_power_limit` | die Ladeleistung, die das BMS gerade annimmt (A und D): BMS-Spannung mal `bms_charge_current_limit` |
 | `remaining_cycles`, `battery_health` | Verschleiß gegen die Zyklenangabe der Zellen |
 | `backup_reserve_energy` | was unter der Grenze liegt und nur über die Notstromsteckdose erreichbar ist (A und D) |
 | `stored_energy`, `round_trip_efficiency_*` | Energie im Speicher, Wirkungsgrad über drei Zeitebenen |

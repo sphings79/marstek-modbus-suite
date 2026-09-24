@@ -1568,6 +1568,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.VERSION_SENSOR_DEFINITIONS
             + self.STORED_ENERGY_SENSOR_DEFINITIONS
             + self.CYCLE_SENSOR_DEFINITIONS
+            + self.RUNTIME_SENSOR_DEFINITIONS
             + self.SOLAR_POWER_SENSOR_DEFINITIONS
             + self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
             + self.BITFIELD_TEXT_SENSOR_DEFINITIONS
