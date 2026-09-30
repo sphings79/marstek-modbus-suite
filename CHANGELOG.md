@@ -5,6 +5,52 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.0.0-rc.3
+
+rc.2 plus three schedule and panel fixes that were finished before rc.2 but
+missed it.
+
+### A schedule can hold any set of weekdays
+
+The day register is a bit mask, but the day select only knew single days. A
+Monday-to-Friday schedule set in the Marstek app showed as unknown, and editing
+it in the panel overwrote it with one day. The select now reports none, a
+single day or custom, and exposes the mask and the list of days as attributes.
+The panel edits the days as chips and writes the whole mask at once.
+
+**Upgrading:** an automation that compares `schedule_N_days` against a day name
+still works for a single day. A schedule with several days reads `custom`; the
+days are in the attributes.
+
+### Editing a schedule no longer switches it off
+
+The control firmware sets a slot's enabled register to 0 whenever its days,
+start or end are written. Editing an enabled schedule from the panel, the number
+entities or the day select therefore switched it off without a word. Every
+schedule write now goes through one path that writes the enabled flag last and
+restores it when the slot was on.
+
+### Schedules that cannot run are refused
+
+The firmware runs only the first matching slot, while start <= now < end. An
+enabled slot whose window is empty or crosses midnight never runs, and of two
+enabled slots that overlap on a shared day, the later one never runs either.
+Both are now refused before anything is written, with a translated error, from
+the panel, a service call or an automation alike. Disabled slots can be prepared
+freely. The panel shows the refusal and puts the field back to the device value.
+
+The README describes how the device runs the schedules, including that the
+firmware saves schedules to its EEPROM only when they come from the app - read
+from the firmware, not yet tested.
+
+### The panel survives an update while it is open
+
+Home Assistant loads the panel bundle with the version in its URL. After an
+update the page often stays open - the iOS app just reconnects - and the bundle
+was loaded a second time and failed on the first element it registered. Elements
+already registered are now skipped, and a panel still running the old code
+offers a reload.
+
 ## 3.0.0-rc.2
 
 rc.1 with one correction, from
