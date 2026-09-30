@@ -95,6 +95,7 @@ export const de: Record<string, string> = {
   "core.runtime": "Laufzeit",
   "core.to_empty": "Bis leer",
   "core.until_full": "Bis voll",
+  "core.until_pct": "Bis {value} %",
   "core.packs": "Packs",
   "core.soc_bms": "SOC · BMS",
   "core.soc_usable": "nutzbar {value} %",

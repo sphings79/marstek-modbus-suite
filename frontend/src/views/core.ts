@@ -62,6 +62,12 @@ export class MkViewCore extends MkView {
         margin-left: 4px;
         font-weight: 400;
       }
+      .split .steps {
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--mk-dim);
+        line-height: 1.5;
+      }
 
       .flow {
         margin-top: 11px;
@@ -265,6 +271,34 @@ export class MkViewCore extends MkView {
             ? html`${this.fmt.duration(this.reader.num(key))}`
             : "—"}
         </div>
+        ${flowing && !discharging ? this.chargeSteps() : nothing}
+      </div>
+    `;
+  }
+
+  /**
+   * The intermediate marks of the charge forecast. Above 90 % the BMS charges
+   * the packs one after the other at two lower power steps, so the stretch to
+   * 95 % and to 90 % says more than the remaining time alone. A mark already
+   * passed, or beyond the charge target, is left out.
+   */
+  private chargeSteps() {
+    const marks = [95, 90]
+      .map((pct) => ({
+        pct,
+        hours: this.reader.attr<number | null>("runtime_to_full", `hours_to_${pct}`, null),
+      }))
+      .filter((m) => typeof m.hours === "number" && m.hours > 0);
+    if (!marks.length) return nothing;
+
+    return html`
+      <div class="steps">
+        ${marks.map(
+          (m) => html`<div>
+            ${this.t("core.until_pct", { value: String(m.pct) })}
+            ${this.fmt.duration(m.hours)}
+          </div>`,
+        )}
       </div>
     `;
   }

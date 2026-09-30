@@ -12,7 +12,7 @@ eine andere Frage — eine ausgeschaltete Entität wird gar nicht gelesen.
 | Vorgabe | 10 s | 60 s | 300 s |
 | Minimum | 3 s | 10 s | 60 s |
 
-**76 Messwerte im schnellen Takt**, davon 67 standardmäßig eingeschaltet.
+**77 Messwerte im schnellen Takt**, davon 68 standardmäßig eingeschaltet.
 58 liegen im Ultra-Low-Takt, die übrigen 216 im langsamen.
 
 Ein leeres Feld heißt: dieses Modell kennt den Wert nicht.
@@ -130,6 +130,7 @@ Ein leeres Feld heißt: dieses Modell kennt den Wert nicht.
 
 | Messwert | Venus A | Venus D | Venus E v3 | Venus E v1 & v2 | Vorgabe |
 |---|---|---|---|---|---|
+| `bms_charge_current_limit` | 32106 | 32106 |  |  | an |
 | `charging_cutoff_capacity` |  |  |  | 44000 | aus |
 | `discharge_limit_mode` |  |  |  | 41010 | aus |
 | `discharging_cutoff_capacity` |  |  |  | 44001 | aus |

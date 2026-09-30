@@ -1044,10 +1044,13 @@ RUNTIME_SENSOR_DEFINITIONS:
         icon: "mdi:battery-clock"
         enabled_by_default: true
         mode: to_full
+        # soc, capacity and power are required; ac_power only sharpens the
+        # forecast (charge_forecast.py). Single pack: no pack sequence to follow.
         dependency_keys:
             soc: battery_soc
             capacity: battery_total_energy
             power: battery_power
+            ac_power: ac_power
 
 BATTERY_LIFE_SENSOR_DEFINITIONS:
 

@@ -313,7 +313,9 @@ Beyond the raw registers, the integration derives a few values the battery does 
 |---|---|
 | `usable_energy` | what sits above the discharge floor |
 | `energy_to_full` | what is missing before the charge ceiling |
-| `runtime_to_empty` / `runtime_to_full` | hours at the current power, counting only in that direction |
+| `runtime_to_empty` | hours to the discharge floor at the current power, counting only while discharging |
+| `runtime_to_full` | hours to the charge ceiling, counting only while charging. On the A and D it follows the order in which the BMS charges its packs and the two power steps above 90 %, which it learns per BMS firmware; attributes `hours_to_90` and `hours_to_95` give the intermediate marks |
+| `bms_charge_power_limit` | the charge power the BMS accepts right now (A and D): BMS voltage times `bms_charge_current_limit` |
 | `remaining_cycles`, `battery_health` | wear against the cell rating |
 | `backup_reserve_energy` | what sits below the floor, reachable only through the off-grid socket (A and D) |
 | `stored_energy`, `round_trip_efficiency_*` | energy in the pack, efficiency over three timescales |
