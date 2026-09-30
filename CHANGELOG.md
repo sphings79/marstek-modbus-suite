@@ -5,6 +5,165 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.0.0
+
+The first stable release since [2.2.0](https://github.com/sphings79/marstek-modbus-suite/releases/tag/2.2.0).
+The register maps were checked against the control firmware of the Venus D and
+Venus A, and wherever map and firmware disagreed, the firmware won. Several
+sensors turned out to measure something other than their name said. That is
+where the breaking changes come from.
+
+What follows sums up 2.3.0-beta.1, 3.0.0-beta.1 to beta.13 and rc.1 to rc.3.
+Each pre-release has its own notes with the measurements behind it.
+
+### Breaking changes — read before updating
+
+#### Venus A and D: three entities removed
+
+`battery_voltage`, `battery_current` and `bms_version` read the same firmware
+words as `battery_1_voltage`, `battery_1_current` and `battery_1_bms_version`.
+They were pack 1's values under a name for the whole battery. In one recorded
+discharge, `battery_current` read 0.0 A while pack 2 delivered −45.9 A.
+
+**What to do:** switch to the `battery_1_` names, which give identical values.
+For a current across all packs, use `bms_power`. The Venus E v3 and E v1/v2
+keep all three, because there they describe the whole battery.
+
+#### Venus A and D: energy counters renamed, `battery_power` corrected
+
+| Old key | New key |
+|---|---|
+| `battery_power` | `dc_sample_power` (register 30001, one DC measurement point) |
+| *(calculated)* | `battery_power`, now the DC point plus the four strings, i.e. the packs |
+| `total_charging_energy` | `total_ac_input_energy` |
+| `total_discharging_energy` | `total_ac_output_energy` |
+| `total_daily_charging_energy` | `total_daily_ac_input_energy` |
+| `total_daily_discharging_energy` | `total_daily_ac_output_energy` |
+| `total_monthly_charging_energy` | `total_monthly_ac_input_energy` |
+| `total_monthly_discharging_energy` | `total_monthly_ac_output_energy` |
+
+Register 30001 also carries the PV strings. A Venus A read −1557 W there while
+its packs supplied 870 W. The energy counters are measured at the grid
+connection, not at the packs.
+
+- **`battery_power` keeps its key.** Automations keep working, and the value is
+  now correct.
+- **The six old energy keys stay** as pass-throughs with the same unique id. An
+  existing installation keeps the entity, its id and its history. A new
+  installation gets only the new names. New automations should use the new names.
+- `battery_health` and `remaining_cycles` read the BMS cycle count. Before, they
+  divided the energy counter by the capacity, which gave 1211 cycles against the
+  BMS's 153. `battery_cycle_count_calc` is gone on these two models.
+
+#### Venus A and D: `battery_cycle_count` is the mean over the packs
+
+It read pack 1 only. On a seven-pack Venus D it showed 6, while the packs
+counted between 6 and 73. It now reports the mean over the fitted packs, 37 on
+that device. Expect a step in the history. Pack 1's own count stays available as
+`battery_1_cycle_count`.
+
+#### All models: values that read differently
+
+- **`inverter_state`:** state 6 is **Backup Passthrough**, not Bypass. That is
+  what the register means: the backup socket carries a load from the grid.
+- **`software_version`, `bms_version`, `ems_version`** are version strings now,
+  for example `117.7` instead of `1177`.
+- **`schedule_N_days`:** a schedule with several days reads `custom`, and the
+  days are in the attributes. Single days keep their names.
+- **Cycle counts are signed**, as the firmware types them. A BMS sentinel shows
+  as a negative number instead of one near 65535.
+- **`wifi_signal_strength` is off by default** on new installations. The value
+  can never be current while Modbus runs over the cable.
+- **Register 30212** was `dev_30212` and read as a pack count. It is the
+  power-on self-test result and is now called `selftest_status`, off by default.
+
+#### New Modbus library, and what that means for proxies
+
+The integration talks to the battery through **tmodbus** now instead of
+pymodbus. Home Assistant installs it on the restart after the update. The
+integration corrects the firmware's malformed exception replies itself, so no
+proxy is needed any more.
+
+**If you use a Modbus proxy anyway**, for example because a second client shares
+the battery, use [the patched add-on](https://github.com/sphings79/ha-modbusproxy).
+An unpatched proxy trips over the same malformed replies and drops the
+connection.
+
+#### After updating
+
+- **Restart Home Assistant**, not just reload the integration.
+- **Reload every open panel tab.** An open tab keeps running the old panel.
+  From this version on it notices a newer one and offers the reload itself.
+
+### New
+
+- **Setup finds the battery.** A Venus announces itself on the network.
+  *Add integration* listens for four seconds and fills in model, address and
+  register map. The MAC serves as the unique id, so the same battery cannot be
+  set up twice.
+- **Modbus device polling**, per battery: *Active*, *Paused, entities
+  unavailable* or *Paused, entities frozen*. This is meant for a battery
+  switched off for the season. The setting survives restarts, a paused entry
+  loads without connecting, and controls are locked while paused.
+- **A battery that is off looks off.** The status light shows green, amber, red
+  (with the time of the last answer) or grey (paused). The log reports one line
+  going off and one coming back, instead of a burst every minute. After it is
+  switched back on, the readings are back within a minute.
+- **Pack count detection.** The panel counts the packs that answer. On the
+  Venus A and D, *Options → Battery packs* can also pin the count, so the unused
+  blocks are not polled at all.
+- **Polling based on measurements at the device:** 65 ms per request and 5.5 s
+  for a full round. A new ultra-low group (default five minutes) holds the 55
+  values that only change when somebody changes them. The MPPT values are back
+  at the fast rate. [Which value is in which group](https://github.com/sphings79/marstek-modbus-suite/blob/main/docs/polling-groups.md).
+- **Schedules:**
+  - Any combination of weekdays, edited as chips in the panel.
+  - Editing an enabled schedule no longer switches it off. The firmware does
+    that on every write, and the integration switches it back on.
+  - Schedules the firmware would never run are refused: overlapping enabled
+    slots, empty windows, windows across midnight.
+- **RS485 control mode:** the repair entry "Restore the control mode" appears
+  only when this integration switched the mode on itself. A second client such as
+  evcc no longer triggers it ([#6](https://github.com/sphings79/marstek-modbus-suite/issues/6)).
+  The dialog also warns that submitting ends the configured work mode.
+- **Venus A:** pack 7 with 13 cells, and the DEV register groups.
+- **Fault texts** for the Venus A and E v3, taken from their own firmware.
+- **`alarm_status_low`**: the second half of the 32-bit alarm word. Until now it
+  was read and discarded.
+- **Panel:**
+  - Runtimes in hours and minutes.
+  - One threshold for pack spread across the tile, table and columns.
+  - Temperatures with their unit.
+  - A layout that works on a phone.
+  - Restarting the device asks for confirmation in a dialog.
+
+### Fixed
+
+- Time to full and time to empty went blank when a single PV string was missing.
+- The calculated cycle count could run into the tens of thousands on an unread
+  capacity register. Because the sensor is `total_increasing`, such a spike stays
+  in the statistics.
+- `battery_cycle_count` and `battery_power_bms` stayed blank on any stack
+  smaller than seven packs.
+- *PV passthrough* in the panel requires producing strings now, so it no longer
+  appears on a Venus E.
+- Pausing during a running poll could leave the connection open.
+- A register was fetched twice in every cycle.
+- A device that refuses the connection gets a message naming the likely causes:
+  wrong interface, or its single Modbus connection already taken.
+
+### Worth knowing
+
+- **Modbus TCP only runs over the LAN port.** Port 502 is refused on the WiFi
+  address, even when the battery has no cable at all. Discovery finds a battery
+  without a cable, but setup cannot connect to it.
+- **Venus A power limits:** `max_charge_power` and `max_discharge_power` are
+  capped at 1500 W. That has been tested on one system. How the device handles
+  writes above 1500 W comes from the firmware and has not been measured.
+- **Schedules set over Modbus** may be lost after the battery restarts. The
+  firmware writes them to EEPROM only when they come from the app. This comes
+  from the firmware and has not been tested.
+
 ## 3.0.0-rc.3
 
 rc.2 plus three schedule and panel fixes that were finished before rc.2 but
