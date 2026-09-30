@@ -5,6 +5,66 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.0-beta.1
+
+[3.0.0](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0)
+plus a new forecast for **time to full**. This is a pre-release. If you want to
+stay on stable, 3.0.0 is the one to use.
+
+### Time to full follows the order in which the BMS charges the packs
+
+`runtime_to_full` used to divide the missing energy by the current power. On a
+Venus A or D that swings between far too short and far too long for the whole
+of a charge, because the battery does not charge its packs together:
+
+- The BMS charges **one pack at a time**, the emptiest first, to the next whole
+  ten percent, and then moves on to the next emptiest pack.
+- **Above 90 % it steps the power down twice per pack.** On a seven-pack Venus D
+  the battery took about 1250 W from 90 to 95 % and about 490 W from 95 to 100 %,
+  one pack after the other.
+- The top step takes far less energy than its five percent suggest. The BMS
+  declares a pack full early.
+
+The sensor now plays that sequence through. For each step it uses the lower of
+two values: the power available, or the cap the BMS allows. With a forced
+charge running, the setpoint counts as the power available. Otherwise it is the
+measured power.
+
+**The countdown now runs smoothly through the upper range instead of jumping
+around.**
+
+### Learns from your battery
+
+The caps and the real energy of the top two steps are **learned per BMS
+firmware version**. They are forgotten when the control firmware changes. Until
+your battery has shown each step once, the forecast uses the values measured on
+the Venus D. **Expect it to get more accurate after a few charges to 100 %.**
+
+### New
+
+- **`bms_charge_current_limit`** (A and D): the charge current the BMS accepts
+  right now, register 32106. It reads 0 once the active pack is full.
+- **`bms_charge_power_limit`** (A and D): the resulting charge power cap, BMS
+  voltage times that current.
+- **Attributes `hours_to_90` and `hours_to_95`** on `runtime_to_full`. The panel
+  shows them as two marks under the countdown.
+
+### By model
+
+- **Venus D:** measured and tested, on a seven-pack unit.
+- **Venus A:** same firmware base. It is expected to behave the same way, but
+  this has **not been verified on an A**. Feedback is especially welcome here.
+- **Venus E v3 and E v1/v2:** a single pack, so there is no pack order to
+  follow. Little changes here. The forecast only takes the AC power into account
+  as well.
+
+### Feedback
+
+If you try it, please report how `runtime_to_full` behaved over a charge,
+ideally with the history of the sensor including `hours_to_90` and
+`hours_to_95`. Please include the model, the number of packs and the BMS
+version.
+
 ## 3.0.0
 
 The first stable release since [2.2.0](https://github.com/sphings79/marstek-modbus-suite/releases/tag/2.2.0).
