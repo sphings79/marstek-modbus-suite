@@ -22,6 +22,7 @@ from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     CONF_PACK_COUNT, PACK_COUNT_AUTO, MAX_PACK_COUNT,
                     PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
                     RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET,
+                    USER_WORK_MODE_KEY, CONF_RS485_CONTROL_OWNED,
                     CONF_POLLING_MODE, DEFAULT_POLLING_MODE, POLLING_MODES,
                     POLLING_MODE_ACTIVE, POLLING_MODE_PAUSED_UNAVAILABLE,
                     DEFAULT_MAX_READ_GAP, CONF_BAD_GAPS, CONF_BAD_GAPS_FIRMWARE,
@@ -223,6 +224,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # Last value seen in register 42000, to spot the device dropping out of
         # RS485 control mode on its own. None until the register is first read.
         self._last_rs485_control_mode = None
+        # Unknown on an entry from before this was stored: taken as ours, the way
+        # every drop used to be. At worst that is one report too many, after
+        # which the first "off" read settles it for good.
+        self._rs485_control_owned = bool(
+            (self.config_entry.options or {}).get(CONF_RS485_CONTROL_OWNED, True)
+        )
         self._last_block_timeout_time = None
         self._last_block_timeout_registers = None
         self._last_block_timeout_count = None
@@ -618,6 +625,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         Only a transition from on to off counts. A mode that is already off when
         Home Assistant starts is somebody's deliberate setting, not a fault.
+
+        And only while this integration owns the mode - it switched it on and
+        has not switched it off since. A second Modbus client that controls the
+        battery (evcc holds it during a charging session, then writes the work
+        mode back) produces exactly the same on-to-off transition. The register
+        cannot tell the two apart; who switched it on can.
         """
         value = updated_data.get(RS485_CONTROL_MODE_KEY)
         if value is None:
@@ -634,15 +647,28 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self._async_clear_rs485_control_mode_issue()
             return
 
+        # Off, whatever the cause: the ownership ends here. Kept for the check
+        # below, which still needs to know whether it was ours.
+        owned = self._rs485_control_owned
+        self._set_rs485_control_owned(False)
+
         if previous != definition.get("command_on"):
             return
 
-        # Our own change is not a device-side reset. Comparing the value rather
-        # than a timestamp also covers the case that matters most: after the
-        # repair flow has written "on", an "off" coming back is the device
-        # refusing it — and that has to raise the issue again, not be swallowed
-        # as a recent write of ours.
-        if self._last_write_values.get(RS485_CONTROL_MODE_KEY) == value:
+        # Not ours to report: switched off from here (the switch, or a work mode
+        # written through the select), or never switched on from here. Ownership
+        # rather than a timestamp also covers the case that matters most: after
+        # the repair flow has written "on", an "off" coming back is the device
+        # refusing it — and that has to raise the issue again.
+        if not owned:
+            _LOGGER.info(
+                "The control mode ended (register %s is %s, was %s) - not reported as a reset, "
+                "since this integration did not hold it: switched off from here, or switched "
+                "on and off by another Modbus client",
+                definition.get("register"),
+                value,
+                previous,
+            )
             return
 
         _LOGGER.warning(
@@ -684,6 +710,26 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._last_rs485_control_mode = value
         self._async_clear_rs485_control_mode_issue()
         return True
+
+    def _note_rs485_control_write(self, key: str, value: int) -> None:
+        """Track whether a successful write of ours took or gave up the mode."""
+        if key == RS485_CONTROL_MODE_KEY:
+            definition = self._rs485_control_mode_definition() or {}
+            self._set_rs485_control_owned(value == definition.get("command_on"))
+        elif key == USER_WORK_MODE_KEY:
+            # Same firmware byte: a work mode written from here ends the control
+            # mode on purpose, and the drop that follows is not a reset.
+            self._set_rs485_control_owned(False)
+
+    def _set_rs485_control_owned(self, owned: bool) -> None:
+        """Remember the ownership on the config entry, writing only on change."""
+        if owned == self._rs485_control_owned:
+            return
+        self._rs485_control_owned = owned
+        options = dict(self.config_entry.options or {})
+        options[CONF_RS485_CONTROL_OWNED] = owned
+        # No reload: this only decides whether a drop gets reported.
+        self.hass.config_entries.async_update_entry(self.config_entry, options=options)
 
     def _async_create_rs485_control_mode_issue(self) -> None:
         """Surface the reset in Settings > System > Repairs."""
@@ -1483,6 +1529,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 from homeassistant.util.dt import utcnow as _utcnow
                 self._last_write_times[key] = _utcnow()
                 self._last_write_values[key] = value_to_send
+                self._note_rs485_control_write(key, value_to_send)
                 self._schedule_post_write_refresh(key)
                 return True
             else:

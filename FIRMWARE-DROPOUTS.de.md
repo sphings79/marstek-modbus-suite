@@ -102,6 +102,10 @@ der anbietet, den Modus wieder einzuschalten. Geschrieben wird, weil jemand eine
 Knopf gedrückt hat — nicht still im Hintergrund, denn der Mechanismus hinter dem
 Rücksprung ist noch nicht vollständig verstanden.
 
+Seit 3.0.0 erscheint der Eintrag nur, wenn die Integration den Modus selbst
+eingeschaltet hat. Ein anderer Modbus-Client, der den Speicher steuert, etwa
+evcc, schaltet ihn selbst ein und aus, und das ist kein Rücksprung.
+
 Zu wissen wäre außerdem: 42000 und 43000 sind in der Firmware **dasselbe Byte**,
 nur über zwei Adressen erreichbar.
 

@@ -98,6 +98,10 @@ to switch it back on. The write happens because somebody pressed a button, not
 silently in the background — the mechanism behind the reset is still not fully
 understood.
 
+Since 3.0.0 the entry is raised only if the integration switched the mode on
+itself. Another Modbus client that controls the battery, such as evcc, switches
+it on and off on its own, and that is not a reset.
+
 Note that 42000 and 43000 are the **same byte** in firmware, reachable at two
 addresses.
 

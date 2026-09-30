@@ -248,6 +248,16 @@ CONF_DEV_REGISTERS_LEGACY = "dev_registers"
 RS485_CONTROL_MODE_KEY = "rs485_control_mode"
 ISSUE_RS485_CONTROL_MODE_RESET = "rs485_control_mode_reset"
 
+# The work mode register (43000) - the other face of the same firmware byte.
+# Writing it from here ends the control mode on purpose.
+USER_WORK_MODE_KEY = "user_work_mode"
+
+# Whether this integration switched the control mode on and has not switched it
+# off since. Only then is a drop a reset worth reporting: a second Modbus client
+# (evcc, for one) switches the mode on and off by itself, and that is not a
+# fault. Stored on the config entry so a restart does not forget it.
+CONF_RS485_CONTROL_OWNED = "rs485_control_mode_owned"
+
 
 # Polling mode, set per config entry from the select entity of the same name.
 # Not a register: it says what this integration does, not what the device is,

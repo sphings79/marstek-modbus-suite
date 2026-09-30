@@ -5,6 +5,41 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.0.0-rc.2
+
+rc.1 with one correction, from
+[#6](https://github.com/sphings79/marstek-modbus-suite/issues/6).
+
+### The control mode repair only fires when the mode was switched on from here
+
+The repair entry "Restore the control mode" reported every drop of register
+42000 from on to off that this integration had not written itself. Who had
+switched the mode on was never asked. A second Modbus client that controls the
+battery - evcc holds it during a charging session, then writes the work mode
+back - produces exactly that transition, so the entry came back after every
+session, claiming the device had reset itself. Submitting it would have taken
+the battery out of its self-consumption mode outside any session.
+
+The register cannot tell a reset from another client's write; both leave the
+same byte. What can tell them apart is who switched the mode on. The
+integration now remembers whether it did - through the switch or the repair
+flow - and stores that on the config entry, so a restart does not forget it.
+The entry is raised only while that is the case. Switching the mode off here,
+or writing the work mode through the select, gives it up, as does any "off"
+read from the device.
+
+Writing the work mode through the select no longer raises the entry either.
+It ends the control mode on purpose, since 42000 and 43000 are the same byte,
+and was reported as a reset all the same.
+
+An entry from an earlier version has nothing stored and is treated the old
+way until the device first reports the mode off. At most one more false report
+per installation, and a genuine reset right after the update is still caught.
+
+The repair text now says, in bold, that submitting takes the battery out of
+its configured work mode, and to ignore the entry when another system ended
+the mode on purpose.
+
 ## 3.0.0-rc.1
 
 [beta.13](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0-beta.13)
