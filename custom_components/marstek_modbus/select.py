@@ -9,6 +9,7 @@ from typing import Any
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -17,6 +18,9 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from .const import (DOMAIN, MANUFACTURER, MODEL, POLLING_MODE_KEY,
                     POLLING_MODES)
 from .coordinator import MarstekCoordinator
+from .schedules import (DAY_BITS, OPTION_CUSTOM, OPTION_NONE,
+                        async_write_slot, days_from_mask, option_from_mask,
+                        parse_key)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -138,8 +142,13 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         # This ensures English entity_ids while friendly_name follows user language
         self._attr_suggested_object_id = definition["key"]
 
+        # A bit mask register (the schedule days) holds any combination of its
+        # options. Single days keep their names; "none" and "custom" cover an
+        # empty mask and a combination.
+        self._bitmask = bool(definition.get("bitmask"))
+
         # You can rely on the property below, but pre-fill for HA caching behavior
-        self._attr_options = list(self.definition.get("options", {}).keys())
+        self._attr_options = self.options
 
     @property
     def entity_type(self) -> str:
@@ -164,7 +173,28 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         """
         Return a list of available options for selection.
         """
+        if self._bitmask:
+            return [OPTION_NONE, *DAY_BITS, OPTION_CUSTOM]
         return list(self.definition.get("options", {}).keys())
+
+    def _mask(self) -> int | None:
+        """Return the register value of a bit mask select, or None."""
+        data = self.coordinator.data
+        value = data.get(self._key) if data is not None else None
+        try:
+            return int(value) & 0x7F if value is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the full set of days, which the state alone cannot show."""
+        if not self._bitmask:
+            return None
+        mask = self._mask()
+        if mask is None:
+            return None
+        return {"days_mask": mask, "days": days_from_mask(mask)}
 
     @property
     def current_option(self) -> str | None:
@@ -182,6 +212,10 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         if value is None:
             return None
 
+        if self._bitmask:
+            mask = self._mask()
+            return option_from_mask(mask) if mask is not None else None
+
         options_map = self.definition.get("options", {})
         # Reverse the mapping: {int_value: option_name}
         try:
@@ -195,6 +229,24 @@ class MarstekSelect(CoordinatorEntity, SelectEntity):
         """
         Change the selected option by writing to the device register.
         """
+        if self._bitmask:
+            if option == OPTION_CUSTOM:
+                raise ServiceValidationError(
+                    "'custom' describes several days and cannot be selected; "
+                    "set the days in the Marstek Modbus panel"
+                )
+            if option != OPTION_NONE and option not in DAY_BITS:
+                _LOGGER.warning("Invalid option '%s' for %s", option, self._key)
+                return
+            slot = parse_key(self._key)
+            if slot is None:
+                _LOGGER.warning("%s is not a schedule day register", self._key)
+                return
+            await async_write_slot(
+                self.coordinator, slot[0], {"days": DAY_BITS.get(option, 0)}
+            )
+            return
+
         options_map = self.definition.get("options", {})
         if option not in options_map:
             _LOGGER.warning("Invalid option '%s' for %s", option, self._key)

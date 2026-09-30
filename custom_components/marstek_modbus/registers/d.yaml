@@ -2805,6 +2805,7 @@ SELECT_DEFINITIONS:
             discharge: 2
     schedule_1_days:
         register: 43100
+        bitmask: true
         enabled_by_default: true
         scan_interval: ultra
         category: config
@@ -2818,6 +2819,7 @@ SELECT_DEFINITIONS:
             saturday: 32
     schedule_2_days:
         register: 43105
+        bitmask: true
         enabled_by_default: true
         scan_interval: ultra
         category: config
@@ -2831,6 +2833,7 @@ SELECT_DEFINITIONS:
             saturday: 32
     schedule_3_days:
         register: 43110
+        bitmask: true
         enabled_by_default: true
         scan_interval: ultra
         category: config
@@ -2844,6 +2847,7 @@ SELECT_DEFINITIONS:
             saturday: 32
     schedule_4_days:
         register: 43115
+        bitmask: true
         enabled_by_default: true
         scan_interval: ultra
         category: config
@@ -2857,6 +2861,7 @@ SELECT_DEFINITIONS:
             saturday: 32
     schedule_5_days:
         register: 43120
+        bitmask: true
         enabled_by_default: true
         scan_interval: ultra
         category: config
@@ -2870,6 +2875,7 @@ SELECT_DEFINITIONS:
             saturday: 32
     schedule_6_days:
         register: 43125
+        bitmask: true
         enabled_by_default: true
         scan_interval: ultra
         category: config

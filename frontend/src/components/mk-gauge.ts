@@ -1,5 +1,6 @@
 import { LitElement, html, svg, css, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
+import { customElement } from "../define";
 import { baseStyles } from "../styles";
 
 const OUTER_R = 118;

@@ -1176,73 +1176,85 @@
       "schedule_1_days": {
         "name": "Schema 1 Dagen",
         "state": {
+          "none": "Geen dag",
           "sunday": "Zondag",
           "monday": "Maandag",
           "tuesday": "Dinsdag",
           "wednesday": "Woensdag",
           "thursday": "Donderdag",
           "friday": "Vrijdag",
-          "saturday": "Zaterdag"
+          "saturday": "Zaterdag",
+          "custom": "Meerdere dagen"
         }
       },
       "schedule_2_days": {
         "name": "Schema 2 Dagen",
         "state": {
+          "none": "Geen dag",
           "sunday": "Zondag",
           "monday": "Maandag",
           "tuesday": "Dinsdag",
           "wednesday": "Woensdag",
           "thursday": "Donderdag",
           "friday": "Vrijdag",
-          "saturday": "Zaterdag"
+          "saturday": "Zaterdag",
+          "custom": "Meerdere dagen"
         }
       },
       "schedule_3_days": {
         "name": "Schema 3 Dagen",
         "state": {
+          "none": "Geen dag",
           "sunday": "Zondag",
           "monday": "Maandag",
           "tuesday": "Dinsdag",
           "wednesday": "Woensdag",
           "thursday": "Donderdag",
           "friday": "Vrijdag",
-          "saturday": "Zaterdag"
+          "saturday": "Zaterdag",
+          "custom": "Meerdere dagen"
         }
       },
       "schedule_4_days": {
         "name": "Schema 4 Dagen",
         "state": {
+          "none": "Geen dag",
           "sunday": "Zondag",
           "monday": "Maandag",
           "tuesday": "Dinsdag",
           "wednesday": "Woensdag",
           "thursday": "Donderdag",
           "friday": "Vrijdag",
-          "saturday": "Zaterdag"
+          "saturday": "Zaterdag",
+          "custom": "Meerdere dagen"
         }
       },
       "schedule_5_days": {
         "name": "Schema 5 Dagen",
         "state": {
+          "none": "Geen dag",
           "sunday": "Zondag",
           "monday": "Maandag",
           "tuesday": "Dinsdag",
           "wednesday": "Woensdag",
           "thursday": "Donderdag",
           "friday": "Vrijdag",
-          "saturday": "Zaterdag"
+          "saturday": "Zaterdag",
+          "custom": "Meerdere dagen"
         }
       },
       "schedule_6_days": {
         "name": "Schema 6 Dagen",
         "state": {
+          "none": "Geen dag",
           "sunday": "Zondag",
           "monday": "Maandag",
           "tuesday": "Dinsdag",
           "wednesday": "Woensdag",
           "thursday": "Donderdag",
           "friday": "Vrijdag",
-          "saturday": "Zaterdag"
+          "saturday": "Zaterdag",
+          "custom": "Meerdere dagen"
         }
       },
       "modbus_device_polling": {
@@ -1381,6 +1393,14 @@
           "write_failed": "De batterij heeft de opdracht niet geaccepteerd. Controleer de verbinding en probeer het opnieuw."
         }
       }
+    }
+  },
+  "exceptions": {
+    "schedule_window": {
+      "message": "Schema {slot}: de start moet vóór het einde liggen. Een venster over middernacht voert het apparaat nooit uit - verdeel het over twee schema's."
+    },
+    "schedule_overlap": {
+      "message": "Schema {slot} zou op een gedeelde dag overlappen met schema {other}. Het apparaat voert alleen het eerste passende schema uit, daarom worden overlappingen geweigerd."
     }
   }
 }

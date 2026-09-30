@@ -1176,73 +1176,85 @@
       "schedule_1_days": {
         "name": "Schedule 1 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_2_days": {
         "name": "Schedule 2 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_3_days": {
         "name": "Schedule 3 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_4_days": {
         "name": "Schedule 4 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_5_days": {
         "name": "Schedule 5 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "schedule_6_days": {
         "name": "Schedule 6 Days",
         "state": {
+          "none": "No day",
           "sunday": "Sunday",
           "monday": "Monday",
           "tuesday": "Tuesday",
           "wednesday": "Wednesday",
           "thursday": "Thursday",
           "friday": "Friday",
-          "saturday": "Saturday"
+          "saturday": "Saturday",
+          "custom": "Several days"
         }
       },
       "modbus_device_polling": {
@@ -1381,6 +1393,14 @@
           "write_failed": "The battery did not accept the command. Check the connection and try again."
         }
       }
+    }
+  },
+  "exceptions": {
+    "schedule_window": {
+      "message": "Schedule {slot}: the start has to be before the end. The device never runs a window across midnight - split it into two schedules."
+    },
+    "schedule_overlap": {
+      "message": "Schedule {slot} would overlap schedule {other} on a shared day. The device runs only the first matching schedule, so overlapping windows are refused."
     }
   }
 }

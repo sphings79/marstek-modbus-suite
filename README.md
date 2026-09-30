@@ -77,15 +77,30 @@ carrying the current right now — the device works one at a time.
 ### Control
 
 <div align="center">
-<img src="assets/ui-control.svg" alt="Control tab: charge and discharge power, limits, work and forced mode, backup and RS485 switches, and the six schedules with times, power and day" width="100%">
+<img src="assets/ui-control.svg" alt="Control tab: charge and discharge power, limits, work and forced mode, backup and RS485 switches, and the six schedules with times, power and days" width="100%">
 </div>
 
 Charge and discharge power, the limits, work and forced mode, the backup and RS485 switches, and
-all six schedules — times, power, day, on and off.
+all six schedules — times, power, any set of weekdays, on and off.
 
 Every control reads its own bounds from the entity rather than hard-coding them, so the same editor
 is correct on a **1500 W** Venus A and a **2500 W** Venus D. Times are converted between the HHMM
 the registers hold and a clock field.
+
+How the device runs the schedules, from control firmware 150 on the A, D and E3:
+
+- A schedule runs while start ≤ now < end on one of its days. The end minute is not part of it, and
+  a window across midnight never runs — split it into two schedules.
+- Positive power discharges, negative charges. **−1 W** is a special value: the battery regulates
+  self-consumption for that window.
+- Only the first matching schedule runs, so the integration refuses to enable schedules that overlap
+  on a shared day, from the panel, a service call or an automation alike. Disabled schedules can be
+  prepared freely.
+- The device switches a schedule off whenever its days, start or end are written. The integration
+  switches it back on afterwards, so editing an enabled schedule leaves it enabled.
+- The firmware saves schedules to its EEPROM only when they come from the app, not over Modbus.
+  Schedules set here may therefore be gone after the battery restarts. This is read from the
+  firmware and not yet tested.
 
 > [!NOTE]
 > Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager —

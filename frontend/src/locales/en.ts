@@ -16,6 +16,8 @@ export const en: Record<string, string> = {
 
   // ---- control ----
   "tab.control": "CONTROL",
+  "update.available": "A new version of the integration is installed. This page still runs the old one.",
+  "update.reload": "Reload",
   "control.power": "Power now",
   "control.power_hint":
     "These two set the working point directly. Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager — writes the same registers and will win within seconds.",
@@ -36,13 +38,16 @@ export const en: Record<string, string> = {
   "control.schedules": "Schedules",
   "control.schedules_axis": "times are the device's own, in its local time",
   "control.schedules_hint":
-    "A schedule needs a window, a power and a day before switching it on does anything. Power is signed: the sign decides the direction. The device takes one day per schedule, not a set of them.",
+    "A schedule needs a window, a power and at least one day before switching it on does anything. Positive power discharges, negative charges; −1 W runs self-consumption for the window. The end is not part of the window, and a window across midnight never runs - use two schedules. Enabled schedules may not overlap.",
+  "control.err.schedule_window":
+    "Schedule {slot}: the start has to be before the end. Split a window across midnight into two schedules.",
+  "control.err.schedule_overlap":
+    "Schedule {slot} would overlap schedule {other} on a shared day. The device runs only the first match.",
   "control.no_schedules": "This battery exposes no schedules.",
   "control.window": "Window",
   "control.sched_power": "Power",
-  "control.days": "Day",
+  "control.days": "Days",
   "control.active": "On",
-  "control.unset": "not set",
   "control.device": "Device",
   "control.reset": "Restart device",
   "control.reset_confirm": "Really restart",

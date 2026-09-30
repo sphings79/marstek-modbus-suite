@@ -8,6 +8,8 @@ export const de: Record<string, string> = {
 
   // ---- Steuerung ----
   "tab.control": "STEUERUNG",
+  "update.available": "Eine neue Version der Integration ist installiert. Diese Seite läuft noch mit der alten.",
+  "update.reload": "Neu laden",
   "control.power": "Leistung jetzt",
   "control.power_hint":
     "Diese beiden setzen den Betriebspunkt direkt. Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager — schreibt dieselben Register und gewinnt innerhalb von Sekunden.",
@@ -28,13 +30,16 @@ export const de: Record<string, string> = {
   "control.schedules": "Zeitpläne",
   "control.schedules_axis": "Zeiten sind die des Geräts, in dessen lokaler Zeit",
   "control.schedules_hint":
-    "Ein Zeitplan braucht Zeitfenster, Leistung und Tag, bevor das Einschalten etwas bewirkt. Die Leistung ist vorzeichenbehaftet — das Vorzeichen bestimmt die Richtung. Das Gerät nimmt einen Tag je Zeitplan, keine Auswahl mehrerer.",
+    "Ein Zeitplan braucht Zeitfenster, Leistung und mindestens einen Tag, bevor das Einschalten etwas bewirkt. Positive Leistung entlädt, negative lädt; −1 W regelt im Fenster auf Eigenverbrauch. Das Ende gehört nicht mehr zum Fenster, und Fenster über Mitternacht laufen nie – dafür zwei Zeitpläne nehmen. Aktive Zeitpläne dürfen sich nicht überschneiden.",
+  "control.err.schedule_window":
+    "Zeitplan {slot}: Der Start muss vor dem Ende liegen. Über Mitternacht auf zwei Zeitpläne aufteilen.",
+  "control.err.schedule_overlap":
+    "Zeitplan {slot} würde sich an einem gemeinsamen Tag mit Zeitplan {other} überschneiden. Das Gerät führt nur den ersten passenden aus.",
   "control.no_schedules": "Dieser Speicher bietet keine Zeitpläne.",
   "control.window": "Fenster",
   "control.sched_power": "Leistung",
-  "control.days": "Tag",
+  "control.days": "Tage",
   "control.active": "An",
-  "control.unset": "nicht gesetzt",
   "control.device": "Gerät",
   "control.reset": "Gerät neu starten",
   "control.reset_confirm": "Wirklich neu starten",

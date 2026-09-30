@@ -1,5 +1,5 @@
 import { html, css, nothing } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement } from "../define";
 import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
 import "../components/mk-stat";

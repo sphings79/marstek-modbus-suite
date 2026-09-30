@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
-import { customElement, property, query } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
+import { customElement } from "../define";
 import { baseStyles } from "../styles";
 
 /**

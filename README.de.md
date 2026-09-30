@@ -79,15 +79,30 @@ markierte Pack ist das, das gerade Strom führt — das Gerät arbeitet eines na
 ### Steuerung
 
 <div align="center">
-<img src="assets/ui-control.svg" alt="Steuerung: Lade- und Entladeleistung, Grenzwerte, Benutzer- und erzwungener Modus, Notstrom- und RS485-Schalter sowie die sechs Zeitpläne mit Zeiten, Leistung und Tag" width="100%">
+<img src="assets/ui-control.svg" alt="Steuerung: Lade- und Entladeleistung, Grenzwerte, Benutzer- und erzwungener Modus, Notstrom- und RS485-Schalter sowie die sechs Zeitpläne mit Zeiten, Leistung und Tagen" width="100%">
 </div>
 
 Lade- und Entladeleistung, die Grenzwerte, Benutzer- und erzwungener Modus, die Schalter für
-Notstrom und RS485 — und alle sechs Zeitpläne mit Zeiten, Leistung, Tag und An/Aus.
+Notstrom und RS485 — und alle sechs Zeitpläne mit Zeiten, Leistung, beliebigen Wochentagen und An/Aus.
 
 Jeder Regler liest seine Grenzen aus der Entität, statt sie fest zu verdrahten. Derselbe Editor ist
 damit auf einem **1500-W**-Venus-A genauso richtig wie auf einem **2500-W**-Venus-D. Zeiten werden
 zwischen dem HHMM der Register und einem Uhrzeitfeld umgerechnet.
+
+So führt das Gerät die Zeitpläne aus, laut Control-Firmware 150 auf A, D und E3:
+
+- Ein Zeitplan läuft, solange Start ≤ jetzt < Ende an einem seiner Tage gilt. Die End-Minute gehört
+  nicht mehr dazu, und ein Fenster über Mitternacht läuft nie — dafür zwei Zeitpläne nehmen.
+- Positive Leistung entlädt, negative lädt. **−1 W** ist ein Sonderwert: Der Speicher regelt in
+  diesem Fenster auf Eigenverbrauch.
+- Es läuft nur der erste passende Zeitplan. Die Integration lehnt es deshalb ab, Zeitpläne zu
+  aktivieren, die sich an einem gemeinsamen Tag überschneiden — egal ob aus dem Panel, per Dienst oder
+  aus einer Automation. Inaktive Zeitpläne lassen sich frei vorbereiten.
+- Das Gerät schaltet einen Zeitplan aus, sobald Tage, Start oder Ende geschrieben werden. Die
+  Integration schaltet ihn danach wieder ein, ein aktiver Zeitplan bleibt beim Bearbeiten also aktiv.
+- Die Firmware speichert Zeitpläne nur ins EEPROM, wenn sie aus der App kommen, nicht per Modbus.
+  Hier gesetzte Zeitpläne können nach einem Neustart des Speichers also weg sein. Das ist aus der
+  Firmware gelesen und noch nicht getestet.
 
 > [!NOTE]
 > Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager —
