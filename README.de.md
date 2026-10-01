@@ -493,7 +493,7 @@ sich, welchen du zuletzt angesehen hast. Eine Summenansicht über mehrere Speich
 nicht.
 
 **Funktioniert das zusammen mit venuscontrol?**
-Ja, beides ergänzt sich: [venuscontrol](https://github.com/sphings79/venuscontrol) konfiguriert den
+Ja, beides ergänzt sich: [marstek-ble-control](https://github.com/sphings79/marstek-ble-control) konfiguriert den
 Speicher über Bluetooth — unter anderem lassen sich dort die Schnittstellen einschalten, die diese
 Integration anschließend über Modbus liest.
 
@@ -505,13 +505,13 @@ Registerforschung hier stammt von A-/D-/E3-Hardware. Behandle Funde zu E v1/v2 a
 
 ## Verwandte Projekte
 
-- 🖥️ **[venuscontrol](https://github.com/sphings79/venuscontrol)** — cloudfreies
-  Web-Bluetooth-Bedienpanel für Venus A / D, inklusive OTA-Firmware-Updates
+- 🖥️ **[marstek-ble-control](https://github.com/sphings79/marstek-ble-control)** — cloudfreies
+  Web-Bluetooth-Bedienpanel für Venus A / D / E, inklusive OTA-Firmware-Updates
 - 📦 **[Marstek-Firmware-Archiv](https://github.com/sphings79/marstek-firmware-archiv)**
 - 🛰️ **[Marstek Offline Endpoint](https://github.com/sphings79/Marstek-offline-endpoint)** —
   beantwortet den Telemetrie-Upload lokal, wodurch die 30-Minuten-Aussetzer verschwinden und die
   Daten im Haus bleiben
-- 🔬 **[Reverse Engineering der Venus-D-Firmware](https://github.com/sphings79/Marstek-Venus-D-Firmware-Reverse-Engineering)**
+- 🔬 **[Reverse Engineering der Venus-Firmware](https://github.com/sphings79/Marstek-Venus-Firmware-Reverse-Engineering)**
 - 🌐 **[Weitere Projekte und Tools](https://sphings-dev.de/)**
 
 ## Dank
