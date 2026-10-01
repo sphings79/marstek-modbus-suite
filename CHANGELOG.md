@@ -5,6 +5,21 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.0-beta.2
+
+[3.1.0-beta.1](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.1.0-beta.1)
+plus the fix from [3.0.1](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.1). This is a
+pre-release. If you want to stay on stable, 3.0.1 is the one to use.
+
+### The integration recovers after the battery was unreachable during startup
+
+A failed or cancelled setup, for example while the battery reboots for a firmware
+update, is now cleaned up completely. Before, platforms that had already registered stayed
+behind, every retry failed with `... has already been setup!`, and the entry stayed loaded
+but never polled until it was reloaded by hand. Details are in the 3.0.1 notes below.
+
+---
+
 ## 3.1.0-beta.1
 
 [3.0.0](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0)
