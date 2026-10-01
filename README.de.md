@@ -493,7 +493,7 @@ sich, welchen du zuletzt angesehen hast. Eine Summenansicht über mehrere Speich
 nicht.
 
 **Funktioniert das zusammen mit venuscontrol?**
-Ja, beides ergänzt sich: [marstek-ble-control](https://github.com/sphings79/marstek-ble-control) konfiguriert den
+Ja, beides ergänzt sich: [Marstek BLE Control](https://github.com/sphings79/marstek-ble-control) konfiguriert den
 Speicher über Bluetooth — unter anderem lassen sich dort die Schnittstellen einschalten, die diese
 Integration anschließend über Modbus liest.
 
@@ -505,7 +505,7 @@ Registerforschung hier stammt von A-/D-/E3-Hardware. Behandle Funde zu E v1/v2 a
 
 ## Verwandte Projekte
 
-- 🖥️ **[marstek-ble-control](https://github.com/sphings79/marstek-ble-control)** — cloudfreies
+- 🖥️ **[Marstek BLE Control](https://github.com/sphings79/marstek-ble-control)** — cloudfreies
   Web-Bluetooth-Bedienpanel für Venus A / D / E, inklusive OTA-Firmware-Updates
 - 📦 **[Marstek-Firmware-Archiv](https://github.com/sphings79/marstek-firmware-archiv)**
 - 🛰️ **[Marstek Offline Endpoint](https://github.com/sphings79/Marstek-offline-endpoint)** —

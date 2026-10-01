@@ -500,7 +500,7 @@ were looking at. There is no combined view across several batteries yet.
 
 **Can this work together with venuscontrol?**
 Yes, and they complement each other:
-[marstek-ble-control](https://github.com/sphings79/marstek-ble-control) configures the battery over Bluetooth —
+[Marstek BLE Control](https://github.com/sphings79/marstek-ble-control) configures the battery over Bluetooth —
 including switching on the interfaces this integration then reads over Modbus.
 
 **Is my Venus E v1/v2 fully supported?**
@@ -511,7 +511,7 @@ from A/D/E3 hardware. Treat E v1/v2 findings as unverified.
 
 ## Related projects
 
-- 🖥️ **[marstek-ble-control](https://github.com/sphings79/marstek-ble-control)** — cloud-free Web Bluetooth control
+- 🖥️ **[Marstek BLE Control](https://github.com/sphings79/marstek-ble-control)** — cloud-free Web Bluetooth control
   panel for Venus A / D / E, including OTA firmware updates
 - 📦 **[Marstek firmware archive](https://github.com/sphings79/marstek-firmware-archiv)**
 - 🛰️ **[Marstek Offline Endpoint](https://github.com/sphings79/Marstek-offline-endpoint)** — answers the
