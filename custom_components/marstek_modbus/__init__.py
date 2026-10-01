@@ -124,9 +124,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 f"Cannot connect to Modbus device at {coordinator.host}:{coordinator.port}"
             )
 
-        # Forward setup to all platforms defined in PLATFORMS
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+        # Forward setup to all platforms defined in PLATFORMS.
+        #
+        # The flag is set BEFORE the await on purpose: if the forward is
+        # cancelled or one platform raises half-way, the platforms that did
+        # register must still be unloaded below. Otherwise the retry that Home
+        # Assistant schedules dies with "... has already been setup!" on every
+        # platform and the entry ends up loaded but never polling.
         platforms_forwarded = True
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
         # Perform first refresh to ensure coordinator has up-to-date data.
         # Raises ConfigEntryNotReady by itself if the first poll fails.
@@ -139,13 +145,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await async_register_panel(hass)
         except Exception as err:  # noqa: BLE001 - the panel is optional
             _LOGGER.warning("Could not register the sidebar panel: %s", err)
-    except Exception:
+    except BaseException:
         # Do not leave a half-set-up entry (platforms, an open socket) behind
-        # when Home Assistant retries the setup later.
+        # when Home Assistant retries the setup later. BaseException on
+        # purpose: Home Assistant cancels a setup that runs into its timeout
+        # (for example while the device reboots and the first poll hangs), and
+        # a cancellation is not an Exception. Every cleanup step is guarded so
+        # that one failing step cannot skip the next, and the original error
+        # is always the one that propagates.
         if platforms_forwarded:
-            await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-        await coordinator.async_close()
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+            try:
+                await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+            except Exception as err:  # noqa: BLE001 - cleanup must go on
+                _LOGGER.warning(
+                    "Could not unload platforms of %s after a failed setup: %s",
+                    entry.entry_id,
+                    err,
+                )
+        try:
+            await coordinator.async_close()
+        except Exception as err:  # noqa: BLE001 - cleanup must go on
+            _LOGGER.warning(
+                "Could not close the coordinator of %s after a failed setup: %s",
+                entry.entry_id,
+                err,
+            )
+        # Only drop our own coordinator: a newer attempt may already have
+        # replaced it.
+        if hass.data.get(DOMAIN, {}).get(entry.entry_id) is coordinator:
+            hass.data[DOMAIN].pop(entry.entry_id, None)
         raise
 
     return True
