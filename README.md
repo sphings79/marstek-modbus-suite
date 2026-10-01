@@ -432,7 +432,7 @@ outbound connection beyond the one TCP socket to the address you configured.
   A few seconds with no Modbus and no ping, on a fixed rhythm. This is the device's own firmware
   resetting its network chip when it cannot reach Marstek's cloud — not this integration, and not
   your network. It cannot be prevented from here, only survived quickly, which is what 1.2.0
-  onwards does. Mechanism, and how to stop it: **[FIRMWARE-DROPOUTS.md](FIRMWARE-DROPOUTS.md)**.
+  onwards does. Mechanism, and how to stop it: **[FIRMWARE-DROPOUTS.md](FIRMWARE-DROPOUTS.md)**. Firmware v151 replaces the chip reset by a controller reboot after four hours without a successful upload — see the same document.
 
 - **A read fails every few minutes while the battery uploads its telemetry**
   Firmware v150 sends telemetry over TLS, and the key exchange stops the device answering Modbus

@@ -105,6 +105,20 @@ it on and off on its own, and that is not a reset.
 Note that 42000 and 43000 are the **same byte** in firmware, reachable at two
 addresses.
 
+## Firmware v151: the chip reset became a reboot
+
+*From the decompiled code (Control v150 vs v151). Not yet measured on a v151 device.*
+
+v151 no longer resets the network chip every 30 minutes. If five or more telemetry records stay unsent **for four hours without a
+single success**, it reboots the whole controller instead — and the inverter output is switched off during that reboot, also in
+backup operation. With the cloud unreachable this happens about 4 h 25 min after the last successful upload and repeats. The
+suppression flag that was added next to it is never set in the code that was searched.
+
+What it means for this integration: the half-hourly dropouts disappear on v151, but a battery that is deliberately kept offline now
+reboots every few hours — Modbus is gone for the length of the boot and the output is off. The offline endpoint below prevents
+it in the same way as before (it acknowledges every upload, the backlog never builds); upload path and response parser are
+unchanged in v151. Not checked: the WiFi upload path. Details: [issue 2](https://github.com/sphings79/marstek-modbus-suite/issues/2).
+
 ## Making the dropouts stop
 
 The only way to stop them without patching firmware is to give the battery

@@ -17,7 +17,7 @@ body:
           required: true
         - label: I am running the latest released version of the integration.
           required: true
-        - label: I read [Known issues](https://github.com/sphings79/marstek-modbus-suite#known-issues) and [FIRMWARE-DROPOUTS.md](https://github.com/sphings79/marstek-modbus-suite/blob/main/FIRMWARE-DROPOUTS.md), and this is not one of them.
+        - label: I read [Known issues](https://github.com/sphings79/marstek-modbus-suite#known-issues) and [FIRMWARE-DROPOUTS.md](https://github.com/sphings79/marstek-modbus-suite/blob/main/FIRMWARE-DROPOUTS.md) (v150 network chip resets, v151 controller reboots), and this is not one of them.
           required: true
 
   - type: textarea

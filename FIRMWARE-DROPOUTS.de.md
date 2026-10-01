@@ -109,6 +109,20 @@ evcc, schaltet ihn selbst ein und aus, und das ist kein Rücksprung.
 Zu wissen wäre außerdem: 42000 und 43000 sind in der Firmware **dasselbe Byte**,
 nur über zwei Adressen erreichbar.
 
+## Firmware v151: aus dem Chip-Reset wurde ein Neustart
+
+*Aus dem dekompilierten Code (Control v150 gegen v151). An einem v151-Gerät noch nicht gemessen.*
+
+v151 setzt den Netzwerkchip nicht mehr alle 30 Minuten zurück. Bleiben fünf oder mehr Telemetrie-Einträge **vier Stunden lang ohne einen
+einzigen Erfolg** unversendet, startet es stattdessen die ganze Steuerung neu — und der Wechselrichterausgang ist während des Neustarts
+aus, auch im Notstrombetrieb. Bei nicht erreichbarer Cloud passiert das etwa 4 h 25 min nach dem letzten erfolgreichen Upload und
+wiederholt sich. Das daneben neu eingeführte Unterdrückungs-Flag wird im untersuchten Code nie gesetzt.
+
+Was das für diese Integration heißt: Die halbstündlichen Aussetzer verschwinden unter v151, aber eine absichtlich offline betriebene
+Batterie startet jetzt alle paar Stunden neu — Modbus ist für die Bootdauer weg und der Ausgang ist aus. Der unten genannte Offline-Endpoint
+verhindert das wie bisher (er quittiert jeden Upload, der Puffer läuft nie voll); Upload-Pfad und Antwort-Parser sind in v151 unverändert.
+Nicht geprüft: der WLAN-Uploadpfad. Details: [Issue 2](https://github.com/sphings79/marstek-modbus-suite/issues/2).
+
 ## Wie die Ausfälle aufhören
 
 Ohne Firmware-Eingriff gibt es genau einen Weg: der Batterie etwas geben, das

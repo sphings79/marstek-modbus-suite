@@ -422,7 +422,7 @@ konfiguriert hast.
   die ihren Netzwerkchip zurücksetzt, wenn sie Marsteks Cloud nicht erreicht — nicht diese
   Integration und nicht dein Netzwerk. Von hier aus lässt es sich nicht verhindern, nur schnell
   überstehen, und genau das tut die Integration seit 1.2.0. Mechanismus und Abhilfe:
-  **[FIRMWARE-DROPOUTS.de.md](FIRMWARE-DROPOUTS.de.md)**.
+  **[FIRMWARE-DROPOUTS.de.md](FIRMWARE-DROPOUTS.de.md)**. Firmware v151 ersetzt den Chip-Reset durch einen Neustart der Steuerung nach vier Stunden ohne erfolgreichen Upload — siehe dasselbe Dokument.
 
 - **Alle paar Minuten scheitert ein Read, während die Batterie ihre Telemetrie hochlädt**
   Firmware v150 schickt die Telemetrie über TLS, und der Schlüsselaustausch lässt das Gerät rund
