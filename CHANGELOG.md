@@ -5,6 +5,27 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.0.1
+
+Bug-fix release on top of [3.0.0](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.0).
+
+### The integration no longer stays dead after the battery was unreachable during startup
+
+When the Venus was unreachable while Home Assistant (re)loaded the integration,
+for example during a control firmware update with its reboot, the setup could
+be cancelled half-way by Home Assistant's own setup timeout. The platforms that
+had already registered were not unloaded in that case. Every later retry then
+failed with `... has already been setup!` on all platforms, and the entry
+stayed **loaded but never polled**: the connection sensor stayed off with zero
+read attempts and all entities were `unknown`, although the battery was
+reachable again. Only a manual reload helped.
+
+Failed setups are now cleaned up completely, including cancellations, so the
+next retry starts from a clean state and the integration recovers on its own
+once the device answers again.
+
+---
+
 ## 3.0.0
 
 The first stable release since [2.2.0](https://github.com/sphings79/marstek-modbus-suite/releases/tag/2.2.0).
