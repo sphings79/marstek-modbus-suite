@@ -1651,6 +1651,10 @@
       "name": "WLAN-Zugangsdaten setzen",
       "description": "Schreibt WLAN-Name und Passwort in das Kommunikationsmodul einer Venus D, Venus A oder Venus E v3. Für Fortgeschrittene: braucht Optionen > DEV-Register > DEV-Register anzeigen. Die Firmware legt die Zugangsdaten in einem EEPROM-Bereich ab, der sich mit einer anderen Einstellung überschneidet (ein Firmware-Fehler); ein falscher oder abgebrochener Schreibvorgang kann das Modul mit falschen Zugangsdaten zurücklassen. Nur verwenden, wenn die Batterie auf anderem Weg (App, Kabel) erreichbar ist, um das zu korrigieren. Das Passwort wird nie zurückgelesen und nie protokolliert.",
       "fields": {
+        "device_id": {
+          "name": "Batterie",
+          "description": "Die Batterie, in die geschrieben wird. Kann entfallen, wenn genau eine Venus D, A oder E v3 eingerichtet ist."
+        },
         "ssid": {
           "name": "SSID",
           "description": "Der Netzwerkname: 1 bis 31 druckbare ASCII-Zeichen, ohne Komma und ohne Anführungszeichen."

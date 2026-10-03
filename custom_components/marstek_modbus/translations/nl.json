@@ -1651,6 +1651,10 @@
       "name": "Wifi-gegevens instellen",
       "description": "Schrijft de wifi-netwerknaam en het wachtwoord naar de communicatiemodule van een Venus D, Venus A of Venus E v3. Geavanceerd: vereist Opties > DEV-registers > DEV-registers tonen. De firmware slaat de gegevens op in een EEPROM-gebied dat overlapt met een andere instelling (een firmwarefout); een verkeerde of afgebroken schrijfactie kan de module met verkeerde gegevens achterlaten. Gebruik het alleen als de batterij op een andere manier (app, kabel) bereikbaar is om dat te corrigeren. Het wachtwoord wordt nooit teruggelezen en nooit gelogd.",
       "fields": {
+        "device_id": {
+          "name": "Batterij",
+          "description": "De batterij waarnaar wordt geschreven. Mag worden weggelaten als precies één Venus D, A of E v3 is ingesteld."
+        },
         "ssid": {
           "name": "SSID",
           "description": "De netwerknaam: 1 tot 31 afdrukbare ASCII-tekens, zonder komma en zonder dubbele aanhalingsteken."

@@ -1,8 +1,11 @@
 set_wifi:
-  target:
-    device:
-      integration: marstek_modbus
   fields:
+    device_id:
+      required: false
+      selector:
+        device:
+          integration: marstek_modbus
+          multiple: true
     ssid:
       required: true
       example: "MyNetwork"

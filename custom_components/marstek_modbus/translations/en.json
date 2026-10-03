@@ -1651,6 +1651,10 @@
       "name": "Set Wi-Fi credentials",
       "description": "Writes the Wi-Fi network name and password to the communication module of a Venus D, Venus A or Venus E v3. Advanced: needs Options > DEV registers > Show DEV registers. The firmware stores the credentials in an EEPROM area that overlaps another setting (a firmware bug), so a wrong or aborted write can leave the module with wrong credentials. Use it only when the battery is reachable another way (the app, a cable) to correct it. The password is never read back and never logged.",
       "fields": {
+        "device_id": {
+          "name": "Battery",
+          "description": "The battery to write to. Can be left out when exactly one Venus D, A or E v3 is set up."
+        },
         "ssid": {
           "name": "SSID",
           "description": "The network name: 1 to 31 printable ASCII characters, without a comma and without a double quote."
