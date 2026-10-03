@@ -23,3 +23,7 @@ macmini-haos.pub
 id_*
 *.pem
 *.key
+
+# Internal migration notes, kept local
+TMODBUS-MIGRATION.md
+TMODBUS-MIGRATION.de.md

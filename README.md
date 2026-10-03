@@ -84,7 +84,7 @@ Charge and discharge power, the limits, work and forced mode, the backup and RS4
 all six schedules — times, power, any set of weekdays, on and off.
 
 Every control reads its own bounds from the entity rather than hard-coding them, so the same editor
-is correct on a **1500 W** Venus A and a **2500 W** Venus D. Times are converted between the HHMM
+is correct on a **1450 W** Venus A and a **2500 W** Venus D. Times are converted between the HHMM
 the registers hold and a clock field.
 
 How the device runs the schedules, from control firmware 150 on the A, D and E3:
@@ -106,6 +106,22 @@ How the device runs the schedules, from control firmware 150 on the A, D and E3:
 > Anything that regulates the battery from outside — a zero-feed-in automation, an energy manager —
 > writes the same registers and will win within seconds. When that happens right after you set a
 > value, the tab says so instead of looking broken.
+
+### System and maintenance
+
+The System tab lists model, firmware, connection and the fault registers. Its banner names the
+cause of a raised fault word in plain text, not just the register; the BMS fault lock (and the BMS
+factory mode, if you enabled that entity) shows as a warning, and the Venus E v3 waiting for the
+grid release shows as a hint, not as a fault.
+
+At the bottom, collapsed by default, sits a **maintenance** section drawn as a danger zone. It lists
+every command button of the battery you have enabled (factory reset, pack coding, LED test, the
+service tests and, with the DEV option, the DEV commands). A command with the integration's
+two-step confirmation shows the warning first, with a countdown, and is only sent if you confirm
+within the window. Beside it, the **Wi-Fi** form sends new credentials to the communication module
+with the same checks as the service `marstek_modbus.set_wifi`, but through the integration's own
+websocket command, so the password stays out of the recorder — see [docs/set-wifi.md](docs/set-wifi.md)
+for the warning that goes with it. The password is never stored by the panel.
 
 ### Settings
 
@@ -134,7 +150,7 @@ distinguishable from one that was never there.
 |---|:---:|:---:|:---:|
 | 🇬🇧 **English** | ✅ | ✅ | ✅ |
 | 🇩🇪 **Deutsch** | ✅ | ✅ | ✅ |
-| 🇳🇱 **Nederlands** | ✅ | ✅ | falls back to English |
+| 🇳🇱 **Nederlands** | ✅ | ✅ | ✅ |
 
 All three follow whatever language Home Assistant is set to — nothing to configure. Entity names
 come from Home Assistant's own translation system, which is also why the panel finds its values by
@@ -166,21 +182,24 @@ a model has no data for, and the entity list follows the same lines.
 | Remaining cycles and state of health | ✅ | ✅ | ✅ | ✅ |
 | Internal and cell temperatures | ✅ | ✅ | ✅ | ✅ |
 | Firmware versions, network diagnostics | ✅ | ✅ | ✅ | ✅ |
-| Fault and alarm registers | ✅ | ✅ | ✅ | ❌ |
+| Fault and alarm registers | ✅ | ✅ | ✅ | ✅ |
 | **Solar inputs (MPPT)** | ✅ | ✅ | ❌ | ❌ |
-| **Cell voltages per pack** | ✅ | ✅ | ❌ | ❌ |
+| **Cell voltages per pack** | ✅ | ✅ | ❌ | ✅¹ |
 | **State of charge per pack** | ✅ | ✅ | ❌ | ❌ |
-| **Temperatures and cycles per pack** | ✅ | ✅ | ❌ | ❌ |
-| **Protection flags per pack** | ✅ | ✅ | ❌ | ❌ |
+| **Temperatures and cycles per pack** | ✅ | ✅ | ❌ | ✅¹ |
+| **Protection flags per pack** | ✅ | ✅ | ❌ | ✅¹ |
 | **Which pack is carrying the current** | ✅ | ✅ | ❌ | ❌ |
 | Battery packs | up to 6 | up to 7 | 1, built in | 1, built in |
+
+¹ The one built-in pack of the Venus E v3. These readings exist but are disabled by default there;
+enable them in the entity list to see them.
 
 ### Control
 
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Charge and discharge power | ✅ | ✅ | ✅ | ✅ |
-| Power limits | 1500 W | 2500 W | 2500 W | 2500 W |
+| Power limits | 1450 W | 2500 W | 2500 W | 2500 W |
 | Charge target (SoC ceiling) | ✅ | ✅ | ✅ | ✅ |
 | Operating mode, forced mode | ✅ | ✅ | ✅ | ✅ |
 | Six schedules with day selection | ✅ | ✅ | ✅ | ✅ |
@@ -191,13 +210,25 @@ a model has no data for, and the entity list follows the same lines.
 
 Everything in this table is editable from the **Control** tab as well as from the entity list.
 
+### Maintenance and services
+
+| | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
+|---|:---:|:---:|:---:|:---:|
+| Factory reset (with a confirmation step) | ✅ | ✅ | ✅ | ✅ |
+| LED test, inverter EEPROM test | ✅ | ✅ | ❌ | ✅ |
+| Wi-Fi setup service `set_wifi` | ✅ | ✅ | ❌ | ✅ |
+| DEV registers and DEV buttons (option **Show DEV registers**) | ✅ | ✅ | ❌ | ✅ |
+
+The maintenance section in the **System** tab lists the commands your battery has; the DEV ones and
+`set_wifi` need the option **Show DEV registers**.
+
 ### Panel tabs
 
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Overview | ✅ | ✅ | ✅ | ✅ |
-| Cells | ✅ | ✅ | ❌ | ❌ |
-| Packs | ✅ | ✅ | ❌ | ❌ |
+| Cells | ✅ | ✅ | ❌ | ✅¹ |
+| Packs | ✅ | ✅ | ❌ | ✅¹ |
 | Solar | ✅ | ✅ | ❌ | ❌ |
 | Energy | ✅ | ✅ | ✅ | ✅ |
 | **Control** | ✅ | ✅ | ✅ | ✅ |
@@ -206,6 +237,10 @@ Everything in this table is editable from the **Control** tab as well as from th
 
 A tab appears only when the battery has something to put in it, and it can be hidden by hand in
 the settings — where the ones your model cannot fill are listed greyed out with the reason.
+
+¹ The one built-in pack. Its readings (cell voltages, pack temperatures, protection and warning
+words, MOSFET status, battery profile) are disabled by default on the Venus E v3; the tabs say so
+and fill in once you enable them.
 
 > [!IMPORTANT]
 > Venus **A**, **D** and **E v3** share one firmware base. Venus **E v1/v2** is built on a
@@ -302,7 +337,9 @@ repository has to be removed from HACS first. For the entities there are two pat
 </div>
 
 Everything lands on one device. **Every entity the panel reads is enabled by default**, so the
-panel is complete the moment the integration is set up — nothing to switch on by hand. What stays
+panel is complete the moment the integration is set up — nothing to switch on by hand. The
+exceptions are opt-in on purpose: the command buttons of the maintenance section and the pack
+readings of the Venus E v3. What stays
 disabled is what no view asks for: registers whose meaning is unclear, values a sensor already
 reports under another name, and diagnostics for cases that are not yours. Enable those in the
 entity list if you want them.
@@ -379,6 +416,16 @@ Home Assistant's own **Enable polling for updates**, under the entry's system op
 and is independent of this. If both are set, Home Assistant's wins, because it stops the scheduler
 before the integration is asked.
 
+### Registers that are not offered, and the Wi-Fi service
+
+Some registers of the Venus D, A and E v3 are deliberately not turned into entities or buttons, because
+writing them can stop the output, bypass the protections or disable Modbus for good.
+[docs/not-offered-registers.md](docs/not-offered-registers.md) lists them with the reason for each.
+One of them has a service instead: `marstek_modbus.set_wifi` writes the Wi-Fi credentials of the
+communication module on the Venus D, A and E v3. It is off unless **Options → DEV registers → Show
+DEV registers** is on, and a wrong or aborted write can leave the module with wrong credentials,
+so read [docs/set-wifi.md](docs/set-wifi.md) first.
+
 ---
 
 ## What stays local
@@ -437,9 +484,7 @@ outbound connection beyond the one TCP socket to the address you configured.
 - **A read fails every few minutes while the battery uploads its telemetry**
   Firmware v150 sends telemetry over TLS, and the key exchange stops the device answering Modbus
   for about four and a half seconds. Any read shorter than that gives up, and the answer arrives
-  afterwards with nobody waiting for it. Measured here, along with what the client library does
-  with that reply and why it decides whether the stall costs one failed read or two:
-  **[TMODBUS-MIGRATION.md](TMODBUS-MIGRATION.md)**.
+  afterwards with nobody waiting for it.
 
 ---
 

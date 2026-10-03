@@ -15,11 +15,12 @@ Below is a per-key table showing descriptive fields and the register defined in 
 
 | Key / Name                        | Description                                | Type    | Bytes | Scale  | Unit | a     | d     | e_v12 | e_v3 |
 |:----------------------------------|:-------------------------------------------|:--------|:-----:|:------:|:----:|:-----:|:-----:|:------:|:-----:|
-| device_name                       | Device name (string)                       | char    | 20   | -      | -    | 31000 | 31000 | 31000 | 31000 |
+| device_name                       | Device name (string)                       | char    | 20   | -      | -    |       |       | 31000 |       |
+| device_model                      | Model string (fixed `VNSD-0` / `VNSA-0` / `VNSE3-0`) | char    | 20   | -      | -    | 31000 | 31000 |       | 31000 |
 | sn_code                           | Device serial / SN code                    | char    | 20   | -      | -    |       |       | 31200 |       |
 | software_version                  | Device software version                    | uint16  | 2    | 0.01   | -    |       |       | 31100 |       |
-| bms_version                       | BMS firmware version                       | uint16  | 2    | -      | -    | 30204 | 30204 | 31102 | 30204 |
-| vms_version                       | VMS firmware version                       | uint16  | 2    | -      | -    | 30202 | 30202 |       | 30202 |
+| bms_version                       | BMS firmware version                       | uint16  | 2    | -      | -    |       |       | 31102 | 30204 |
+| vns_version                       | Inverter (VNS) firmware version | uint16  | 2    | -      | -    | 30202 | 30202 |       | 30202 |
 | ems_version                       | EMS firmware version (special formatting)  | uint16  | 2    | 1      | -    | 30200 | 30200 | 31101 | 30200 |
 | firmware_version                  | Combined firmware version string           | calculated | - | - | - |  |  |  |  |
 | ble_mac_address                   | BLE MAC address                            | mac     | 12   | -      | -    | 30304 | 30304 | 30402 | 30304 |
@@ -29,30 +30,31 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | wifi_status (binary)              | WiFi connected (0/1)                       | uint16  | 2    | 1      | -    | 30300 | 30300 | 30300 | 30300 |
 | cloud_status (binary)             | Cloud connected (0/1)                      | uint16  | 2    | 1      | -    | 30302 | 30302 | 30302 | 30302 |
 | battery_soc                       | State of charge                            | uint16  | 2    | 0.1/1  | %    | 32104 | 32104 | 32104 | 34002 |
-| battery_total_energy              | Total stored energy                        | uint16  | 2    | 0.001  | kWh  | 32105 | 32105 | 32105 | 32105 |
-| battery_voltage                   | Battery voltage                            | uint16  | 2    | 0.01   | V    | 30100 | 30100 | 32100 | 30100 |
-| battery_current                   | Battery current                            | int16   | 2    | 0.1/0.01| A   | 30101 | 30101 | 32101 | 30101 |
-| battery_power                     | Battery power                              | int16/32| 2/4  | 1      | W    | 30001 | 30001 | 32102 | 30001 |
-| total_charging_energy             | Total charging energy                      | uint32  | 4    | 0.01   | kWh  | 33000 | 33000 | 33000 | 33000 |
-| total_discharging_energy          | Total discharging energy                   | int32   | 4    | 0.01   | kWh  | 33002 | 33002 | 33002 | 33002 |
-| total_daily_charging_energy       | Total daily charging energy                | uint32  | 4    | 0.01   | kWh  | 33004 | 33004 | 33004 | 33004 |
-| total_daily_discharging_energy    | Total daily discharging energy             | int32   | 4    | 0.01   | kWh  | 33006 | 33006 | 33006 | 33006 |
-| total_monthly_charging_energy     | Total monthly charging energy              | uint32  | 4    | 0.01   | kWh  | 33008 | 33008 | 33008 | 33008 |
-| total_monthly_discharging_energy  | Total monthly discharging energy           | int32   | 4    | 0.01   | kWh  | 33010 | 33010 | 33010 | 33010 |
-| battery_cycle_count               | Native cycle counter                       | uint16  | 2    | 1      | -    | 34003 | 34003 |       | 34003 |
+| battery_total_energy              | Total stored energy                        | uint16  | 2    | 0.001  | kWh  |       |       | 32105 |       |
+| battery_rated_capacity            | Nominal capacity (packs × 2560 Wh on D, × 2080 Wh on A) | uint16  | 2    | 0.001  | kWh  | 32105 | 32105 |       | 32105 |
+| battery_voltage                   | Battery voltage                            | uint16  | 2    | 0.01   | V    |       |       | 32100 | 30100 |
+| battery_current                   | Battery current                            | int16   | 2    | 0.1/0.01| A   |       |       | 32101 | 30101 |
+| battery_power                     | Battery power                              | int16/32| 2/4  | 1      | W    |       |       | 32102 | 30001 |
+| total_charging_energy             | Total charging energy                      | uint32  | 4    | 0.01   | kWh  |       |       | 33000 | 33000 |
+| total_discharging_energy          | Total discharging energy                   | int32   | 4    | 0.01   | kWh  |       |       | 33002 | 33002 |
+| total_daily_charging_energy       | Total daily charging energy                | uint32  | 4    | 0.01   | kWh  |       |       | 33004 | 33004 |
+| total_daily_discharging_energy    | Total daily discharging energy             | int32   | 4    | 0.01   | kWh  |       |       | 33006 | 33006 |
+| total_monthly_charging_energy     | Total monthly charging energy              | uint32  | 4    | 0.01   | kWh  |       |       | 33008 | 33008 |
+| total_monthly_discharging_energy  | Total monthly discharging energy           | int32   | 4    | 0.01   | kWh  |       |       | 33010 | 33010 |
+| battery_cycle_count               | Native cycle counter                       | uint16  | 2    | 1      | -    |       |       |       | 34003 |
 | ac_voltage                        | AC voltage                                 | uint16  | 2    | 0.1    | V    | 32200 | 32200 | 32200 | 32200 |
-| ac_current                        | AC current                                 | int16   | 2    | 0.004/0.01| A  | 37004 | 37004 | 32201 | 37004 |
+| ac_current                        | AC current                                 | int16   | 2    | 0.004/0.01| A  |       |       | 32201 |       |
 | ac_power                          | AC power                                   | int16/32| 2/4  | 1      | W    | 30006 | 30006 | 32202 | 30006 |
 | ac_frequency                      | AC frequency                               | int16   | 2    | 0.1/0.01| Hz  | 32204 | 32204 | 32204 | 32204 |
 | ac_offgrid_voltage                | AC offgrid voltage                         | uint16  | 2    | 0.1    | V    | 32300 | 32300 | 32300 | 32300 |
-| ac_offgrid_current                | AC offgrid current                         | uint16  | 2    | 0.01   | A    | 32301 | 32301 | 32301 | 32301 |
+| ac_offgrid_current                | AC offgrid current                         | uint16  | 2    | 0.01   | A    |       |       | 32301 |       |
 | ac_offgrid_power                  | AC offgrid power                           | int32   | 4    | 1      | W    | 32302 | 32302 | 32302 | 32302 |
 | internal_temperature              | Internal device temperature                | int16   | 2    | 0.1    | °C   | 35000 | 35000 | 35000 | 35000 |
 | internal_mos1_temperature         | MOS1 internal temperature                  | int16   | 2    | 0.1    | °C   | 35001 | 35001 | 35001 | 35001 |
-| internal_mos2_temperature         | MOS2 internal temperature                  | int16   | 2    | 0.1    | °C   | 35002 | 35002 | 35002 | 35002 |
+| internal_mos2_temperature         | MOS2 internal temperature                  | int16   | 2    | 0.1    | °C   |       |       | 35002 |       |
 | max_cell_temperature              | Max cell temperature                       | int16   | 2    | 0.1/1  | °C   | 35010 | 35010 | 35010 | 35010 |
-| max_cell_voltage                  | Max cell voltage                           | uint16  | 2    | 0.001  | V    | 37007 | —     | 37007 | 37007 |
-| min_cell_voltage                  | Min cell voltage                           | uint16  | 2    | 0.001  | V    | 37008 | —     | 37008 | 37008 |
+| max_cell_voltage                  | Max cell voltage                           | uint16  | 2    | 0.001  | V    |       | —     | 37007 | 37007 |
+| min_cell_voltage                  | Min cell voltage                           | uint16  | 2    | 0.001  | V    |       | —     | 37008 | 37008 |
 | battery_1_cell_1_voltage            | Battery pack 1 cell 1 voltage               | int16   | 2    | 0.001  | V    | 34018 | 34018 |       | 34018 |
 | battery_1_cell_2_voltage            | Battery pack 1 cell 2 voltage               | int16   | 2    | 0.001  | V    | 34019 | 34019 |       | 34019 |
 | battery_1_cell_3_voltage            | Battery pack 1 cell 3 voltage               | int16   | 2    | 0.001  | V    | 34020 | 34020 |       | 34020 |
@@ -178,13 +180,13 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | mppt4_current                     | MPPT4 array current                        | uint16  | 2    | 0.1    | A    | 30027 | 30027 |       |       |
 | mppt4_power                       | MPPT4 array power                          | uint16  | 2    | 0.1    | W    | 30040 | 30040 |       |       |
 | inverter_state                    | Inverter / device state                    | uint16  | 2    | 1      | -    | 35100 | 35100 | 35100 | 35100 |
-| fault_status                      | Fault status bits                          | uint64  | 8    | -      | -    |       |       | 36100 |       |
-| alarm_status                      | Alarm status bits                          | uint32  | 4    | -      | -    |       |       | 36000 |       |
+| fault_status                      | Fault status bits                          | uint64  | 8    | -      | -    | 36100 | 36100 | 36100 | 36100 |
+| alarm_status                      | Alarm status bits                          | uint32  | 4    | -      | -    |       |       | 36000 | 36000 |
 | modbus_address                    | Modbus slave/unit id                       | uint16  | 2    | -      | -    | 41100 | 41100 | 41100 | 41100 |
 | rs485_control_mode (switch)       | RS485 control mode (write commands)        | uint16  | 2    | -      | -    | 42000 | 42000 | 42000 | 42000 |
 | backup_function (switch)          | Backup function control                    | uint16  | 2    | -      | -    | 41200 | 41200 | 41200 | 41200 |
 | force_mode (select)               | Force mode (None/Charge/Discharge)         | uint16  | 2    | -      | -    | 42010 | 42010 | 42010 | 42010 |
-| user_work_mode (select)           | User Work Mode (manual/anti_feed/trade)    | uint16  | 2    | -      | -    | 43000 | 43000 | 43000 | 43000 |
+| user_work_mode (select)           | User Work Mode (manual/anti_feed/trade; D, A and E v3: manual/anti_feed/ai) | uint16  | 2    | -      | -    | 43000 | 43000 | 43000 | 43000 |
 | discharge_limit_mode (binary)     | Discharge limit mode (diagnostic)          | uint16  | 2    | -      | -    |       |       | 41010 |       |
 | modbus_connection (binary)        | Modbus connection health                   | derived | -    | -      | -    |  |  |  |  |
 | grid_standard (select)            | Grid standard / region selection           | uint16  | 2    | -      | -    |       |       | 44100 |       |
@@ -196,36 +198,46 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | charging_cutoff_capacity (number) | Charging cutoff (percentage)               | uint16  | 2    | 0.1    | %    |       |       | 44000 |       |
 | discharging_cutoff_capacity       | Discharging cutoff (percentage)            | uint16  | 2    | 0.1    | %    |       |       | 44001 |       |
 | reset_device (button)             | Reset device command                       | uint16  | 2    | -      | -    | 41000 | 41000 | 41000 | 41000 |
-| factory_reset (button)            | Factory reset command                      | uint16  | 2    | -      | -    | 41001 | 41001 | 41001 | 41001 |
+| factory_reset (button)            | Factory reset command (D, A and E v3: 41000 = 0xAA11, confirm) | uint16  | 2    | -      | -    | 41000 | 41000 | 41001 | 41000 |
+| led_test (button)                 | Front panel LED test (3000 ms) | uint16  | 2    | -      | ms   | 45012 | 45012 |       | 45012 |
+| read_inverter_input_pb1 (button)  | Query inverter input PB1 (D and E v3; result: DEV 30211) | uint16  | 2    | -      | -    |       | 45006 |       | 45006 |
+| inverter_eeprom_test (button)     | Inverter EEPROM self-test (D: no readable result; A and E v3: DEV 30213) | uint16  | 2    | -      | -    | 45001 | 45001 |       | 45001 |
+| pack_coding (button)              | BMS pack address coding (confirm; status: DEV 32114) | uint16  | 2    | -      | -    |       | 45029 |       |       |
 | schedule_1_days                  | Schedule 1 days (bitmask)                   | bit      | 2    | -      | -    | 43100 | 43100 | 43100 | 43100 |
 | schedule_1_start                 | Schedule 1 start (HHMM)                     | uint     | 2    | -      | min  | 43101 | 43101 | 43101 | 43101 |
 | schedule_1_end                   | Schedule 1 end (HHMM)                       | uint     | 2    | -      | min  | 43102 | 43102 | 43102 | 43102 |
-| schedule_1_mode                  | Schedule 1 mode (numeric)                   | int16    | 2    | -      | W    | 43103 | 43103 | 43103 | 43103 |
+| schedule_1_mode                  | Schedule 1 mode (numeric)                   | int16    | 2    | -      | W    |       |       | 43103 |       |
+| schedule_1_power                  | Schedule 1 power (+ discharge, − charge, −1 CT) | int16   | 2    | -      | W    | 43103 | 43103 |       | 43103 |
 | schedule_1_enabled               | Schedule 1 enabled (0/1)                    | uint     | 2    | -      | -    | 43104 | 43104 | 43104 | 43104 |
 | schedule_2_days                  | Schedule 2 days (bitmask)                   | bit      | 2    | -      | -    | 43105 | 43105 | 43105 | 43105 |
 | schedule_2_start                 | Schedule 2 start (HHMM)                     | uint     | 2    | -      | min  | 43106 | 43106 | 43106 | 43106 |
 | schedule_2_end                   | Schedule 2 end (HHMM)                       | uint     | 2    | -      | min  | 43107 | 43107 | 43107 | 43107 |
-| schedule_2_mode                  | Schedule 2 mode (numeric)                   | int16    | 2    | -      | W    | 43108 | 43108 | 43108 | 43108 |
+| schedule_2_mode                  | Schedule 2 mode (numeric)                   | int16    | 2    | -      | W    |       |       | 43108 |       |
+| schedule_2_power                  | Schedule 2 power (+ discharge, − charge, −1 CT) | int16   | 2    | -      | W    | 43108 | 43108 |       | 43108 |
 | schedule_2_enabled               | Schedule 2 enabled (0/1)                    | uint     | 2    | -      | -    | 43109 | 43109 | 43109 | 43109 |
 | schedule_3_days                  | Schedule 3 days (bitmask)                   | bit      | 2    | -      | -    | 43110 | 43110 | 43110 | 43110 |
 | schedule_3_start                 | Schedule 3 start (HHMM)                     | uint     | 2    | -      | min  | 43111 | 43111 | 43111 | 43111 |
 | schedule_3_end                   | Schedule 3 end (HHMM)                       | uint     | 2    | -      | min  | 43112 | 43112 | 43112 | 43112 |
-| schedule_3_mode                  | Schedule 3 mode (numeric)                   | int16    | 2    | -      | W    | 43113 | 43113 | 43113 | 43113 |
+| schedule_3_mode                  | Schedule 3 mode (numeric)                   | int16    | 2    | -      | W    |       |       | 43113 |       |
+| schedule_3_power                  | Schedule 3 power (+ discharge, − charge, −1 CT) | int16   | 2    | -      | W    | 43113 | 43113 |       | 43113 |
 | schedule_3_enabled               | Schedule 3 enabled (0/1)                    | uint     | 2    | -      | -    | 43114 | 43114 | 43114 | 43114 |
 | schedule_4_days                  | Schedule 4 days (bitmask)                   | bit      | 2    | -      | -    | 43115 | 43115 | 43115 | 43115 |
 | schedule_4_start                 | Schedule 4 start (HHMM)                     | uint     | 2    | -      | min  | 43116 | 43116 | 43116 | 43116 |
 | schedule_4_end                   | Schedule 4 end (HHMM)                       | uint     | 2    | -      | min  | 43117 | 43117 | 43117 | 43117 |
-| schedule_4_mode                  | Schedule 4 mode (numeric)                   | int16    | 2    | -      | W    | 43118 | 43118 | 43118 | 43118 |
+| schedule_4_mode                  | Schedule 4 mode (numeric)                   | int16    | 2    | -      | W    |       |       | 43118 |       |
+| schedule_4_power                  | Schedule 4 power (+ discharge, − charge, −1 CT) | int16   | 2    | -      | W    | 43118 | 43118 |       | 43118 |
 | schedule_4_enabled               | Schedule 4 enabled (0/1)                    | uint     | 2    | -      | -    | 43119 | 43119 | 43119 | 43119 |
 | schedule_5_days                  | Schedule 5 days (bitmask)                   | bit      | 2    | -      | -    | 43120 | 43120 | 43120 | 43120 |
 | schedule_5_start                 | Schedule 5 start (HHMM)                     | uint     | 2    | -      | min  | 43121 | 43121 | 43121 | 43121 |
 | schedule_5_end                   | Schedule 5 end (HHMM)                       | uint     | 2    | -      | min  | 43122 | 43122 | 43122 | 43122 |
-| schedule_5_mode                  | Schedule 5 mode (numeric)                   | int16    | 2    | -      | W    | 43123 | 43123 | 43123 | 43123 |
+| schedule_5_mode                  | Schedule 5 mode (numeric)                   | int16    | 2    | -      | W    |       |       | 43123 |       |
+| schedule_5_power                  | Schedule 5 power (+ discharge, − charge, −1 CT) | int16   | 2    | -      | W    | 43123 | 43123 |       | 43123 |
 | schedule_5_enabled               | Schedule 5 enabled (0/1)                    | uint     | 2    | -      | -    | 43124 | 43124 | 43124 | 43124 |
 | schedule_6_days                  | Schedule 6 days (bitmask)                   | bit      | 2    | -      | -    | 43125 | 43125 | 43125 | 43125 |
 | schedule_6_start                 | Schedule 6 start (HHMM)                     | uint     | 2    | -      | min  | 43126 | 43126 | 43126 | 43126 |
 | schedule_6_end                   | Schedule 6 end (HHMM)                       | uint     | 2    | -      | min  | 43127 | 43127 | 43127 | 43127 |
-| schedule_6_mode                  | Schedule 6 mode (numeric)                   | int16    | 2    | -      | W    | 43128 | 43128 | 43128 | 43128 |
+| schedule_6_mode                  | Schedule 6 mode (numeric)                   | int16    | 2    | -      | W    |       |       | 43128 |       |
+| schedule_6_power                  | Schedule 6 power (+ discharge, − charge, −1 CT) | int16   | 2    | -      | W    | 43128 | 43128 |       | 43128 |
 | schedule_6_enabled               | Schedule 6 enabled (0/1)                    | uint     | 2    | -      | -    | 43129 | 43129 | 43129 | 43129 |
 | round_trip_efficiency_total       | Round-trip efficiency (total charge/discharge energies) | calculated | - | - | % |  |  |  |  |
 | round_trip_efficiency_monthly     | Round-trip efficiency (monthly charge/discharge) | calculated | - | - | % |  |  |  |  |
@@ -234,13 +246,20 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | battery_cycle_count_calc          | Cycle count calculated from total discharge and capacity | calculated | - | - | - |  |  |  |  |
 
 _Notes:_
+- **Venus D and Venus A, 3.1.0-beta.3:** five keys were renamed on both models and are migrated automatically, entity id and history included: `device_name` → `device_model`, `vms_version` → `vns_version`, `battery_total_energy` → `battery_rated_capacity`, `min_cell_temperature` → `battery_1_min_cell_temperature` (pack 1 only; 35010 stays the stack maximum) and `schedule_N_mode` → `schedule_N_power`. The `user_work_mode` option `trade_mode` is called `ai` there. `alarm_status`, `alarm_status_low` and `fault_status_2` were removed (the firmware never writes them on the Venus D or the Venus A, so they always read 0), the old `factory_reset` on 41001 (not implemented on either model) was replaced by the real factory reset.
+- **Venus A only, 3.1.0-beta.3:** `mppt_version` (30205, always 0: the MPPT stage sits inside the inverter micro), pack 7 (BMS 1105 sends packs 1–6 only) and the MPPT/CAN registers 30214 and 38000–38014 (no sender) are not mapped any more; `pv_lifetime_energy` (37021, u32, 0.01 kWh) is new. `max_charge_power` / `max_discharge_power` run from 50 to 1450 W and `set_charge_power` / `set_discharge_power` up to 1450 W: the inverter micro silently drops a value of 1451 W or more. `internal_temperature` / `internal_mos1_temperature` keep their keys and are shown as radiator 1 / 2 temperature.
+- **Venus E v3, 3.1.0-beta.3:** four keys were renamed and are migrated automatically, entity id and history included: `device_name` → `device_model` (fixed `VNSE3-0`), `vms_version` → `vns_version`, `battery_total_energy` → `battery_rated_capacity` (nominal capacity of the one fixed pack, 5.12 kWh) and `schedule_N_mode` → `schedule_N_power`; `min_cell_temperature` keeps its name. The `user_work_mode` option `trade_mode` is called `ai`. Removed: `alarm_status_low` and the 16-bit `alarm_status` (one uint32 `alarm_status` over 36000 + 36001 replaces them), `fault_status_2`, the old `factory_reset` on 41001 and the aliases `ac_offgrid_current` (32301 = 32300), `ac_current` (37004 = 30006, the grid power) and `internal_mos2_temperature` (35002 = 35001). `internal_temperature` / `internal_mos1_temperature` keep their keys and are shown as the inverter temperatures of NTC CH12 / CH5. `max_charge_power` / `max_discharge_power` run from 50 to 2500 W; on the Venus E v3 they can be read back (the control unit asks the micro), up to 3000 W after a factory reset, and the entity shows that value unclamped. One fixed pack: there are no entities for packs 2 to 7, no pack counter and no online mask. New (disabled by default): `bms_charge_current_limit`, `bms_discharge_current_limit`, `battery_1_mos_status`, `battery_1_protection_1` / `_2`, `battery_1_bms_warnings`, `battery_1_env_temperature`, `battery_1_mos_temperature`, `battery_1_cell_temperature_1..4`, `battery_1_profile` (low byte of 34017), `selftest_status`, `ems_boot_version`, `vns_boot_version`, `inverter_dc_voltage`, `bms_charge_voltage_limit`, `ethernet_chip_version`.
+- **Buttons with `confirm: true`** (Venus D: `factory_reset`, `pack_coding` and the two DEV BMS buttons; Venus A: `factory_reset` and the DEV buttons for inverter off, BMS master reboot, BMS factory reset and the BMS master role; Venus E v3: `factory_reset` with its own warning, and the DEV buttons for the inverter sleep request and the BMS factory reset) need two presses: the first only shows the warning, a second within 15 s sends the command.
+- **Isolated reads (Venus A):** 30030–30035, 38000–39014, 45000–45031, 45603–45605 and 46000 are never part of a block read (`NO_BLOCK_READ_RANGES` in `a.yaml`). Nothing is mapped in 38000–39014 on the Venus A, but a read there still starts the CAN broadcast.
+- **Isolated reads (Venus D):** 30030–30035, 30214, 37021–37022, 38000–39014, 45000–45031, 45603–45605 and 46000 are never part of a block read (`NO_BLOCK_READ_RANGES` in `d.yaml`). A read anywhere in 38000–39014 makes the control unit broadcast four CAN frames per second until the next reboot; a read of 45603–45605 blocks the Modbus task for up to 200 ticks.
+- **Isolated reads (Venus E v3):** 38000–39014, 41500–41631, 45000–45031, 45603–45605 and 46000 are never part of a block read (`NO_BLOCK_READ_RANGES` in `e_v3.yaml`). 36001, 36101 and 36103 are never read on their own either: a lone read of 36001 returns 36101, of 36101 returns 36103 and of 36103 the grid voltage, so the alarm word is one uint32 and the fault words are read together in one block.
 - `charge_to_soc` (42011, "Maximaler SoC") is a command, not a passive setting: writing it makes the device drive the battery to that state of charge straight away — verified on hardware, writing 70 started a discharge that stopped at 70 %. It is **not** the backup reserve shown in the Marstek app; that is a separate, persistent parameter with no Modbus register at all.
 - `max_discharge_power` (44003) is a free limit, not a three-step selector: setting 1350 W and then commanding a 2500 W discharge produced 1355 W on hardware. It shares its EEPROM word with the app's 800 / 2200 / 2500 W device power class, so writing it restores the power after the cloud has reset the class to 800 — which shows up in practice as a discharge that refuses to exceed 800 W. The cloud command additionally sets a tier flag and, at 800 W, clamps every schedule slot; writing the register does neither. The register is write-only, so the active value cannot be read back.
 - `max_cell_voltage` / `min_cell_voltage` are **not** device-wide on Venus D: 37007/37008 read the same firmware source as `battery_1_max_cell_voltage` / `battery_1_min_cell_voltage` (34005/34006), i.e. pack 1 only. They were removed from `d.yaml`; use the per-pack sensors instead.
 - Columns `a`, `d`, `e_v12` and `e_v3` correspond to the YAML files under `custom_components/marstek_modbus/registers/`.
 - `Bytes` shows the typical byte size for the key (each Modbus register = 2 bytes).
-- Blank cells mean that YAML does not define that key (or the value is calculated and has no direct Modbus register).
-- `firmware_version` is assembled from the raw version registers. `E v1/v2` uses `ems + bms`; `A`, `D` and `E v3` use `ems + vms + bms`.
+- Blank cells mean that YAML does not define that key (or the value is calculated and has no direct Modbus register). On the Venus A and D the single-pack keys `battery_voltage`, `battery_current` and `bms_version` are blank: the per-pack keys (`battery_1_voltage`, `battery_1_current`, `battery_1_bms_version`) take their place. `battery_power`, `battery_cycle_count` and the `total_*_charging/discharging_energy` counters are calculated or pass-through sensors there and blank too; their sources are `dc_sample_power`, `battery_N_cycle_count` and `total_ac_input_energy` / `total_ac_output_energy` (33000 …). The table does not list every key of the YAML files.
+- `firmware_version` is assembled from the raw version registers. `E v1/v2` uses `ems + bms`; `A` and `E v3` use `ems + vns + bms`; `D` uses `ems + vns + mppt + bms`.
 - `ble_mac_address` is decoded and formatted as a normal MAC address string such as `00:9B:08:05:D9:0A`.
 - `modbus_connection` is a diagnostic binary sensor derived from recent successful Modbus reads, not from a separate device register.
 - The `rs485_control_mode` switch (register 42000) uses write commands (command_on=21930, command_off=21947) to trigger RS485 control operations; use with caution.
@@ -248,10 +267,10 @@ _Notes:_
 - Schedule Time format: `start` and `end` are entered as HHMM 24-hour integers (for example `0830` = 08:30). Use values within the valid range shown in the YAML for each device; ensure `start` is earlier than `end` for a single active period.
 - Schedule Day selection: the underlying `schedule_*_days` register uses a bitmask to represent multiple days, but the integration currently exposes it as a single-select option in Home Assistant. Due to this limitation you cannot select multiple days from the integration UI.
 - Energy Dashboard caveat (Venus A / Venus D with PV input): reported battery charge/discharge energy registers may include energy that flows to household loads via the inverter path, not only net battery-in/out energy. This can lead to misleading Home Assistant Energy Dashboard battery statistics. For accurate dashboard usage, prefer custom derived sensors (for example from power integration) and validate behavior on your firmware/device.
-- Schedule Mode values: `schedule_*_mode` accepts the following ranges:
+- Schedule power values: `schedule_*_power` (Venus A, D and E v3) / `schedule_*_mode` (Venus E v1/v2) accepts the following ranges:
   - `-1` = Self consumption mode
   - Charge/discharge range is model-dependent.
-  - Venus A (fw v148+): `-100` to `-1500` (charge), `100` to `1500` (discharge)
+  - Venus A (fw v148+): `-100` to `-1500` (charge), `100` to `1500` (discharge) in the control firmware; the inverter micro silently drops values of 1451 W or more, so the integration stops at ±1450 W
   - Venus D / Venus E: `-100` to `-2500` (charge), `100` to `2500` (discharge)
 
 ---

@@ -3,6 +3,7 @@ import { customElement } from "../define";
 import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
 import "../components/mk-stat";
+import { CAPACITY_KEYS } from "../entities";
 
 interface Period {
   titleKey: string;
@@ -10,6 +11,8 @@ interface Period {
   discharge: string[];
   /** Efficiency sensor for this period, when the device reports one. */
   efficiency?: string;
+  /** Further counters of the same period, shown as rows where they exist. */
+  extra?: string[];
 }
 
 const PERIODS: Period[] = [
@@ -29,6 +32,8 @@ const PERIODS: Period[] = [
     charge: ["total_ac_input_energy", "total_charging_energy"],
     discharge: ["total_ac_output_energy", "total_discharging_energy"],
     efficiency: "round_trip_efficiency_total",
+    // The PV yield counter of the Venus A; the other models have none.
+    extra: ["pv_lifetime_energy"],
   },
 ];
 
@@ -118,7 +123,7 @@ export class MkViewEnergy extends MkView {
         <div class="panel">
           <div class="head"><div class="label">${t("energy.throughput")}</div></div>
           ${this.kv("battery_cycle_count_calc", 2)} ${this.kv("battery_cycle_count", 0)}
-          ${this.kv("stored_energy", 2)} ${this.kv("battery_total_energy", 2)}
+          ${this.kv("stored_energy", 2)} ${this.kvFirst(CAPACITY_KEYS, 2)}
           ${this.kv("usable_energy", 2)} ${this.kv("energy_to_full", 2)}
           ${this.kv("remaining_cycles", 0)} ${this.kv("battery_health", 2)}
         </div>
@@ -173,6 +178,7 @@ export class MkViewEnergy extends MkView {
           ${ratio === null
             ? nothing
             : this.row(t("energy.returned"), `${f.num(ratio, 1)} %`)}
+          ${(p.extra ?? []).map((key) => this.kv(key, 2))}
         </div>
       </div>
     `;

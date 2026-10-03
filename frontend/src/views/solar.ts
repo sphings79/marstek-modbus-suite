@@ -122,6 +122,7 @@ export class MkViewSolar extends MkView {
           <div class="chan-value">
             ${f.num(total, 0)}<span class="chan-unit">W</span>
           </div>
+          ${this.kv("pv_lifetime_energy", 2)}
           <div class="note">
             ${anyActive ? t("solar.note_active") : t("solar.note_floating")}
           </div>
@@ -129,12 +130,8 @@ export class MkViewSolar extends MkView {
 
         <div class="panel">
           <div class="head"><div class="label">${t("solar.diagnostics")}</div></div>
-          ${this.kv("mppt_error", 0, {
-            tone: r.num("mppt_error") ? "crit" : "ok",
-          })}
-          ${this.kv("mppt_warning", 0, {
-            tone: r.num("mppt_warning") ? "warn" : "ok",
-          })}
+          ${this.codeRow("mppt_error", r.code("mppt_error") ? "crit" : "ok")}
+          ${this.codeRow("mppt_warning", r.code("mppt_warning") ? "warn" : "ok")}
           ${this.kv("mppt_version", 0, { version: true })}
           ${total === null
             ? nothing

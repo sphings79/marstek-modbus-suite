@@ -80,7 +80,11 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
         # Set entity attributes from definition
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{self.definition['key']}"
         self._attr_has_entity_name = True
-        self._attr_translation_key = definition["key"]
+        # The name normally comes from the translations under the key. A
+        # definition can name another translation entry: the key is the unique
+        # id of existing entities and must not change, but one model may need a
+        # different display name for it (the Venus A radiator temperatures).
+        self._attr_translation_key = definition.get("translation_key") or definition["key"]
 
         # Set basic attributes from definition
         self._attr_native_unit_of_measurement = definition.get("unit")
@@ -97,6 +101,12 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
 
         # Optional states mapping for int → label conversion
         self.states = definition.get("states")
+
+        # Optional bit texts for a bit mask register. The state stays the raw
+        # number, so automations comparing against it keep working; the set
+        # bits are decoded into attributes instead.
+        raw_bits = definition.get("bit_descriptions") or {}
+        self._bit_descriptions = {int(bit): str(text) for bit, text in raw_bits.items()}
 
     @property
     def entity_type(self) -> str:
@@ -119,6 +129,52 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
             return False
         data = getattr(self.coordinator, "data", None)
         return isinstance(data, dict) and self._key in data
+
+    def _scale(self, value):
+        """Apply the EMS version special case, or scale/offset/precision, to a number.
+
+        Anything that is not a number (text, list) is returned unchanged. Shared
+        by `native_value` and the `raw_value` attribute, so both see the same
+        number.
+        """
+        if isinstance(value, (int, float)):
+            # Special-case: EMS version is encoded as an integer where
+            # values with 4 digits encode a decimal in the last digit
+            # (e.g. 1573 -> 157.3), while 3-digit values are whole numbers
+            # (e.g. 158 -> 158). Handle that before applying generic scale.
+            if self._key == "ems_version":
+                try:
+                    iv = int(value)
+                except Exception:
+                    iv = None
+
+                if iv is not None:
+                    if iv >= 1000:
+                        # interpret last digit as decimal (tenths)
+                        value = round(iv / 10.0, 1)
+                    else:
+                        value = int(iv)
+                    # the ems_version branch skips the generic scaling below
+                    if isinstance(value, float) and value.is_integer():
+                        value = int(value)
+                    # the states mapping is applied by native_value
+                else:
+                    # fall back to generic handling if conversion fails
+                    pass
+            else:
+                # Apply scaling/offset and round according to precision.
+                scale = self.definition.get("scale", 1)
+                offset = self.definition.get("offset", 0)
+                precision = int(self.definition.get("precision", 0) or 0)
+
+                value = float(value) * scale + offset
+                value = round(value, precision)
+
+                # If the rounded value has no fractional component, return int
+                # so Home Assistant does not render an unnecessary trailing .0.
+                if isinstance(value, float) and value.is_integer():
+                    value = int(value)
+        return value
 
     @property
     def native_value(self):
@@ -158,43 +214,7 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
 
             return enabled
 
-        if isinstance(value, (int, float)):
-            # Special-case: EMS version is encoded as an integer where
-            # values with 4 digits encode a decimal in the last digit
-            # (e.g. 1573 -> 157.3), while 3-digit values are whole numbers
-            # (e.g. 158 -> 158). Handle that before applying generic scale.
-            if self._key == "ems_version":
-                try:
-                    iv = int(value)
-                except Exception:
-                    iv = None
-
-                if iv is not None:
-                    if iv >= 1000:
-                        # interpret last digit as decimal (tenths)
-                        value = round(iv / 10.0, 1)
-                    else:
-                        value = int(iv)
-                    # return early after mapping; skip generic scaling
-                    if isinstance(value, float) and value.is_integer():
-                        value = int(value)
-                    # apply states mapping below
-                else:
-                    # fall back to generic handling if conversion fails
-                    pass
-            else:
-                # Apply scaling/offset and round according to precision.
-                scale = self.definition.get("scale", 1)
-                offset = self.definition.get("offset", 0)
-                precision = int(self.definition.get("precision", 0) or 0)
-
-                value = float(value) * scale + offset
-                value = round(value, precision)
-
-                # If the rounded value has no fractional component, return int
-                # so Home Assistant does not render an unnecessary trailing .0.
-                if isinstance(value, float) and value.is_integer():
-                    value = int(value)
+        value = self._scale(value)
 
         # Firmware version registers are numbers on the wire but versions to a
         # reader: 1509 is release 150.9. Formatting them here keeps the single
@@ -234,8 +254,30 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict:
-        """Return attributes for packed schedule sensors from coordinator data."""
+        """Return attributes for packed schedule sensors from coordinator data.
+
+        A definition with `bit_descriptions` gets the set bits of its raw word
+        decoded instead, the same attributes the bit text sensors carry.
+        """
         data = self.coordinator.data or {}
+        if self._bit_descriptions:
+            raw = data.get(self._key)
+            bits = MarstekBitfieldTextSensor._active_bits(raw)
+            return {
+                "active_bits": bits,
+                "active_faults": [
+                    self._bit_descriptions.get(bit, f"unknown bit {bit}") for bit in bits
+                ],
+            }
+        if self.states:
+            # A sensor that maps register values to texts keeps the text as its
+            # state; the number it was mapped from goes into an attribute, so
+            # automations and the panel need not match on the text. Left out
+            # while there is no number (no data yet, or a non-numeric value).
+            raw = self._scale(data.get(self._key))
+            if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+                return {"raw_value": raw}
+            return {}
         attrs = data.get(f"{self._key}_attrs") or {}
 
         # For schedule types, enrich attributes with human-readable fields.
@@ -361,7 +403,11 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
         # Set entity attributes from definition
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{self.definition['key']}"
         self._attr_has_entity_name = True
-        self._attr_translation_key = definition["key"]
+        # The name normally comes from the translations under the key. A
+        # definition can name another translation entry: the key is the unique
+        # id of existing entities and must not change, but one model may need a
+        # different display name for it (the Venus A radiator temperatures).
+        self._attr_translation_key = definition.get("translation_key") or definition["key"]
 
         # Set basic attributes from definition
         self._attr_native_unit_of_measurement = definition.get("unit")
@@ -439,6 +485,11 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
             self.async_write_ha_state()
             return
 
+        # Only part of the first poll cycle is in: wait for the rest instead of
+        # calculating from half the inputs or reporting the other half missing.
+        if getattr(self.coordinator, "partial_update", False):
+            return
+
         data = self.coordinator.data if isinstance(self.coordinator.data, dict) else {}
 
         self._calculate(data)
@@ -448,12 +499,12 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
         """Aliases whose absence must not stop the calculation.
 
         Pack registers on a stack with fewer packs are what this is for. A map
-        describes all seven blocks because one model can carry them, and a
-        three-pack device answers for three. The map assumes an absent pack
+        describes every block its model can carry (seven on the Venus D, six on
+        the Venus A), and a three-pack device answers for three. The map assumes an absent pack
         replies with zeros, which holds only while every block is polled: with
         `pack_count` pinned, the missing blocks are never asked for, so their
         value arrives as None rather than zero and a calculation that demands
-        all seven never runs at all. Measured on a three-pack Venus A, where
+        every block never runs at all. Measured on a three-pack Venus A, where
         `battery_cycle_count` and `battery_power_bms` each refused on every
         one of 99 cycles in eleven minutes.
         """
@@ -767,8 +818,8 @@ class MarstekBmsBatteryPowerSensor(MarstekCalculatedSensor):
 
         # Packs the device does not have contribute nothing, so they are left
         # out rather than blanking the sum - a three-pack stack reports the
-        # current of its three. Refusing unless all seven answered is what kept
-        # this sensor empty on every device with fewer than seven.
+        # current of its three. Refusing unless every pack of the map answered is
+        # what kept this sensor empty on every device with fewer packs.
         currents = [
             float(dep_values[alias])
             for alias in self.get_dependency_keys()
@@ -882,8 +933,8 @@ class MarstekWindowSensor(MarstekCalculatedSensor):
     The floor is a configured percentage: Venus A, D and E v3 do not expose
     discharging_cutoff_capacity, so what the user set in the Marstek app cannot
     be read back over Modbus. The ceiling does have a register, charge_to_soc,
-    but a device that is not using it reports a value outside its own 10-100
-    range - a Venus D driven by an external controller reads a literal 0.
+    but a device that is not using it reports a value outside its own range
+    (13-100, 10-100 on the Venus E v1/v2) - a Venus D driven by an external controller reads a literal 0.
     """
 
     def _floor(self) -> float:
@@ -891,7 +942,13 @@ class MarstekWindowSensor(MarstekCalculatedSensor):
         return float(getattr(self.coordinator, "discharge_floor", 0.0))
 
     def _ceiling(self) -> float:
-        """Upper end of the window, in percent, falling back to a full pack."""
+        """Upper end of the window, in percent, falling back to a full pack.
+
+        Tolerant on purpose: any reading from 10 to 100 counts, anything else
+        (a literal 0 under external control) falls back to 100. The number
+        entity charge_to_soc enforces 13 to 100 on the Venus D, A and E v3 and
+        10 to 100 on the E v1/v2; this reader does not tell the models apart.
+        """
         data = self.coordinator.data if isinstance(self.coordinator.data, dict) else {}
         try:
             ceiling = float(data.get("charge_to_soc"))
@@ -1310,8 +1367,12 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
                 - "ems_vms_bms": combines ems_version + vms_version + bms_version
                     into a string like "V147.6.117.112"
                 - "ems_vms_mppt_bms": combines ems_version + vms_version + mppt_version
-                    + bms_version into a string like "V149.2.115.104.118" (for models
-                    with an MPPT stage, e.g. Venus D)
+                    + bms_version into a string like "V149.2.115.104.118" (for the
+                    Venus D, the only model with an MPPT version register)
+
+    The inverter part is the dependency alias `vns` or, in the maps that
+    still use the old name, `vms`. The mode names keep "vms"; they are only
+    option strings.
     """
 
     def _calculate(self, data: dict) -> None:
@@ -1335,7 +1396,7 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
         if mode in ("ems_bms", "ems_vms_bms", "ems_vms_mppt_bms"):
             ems_str = _format_version_part(raw_values["ems"])
             bms = _format_version_part(raw_values["bms"])
-            vms_raw = raw_values.get("vms")
+            vms_raw = raw_values.get("vns", raw_values.get("vms"))
 
             if mode == "ems_bms":
                 return f"V{ems_str}.{bms}"
@@ -1349,9 +1410,8 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
             if mode == "ems_vms_bms":
                 return f"V{ems_str}.{vms}.{bms}"
 
-            # ems_vms_mppt_bms adds the MPPT firmware version (Venus D/A). The
-            # part stays in even when it reads 0, which is what a model without
-            # an MPPT stage reports - the field count then matches across models.
+            # ems_vms_mppt_bms adds the MPPT firmware version (Venus D). The
+            # part stays in even when it reads 0.
             mppt_raw = raw_values.get("mppt")
             if mppt_raw is None:
                 _LOGGER.warning("%s missing mppt for mode '%s'", self._key, mode)

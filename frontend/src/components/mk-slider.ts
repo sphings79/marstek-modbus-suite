@@ -5,7 +5,7 @@ import { baseStyles } from "../styles";
 
 /**
  * A number you can set, with its range taken from the entity rather than
- * assumed. A Venus A tops out at 1500 W and a Venus D at 2500 W; reading the
+ * assumed. A Venus A tops out at 1450 W and a Venus D at 2500 W; reading the
  * bounds means the control is right on both without knowing which is attached.
  *
  * While dragging, the slider shows where the thumb is. On release it sends the
@@ -23,8 +23,12 @@ export class MkSlider extends LitElement {
   @property({ type: Boolean }) disabled = false;
   @property({ attribute: false }) formatNumber: (v: number | null) => string = (v) =>
     v === null ? "—" : String(v);
-  /** Called with the new value once the user lets go. */
-  @property({ attribute: false }) onCommit?: (value: number) => void;
+  /**
+   * Called with the new value once the user lets go. A returned promise that
+   * rejects - the write was refused - takes the pending mark off again, so the
+   * slider falls back to the value the device actually has.
+   */
+  @property({ attribute: false }) onCommit?: (value: number) => unknown;
 
   /** Position while dragging, before anything is sent. */
   @state() private dragging: number | null = null;
@@ -145,7 +149,12 @@ export class MkSlider extends LitElement {
     this.dragging = null;
     if (value === this.value) return;
     this.pending = value;
-    this.onCommit?.(value);
+    const result = this.onCommit?.(value);
+    if (result instanceof Promise) {
+      result.catch(() => {
+        if (this.pending === value) this.pending = null;
+      });
+    }
   }
 }
 

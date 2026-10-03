@@ -4,11 +4,6 @@
 # EFFICIENCY_SENSOR_DEFINITIONS and STORED_ENERGY_SENSOR_DEFINITIONS that were
 # previously in `const.py` and correspond to v1/v2 devices.
 
-MISSING:
-    sensor:
-        - vms_version
-        - cell_xx_voltage (1-16)
-
 SENSOR_DEFINITIONS:
     device_name:
         register: 31000

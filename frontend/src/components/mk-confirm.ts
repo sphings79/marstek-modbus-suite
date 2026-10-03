@@ -33,6 +33,13 @@ export class MkConfirm extends LitElement {
   @property({ type: String }) message = "";
   @property({ type: String }) confirmLabel = "";
   @property({ type: String }) cancelLabel = "";
+  /**
+   * A line under the message that changes while the dialog is open - the
+   * countdown of a two-step button's confirmation window.
+   */
+  @property({ type: String }) note = "";
+  /** Grey out the confirming answer, once the window it belonged to closed. */
+  @property({ type: Boolean }) confirmDisabled = false;
   @property({ attribute: false }) onConfirm?: () => void;
   @property({ attribute: false }) onCancel?: () => void;
 
@@ -102,6 +109,14 @@ export class MkConfirm extends LitElement {
         color: var(--mk-crit);
         background: var(--mk-surface-2);
       }
+      button.confirm:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      p.note {
+        color: var(--mk-warn);
+        margin-top: -8px;
+      }
       button:focus-visible {
         outline: 2px solid var(--mk-accent);
         outline-offset: 2px;
@@ -136,11 +151,12 @@ export class MkConfirm extends LitElement {
         <div class="body">
           <h2 id="heading">${this.heading}</h2>
           <p>${this.message}</p>
+          ${this.note ? html`<p class="note" role="timer">${this.note}</p>` : ""}
           <div class="buttons">
             <!-- Cancel first, so the dialog opens with the harmless answer
                  focused and Enter does nothing anyone has to undo. -->
             <button @click=${this.cancel}>${this.cancelLabel}</button>
-            <button class="confirm" @click=${this.confirm}>
+            <button class="confirm" ?disabled=${this.confirmDisabled} @click=${this.confirm}>
               ${this.confirmLabel}
             </button>
           </div>
@@ -157,6 +173,7 @@ export class MkConfirm extends LitElement {
    * followed a confirmation.
    */
   private confirm() {
+    if (this.confirmDisabled) return;
     this.dialog.close();
     this.onConfirm?.();
   }

@@ -16,6 +16,8 @@ export const de: Record<string, string> = {
   "control.limits": "Grenzwerte",
   "control.limits_hint":
     "Nach einem Neustart des Geräts melden diese drei oft 0. Die zuvor gesetzte Grenze gilt trotzdem weiter und muss nicht neu geschrieben werden.",
+  "control.limits_floor":
+    "Die beiden Maximalleistungen beginnen bei {min} W und lassen sich nicht auf 0 stellen; das obere Ende, {max} W, kommt aus der Entität des Geräts (2500 W bei Venus D und E v3, 1450 W bei der Venus A). Zum Stoppen von Laden oder Entladen den erzwungenen Modus auf Standby oder die Leistung auf 0 setzen.",
   "control.mode": "Modus",
   "control.mode_hint":
     "Ohne Wirkung, solange das Gerät über Modbus gesteuert wird.",
@@ -35,6 +37,8 @@ export const de: Record<string, string> = {
     "Zeitplan {slot}: Der Start muss vor dem Ende liegen. Über Mitternacht auf zwei Zeitpläne aufteilen.",
   "control.err.schedule_overlap":
     "Zeitplan {slot} würde sich an einem gemeinsamen Tag mit Zeitplan {other} überschneiden. Das Gerät führt nur den ersten passenden aus.",
+  "control.err.schedule_time":
+    "Zeitplan {slot}: Start und Ende sind HHMM-Uhrzeiten mit Minuten unter 60.",
   "control.no_schedules": "Dieser Speicher bietet keine Zeitpläne.",
   "control.window": "Fenster",
   "control.sched_power": "Leistung",
@@ -51,6 +55,7 @@ export const de: Record<string, string> = {
   "control.opt.manual": "Manuell",
   "control.opt.anti_feed": "Nulleinspeisung",
   "control.opt.trade_mode": "Handel",
+  "control.opt.ai": "AI",
   "control.opt.standby": "Bereit",
   "control.opt.charge": "Laden",
   "control.opt.discharge": "Entladen",
@@ -79,9 +84,14 @@ export const de: Record<string, string> = {
   "common.pack": "PACK",
   "common.pack_n": "Pack {pack}",
   "common.standby": "Standby",
+  "common.active_pack": "aktives Pack {pack}",
+  "common.active_pack_hint":
+    "Das Pack, das die Batterie gerade zugeschaltet hat; die anderen ruhen.",
   "common.voltage": "Spannung",
   "common.current": "Strom",
   "common.device": "Gerät",
+  "common.pack_entities_disabled":
+    "Einige Werte dieses Packs fehlen, weil ihre Entitäten bei diesem Modell standardmäßig deaktiviert sind: Zellspannungen, Pack-Temperaturen, Schutz- und Warnwörter, MOSFET-Status, Batterieprofil. Die gewünschten auf der Geräteseite aktivieren (Einstellungen → Geräte & Dienste → Marstek Modbus Suite → dieser Speicher → Entitäten); sie erscheinen hier, sobald sie Werte liefern.",
 
   // ---- Übersicht ----
   "core.electrical": "Elektrisch · jetzt",
@@ -115,16 +125,17 @@ export const de: Record<string, string> = {
   "cells.lowest": "Niedrigste Zelle",
   "cells.in_pack": "Pack {pack}",
   "cells.stack_spread": "Spreizung gesamt",
-  "cells.stack_hint": "Packs laden nacheinander, Spreizung ist normal",
+  "cells.stack_hint": "Packs laden/entladen nacheinander, Spreizung ist normal",
   "cells.mean_delta": "Delta ⌀ im Pack",
   "cells.worst_pack": "größtes: Pack {pack}, {value} mV",
-  "cells.temp_span": "Spreizung Zelltemperatur",
-  "cells.packs_online": "Packs melden",
+  "cells.temp_span": "Zelltemp.-Spreizung im Pack",
+  "cells.temp_span_pack": "größte: Pack {pack}, {range}",
+  "cells.packs_online": "Erkannte Packs",
   "cells.cells_total": "{count} Zellen",
   "cells.matrix_title": "Zellspannungsbereich je Pack · gemeinsame Achse",
-  "cells.matrix_axis": "Balken = niedrigste bis höchste Zelle",
+  "cells.matrix_axis": "Balken = niedrigste bis höchste Zelle · feste Achse 3,0 – 3,7 V",
   "cells.matrix_legend":
-    "Der Strich im Balken ist die Mitte des Packs. Ein schmaler Balken heißt ausgeglichen, ein breiter heißt Drift innerhalb des Packs, und ein Balken abseits der anderen heißt: dieses Pack steht auf einem anderen Niveau als der Rest.",
+    "Der Strich im Balken ist die Mitte des Packs. Ein schmaler Balken heißt ausgeglichen, ein breiter heißt Drift innerhalb des Packs, und ein Balken abseits der anderen heißt: dieses Pack steht auf einem anderen Niveau als der Rest. Die Achse ist fest auf 3,0 – 3,7 V gesetzt und wird nur in Schritten von 0,1 V erweitert, wenn ein Pack außerhalb liegt.",
   "cells.no_ranges": "Dieser Speicher meldet keine Zellspannungen je Pack.",
   "cells.protection": "Schutz und Störungen",
   "cells.protection_all": "Schutz · alle {count} Packs",
@@ -132,8 +143,15 @@ export const de: Record<string, string> = {
   "cells.conducting": "Pack am Netz",
   "cells.conducting_none": "keins — alle Packs getrennt",
   "cells.conducting_hint":
-    "Das Gerät arbeitet ein Pack nach dem anderen und schließt dabei dessen MOSFETs. Ein Pack, das hier steht, arbeitet gerade — es meldet keine Störung.",
+    "Das Gerät arbeitet ein Pack nach dem anderen und schaltet dabei dieses Pack zu: nur Lade-MOSFET, nur Entlade-MOSFET oder beide. Ein Pack, das hier steht, arbeitet gerade — es meldet keine Störung.",
   "cells.mos_unexpected": "MOSFET-Status unerwartet",
+  "cells.mos_off": "beide MOSFETs aus",
+  "cells.mos_charge": "nur Laden",
+  "cells.mos_discharge": "nur Entladen",
+  "cells.mos_both": "Laden und Entladen",
+  "cells.lock_on": "aktiv",
+  "cells.lock_off": "inaktiv",
+  "cells.cell_voltages": "Zellspannungen",
   "cells.raised": "ausgelöst",
   "cells.bms": "BMS",
   "cells.bms_version": "BMS-Version",
@@ -208,6 +226,12 @@ export const de: Record<string, string> = {
   // ---- System ----
   "system.no_faults": "Kein Störungsregister ist gesetzt.",
   "system.faults_raised": "Gesetzt: {list}",
+  "system.grid_wait":
+    "Der Wechselrichter wartet auf die Netzfreigabe (Alarmwort Bit 0). Das ist keine Störung; der Hinweis verschwindet, sobald das Netz akzeptiert ist.",
+  "system.bms_lock_active":
+    "BMS-Sperre aktiv: Das BMS hält die Pack-MOSFETs nach einem Fehler offen, der Speicher lädt und entlädt nicht.",
+  "system.bms_factory_mode":
+    "BMS-Werksmodus ist an: Das BMS ist nicht in seinem normalen Betriebsmodus.",
   "system.device": "Gerät",
   "system.packs": "Batteriepacks",
   "system.firmware": "Firmware",
@@ -215,10 +239,68 @@ export const de: Record<string, string> = {
   "system.faults": "Störungsregister",
   "system.control": "Regelung und Grenzwerte",
   "system.thermal": "Thermik und Elektrik",
+  "system.cell_temp_max_all": "Zellentemperatur, höchste (alle Packs)",
+  "system.cell_temp_min_all": "Zellentemperatur, niedrigste (alle Packs)",
+  "system.cell_temp_max": "Zellentemperatur, höchste",
+  "system.cell_temp_min": "Zellentemperatur, niedrigste",
+  "system.cell_temp_max_bms": "Zellentemperatur, höchste (BMS)",
+  "system.cell_temp_min_bms": "Zellentemperatur, niedrigste (BMS)",
+  "system.cell_temp_holder": "Pack {packs}",
+  "system.set_charge_power": "Ladeleistung (Sollwert)",
+  "system.set_discharge_power": "Entladeleistung (Sollwert)",
+  "system.set_power_hint":
+    "Aktuell vom Regler angefordert (Force-Modus, Zeitplan oder externe Steuerung); nicht die gemessene Leistung.",
+  "system.selftest_5": "Ethernet-Chip meldet eine andere Version als erwartet (unbedenklich)",
+  "system.selftest_5_hint":
+    "Der Selbsttest vergleicht die Version des Ethernet-Chips (CH395) mit der, die die Firmware erwartet: der Chip meldet 0x4A statt 0x4B. Gemessen an zwei Venus D mit funktionierendem LAN, unbedenklich. Ein echter SRAM-Fehler würde den Controller stoppen; die echten Fehler sind 2 (EEPROM) und 3 (Flash).",
   "system.ceiling_used":
     "Das Panel rechnet mit {value} % als Ladeobergrenze, gelesen aus diesem Register.",
   "system.ceiling_ignored":
-    "Dieses Register meldet {value} % und liegt damit außerhalb seines eigenen Bereichs 10–100, wird vom Gerät also nicht genutzt. Das Panel rechnet stattdessen bis 100 %.",
+    "Dieses Register meldet {value} % und liegt damit außerhalb seines eigenen Bereichs {min}–100, wird vom Gerät also nicht genutzt. Das Panel rechnet stattdessen bis 100 %.",
+
+  // ---- Wartung ----
+  "maint.title": "Wartung · Gefahrenzone",
+  "maint.warning":
+    "Diese Befehle wirken direkt auf das Gerät. Mehrere lassen sich nicht rückgängig machen – ein Werksreset löscht die WLAN- und Cloud-Einstellungen. Nur verwenden, wenn klar ist, was sie tun.",
+  "maint.buttons": "Befehle",
+  "maint.dev": "DEV-Befehle",
+  "maint.none":
+    "Für diesen Speicher ist kein Befehl aktiviert. Die Befehls-Entitäten sind standardmäßig deaktiviert; die benötigten auf der Geräteseite aktivieren, dann erscheinen sie hier.",
+  "maint.buttons_hint":
+    "Ein Befehl mit zweistufiger Bestätigung zeigt zuerst die Warnung der Integration und wird erst gesendet, wenn innerhalb ihres Zeitfensters bestätigt wird.",
+  "maint.press": "Drücken",
+  "maint.run": "Starten",
+  "maint.pressing": "Sende …",
+  "maint.confirm": "Jetzt senden",
+  "maint.close": "Schließen",
+  "maint.countdown": "Innerhalb von {seconds} s bestätigen. Noch wurde nichts gesendet.",
+  "maint.expired":
+    "Das Bestätigungsfenster ist abgelaufen. Es wurde nichts gesendet. Schließen und den Befehl erneut drücken, um neu zu beginnen.",
+  "maint.admin_required":
+    "Dafür sind Administratorrechte nötig. Bitte einen Home-Assistant-Administrator darum bitten.",
+  "maint.sent": "{name}: gesendet.",
+  "maint.cancelled":
+    "{name}: abgebrochen, es wurde nichts gesendet.",
+  "maint.ask_message":
+    "Dieser Befehl wird beim ersten Drücken gesendet, ohne Bestätigungsschritt der Integration. Jetzt senden?",
+
+  // ---- WLAN ----
+  "wifi.title": "WLAN",
+  "wifi.warning":
+    "Schreibt neue WLAN-Zugangsdaten in das Kommunikationsmodul des Speichers. Die Firmware legt das Passwort in einem EEPROM-Bereich ab, der eine andere Einstellung überlappt (bekannter Firmware-Fehler). Ein falscher oder abgebrochener Schreibvorgang kann falsche Zugangsdaten im Modul hinterlassen. Nur verwenden, solange der Speicher auf anderem Weg erreichbar bleibt – über die Marstek-App oder ein Kabel –, um das zu korrigieren. Er braucht die Integrationsoption Optionen → DEV-Register → DEV-Register anzeigen.",
+  "wifi.ssid": "SSID",
+  "wifi.password": "Passwort",
+  "wifi.hint":
+    "SSID 1 bis 31 Zeichen; Passwort leer für ein offenes Netz oder 8 bis 31 Zeichen. Nur druckbare ASCII-Zeichen, ohne Komma und Anführungszeichen. Das Passwort wird nicht gespeichert, das Feld wird nach jedem Versuch geleert.",
+  "wifi.send": "Zugangsdaten senden",
+  "wifi.sent": "Zugangsdaten gesendet. Das Kommunikationsmodul übernimmt sie jetzt und verbindet sich neu.",
+  "wifi.err.ssid_length": "Die SSID muss 1 bis {max} Zeichen lang sein. Es wurde nichts gesendet.",
+  "wifi.err.ssid_chars":
+    "Die SSID darf nur druckbare ASCII-Zeichen enthalten, ohne Komma und ohne Anführungszeichen. Es wurde nichts gesendet.",
+  "wifi.err.password_length":
+    "Das Passwort muss leer (offenes Netz) oder {min} bis {max} Zeichen lang sein. Es wurde nichts gesendet.",
+  "wifi.err.password_chars":
+    "Das Passwort darf nur druckbare ASCII-Zeichen enthalten, ohne Komma und ohne Anführungszeichen. Es wurde nichts gesendet.",
 
   // ---- Einstellungen ----
   "settings.title": "Einstellungen",
@@ -280,4 +362,43 @@ export const de: Record<string, string> = {
     "Dieses Panel liest die Integration Marstek Modbus Suite. Lege dort zuerst einen Speicher an.",
 
   "common.unavailable": "—",
+
+  // ---- decoded fault and warning codes (Venus A MPPT stage) ----
+  "code.mppt_error.0": "Kein Fehler",
+  "code.mppt_error.1088": "Batterie-Überspannung",
+  "code.mppt_error.1089": "Batterie-Überstrom",
+  "code.mppt_error.1093": "MPPT-Chip-Übertemperatur",
+  "code.mppt_error.1094": "PV4-Überstrom",
+  "code.mppt_error.1095": "PV3-Überstrom",
+  "code.mppt_error.1096": "PV2-Überstrom",
+  "code.mppt_error.1097": "PV1-Überstrom",
+  "code.mppt_error.1098": "PV4-Rückstrom",
+  "code.mppt_error.1099": "PV3-Rückstrom",
+  "code.mppt_error.1100": "PV2-Rückstrom",
+  "code.mppt_error.1101": "PV1-Rückstrom",
+  "code.mppt_error.1105": "PE-(Erd-)Spannungswarnung",
+  "code.mppt_error.1106": "PE-(Erd-)Überspannung",
+  "code.mppt_error.1107": "Batterie-Überspannung (Hardware-Abschaltung)",
+  "code.mppt_error.1109": "PV4-Überspannung",
+  "code.mppt_error.1110": "PV3-Überspannung",
+  "code.mppt_error.1111": "PV2-Überspannung",
+  "code.mppt_error.1112": "PV1-Überspannung",
+  "code.mppt_error.1123": "PV4-Überstrom (Hardware-Abschaltung)",
+  "code.mppt_error.1124": "PV3-Überstrom (Hardware-Abschaltung)",
+  "code.mppt_error.1125": "PV2-Überstrom (Hardware-Abschaltung)",
+  "code.mppt_error.1126": "PV1-Überstrom (Hardware-Abschaltung)",
+  "code.mppt_error.1127": "Kühlkörper 1 über 90 °C",
+  "code.mppt_error.1128": "Kühlkörper 2 über 90 °C",
+  "code.mppt_error.1129": "Umgebung über 90 °C",
+  "code.mppt_error.1130": "Batterie-Überstrom (Hardware-Abschaltung)",
+  "code.mppt_warning.0": "Keine Warnung",
+  "code.mppt_warning.1345": "MPPT-Leistungs- oder Spannungsvorgabe außerhalb des Bereichs",
+  "code.mppt_warning.1363": "Leistungsreduzierung, Kühlkörper oder Umgebung über 73 °C",
+  "code.mppt_warning.1364": "Fühler Kühlkörper 1 offen oder kurzgeschlossen",
+  "code.mppt_warning.1365": "Fühler Kühlkörper 2 offen oder kurzgeschlossen",
+  "code.mppt_warning.1366": "Umgebungsfühler offen oder kurzgeschlossen",
+  "code.mppt_warning.1367": "MPPT-Chip über 85 °C",
+  "code.mppt_warning.1368": "Kühlkörper 1 über 73 °C",
+  "code.mppt_warning.1369": "Kühlkörper 2 über 73 °C",
+  "code.mppt_warning.1370": "Umgebung über 73 °C",
 };

@@ -92,7 +92,7 @@ def load(model: str, scope: str) -> list[dict]:
     dependencies: set[str] = set()
 
     for section, body in data.items():
-        if not isinstance(body, dict) or section == "MISSING" or section.startswith("DEV"):
+        if not isinstance(body, dict) or section.startswith("DEV"):
             continue
         for key, entry in body.items():
             if not isinstance(entry, dict):
@@ -106,6 +106,7 @@ def load(model: str, scope: str) -> list[dict]:
                 "span": register_span(entry),
                 "group": entry.get("scan_interval", "high"),
                 "enabled": entry.get("enabled_by_default") is not False,
+                "isolated": entry.get("isolated") is True,
             })
 
     for definition in definitions:
@@ -117,12 +118,22 @@ def load(model: str, scope: str) -> list[dict]:
     return definitions
 
 
+def load_no_block_ranges(model: str) -> list[tuple[int, int]]:
+    """NO_BLOCK_READ_RANGES of a map as (first, last) pairs."""
+    data = yaml.safe_load((REGISTERS / f"{model}.yaml").read_text()) or {}
+    ranges = []
+    for item in data.get("NO_BLOCK_READ_RANGES") or []:
+        low, high = (item if isinstance(item, (list, tuple)) else (item, item))
+        ranges.append((min(int(low), int(high)), max(int(low), int(high))))
+    return ranges
+
+
 # --------------------------------------------------------------------------
 # The block layout
 # --------------------------------------------------------------------------
 
 
-def build_blocks(sensors: list[dict], max_gap: int, refused=()) -> list[list[dict]]:
+def build_blocks(sensors: list[dict], max_gap: int, refused=(), no_block=()) -> list[list[dict]]:
     """Group definitions into blocks the way the coordinator does.
 
     Blocks are cut from every *enabled* register, not from the ones due this
@@ -132,7 +143,14 @@ def build_blocks(sensors: list[dict], max_gap: int, refused=()) -> list[list[dic
     `refused` are gaps the device has turned down, as (left, right) pairs. The
     coordinator learns these at runtime and stores them per firmware; passing
     them here reproduces its steady state rather than its first cycle.
+
+    `no_block` are the map's NO_BLOCK_READ_RANGES. A definition marked
+    `isolated` or lying in one of them is a block of its own, and no block
+    spans one of them - the same rule the coordinator applies.
     """
+    def touches(first: int, last: int) -> bool:
+        return any(first <= high and low <= last for low, high in no_block)
+
     ordered = sorted(sensors, key=lambda s: s["register"])
     blocks: list[list[dict]] = []
     current: list[dict] = []
@@ -140,6 +158,12 @@ def build_blocks(sensors: list[dict], max_gap: int, refused=()) -> list[list[dic
 
     for sensor in ordered:
         sensor_end = sensor["register"] + sensor["span"] - 1
+        if sensor.get("isolated") or touches(sensor["register"], sensor_end):
+            if current:
+                blocks.append(current)
+            current, end = [], None
+            blocks.append([sensor])
+            continue
         if not current:
             current, end = [sensor], sensor_end
             continue
@@ -149,7 +173,11 @@ def build_blocks(sensors: list[dict], max_gap: int, refused=()) -> list[list[dic
             left <= end and sensor["register"] <= right for left, right in refused
         )
         bridgeable = gap <= 0 or (gap <= max_gap and not blacklisted)
-        if bridgeable and sensor_end - current[0]["register"] < MAX_BLOCK_SPAN:
+        if (
+            bridgeable
+            and sensor_end - current[0]["register"] < MAX_BLOCK_SPAN
+            and not touches(current[0]["register"], sensor_end)
+        ):
             current.append(sensor)
             end = max(end, sensor_end)
             continue
@@ -309,6 +337,7 @@ def main() -> int:
     args = parser.parse_args()
 
     sensors = load(args.model, args.scope)
+    no_block = load_no_block_ranges(args.model)
     gaps = [int(g) for g in args.gaps.split(",")]
     refused = parse_refused(args.refused)
 
@@ -334,7 +363,7 @@ def main() -> int:
         time.sleep(0.3)
 
     for gap in gaps:
-        blocks = build_blocks(sensors, gap, refused)
+        blocks = build_blocks(sensors, gap, refused, no_block)
         print(f"gap={gap}")
         for label, due in TICKS:
             plan = requests_for(blocks, due)
@@ -358,7 +387,7 @@ def main() -> int:
 
     if device is not None:
         issued = sum(
-            len(requests_for(build_blocks(sensors, gap, refused), due))
+            len(requests_for(build_blocks(sensors, gap, refused, no_block), due))
             for gap in gaps
             for _, due in TICKS
         )

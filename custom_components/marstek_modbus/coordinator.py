@@ -14,10 +14,11 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
+                    LEGACY_DEVICE_VERSIONS,
                     DEFAULT_TIMEOUT, DEFAULT_MESSAGE_WAIT_MS, CONF_MESSAGE_WAIT_MS,
-                    CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
+                    dev_registers_enabled,
                     CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR,
-                    CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
+                    DOMAIN,
                     min_scan_intervals,
                     CONF_PACK_COUNT, PACK_COUNT_AUTO, MAX_PACK_COUNT,
                     PACK_REGISTER_BASE, PACK_REGISTER_STRIDE,
@@ -66,13 +67,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.timeout = entry_data.get("timeout") or DEFAULT_TIMEOUT
         self.unit_id = entry_data.get("unit_id", DEFAULT_UNIT_ID)
 
-        # DEV-Register: zwei getrennt schaltbare Gruppen, beide standardmaessig
-        # aus. Sie stehen in den Optionen (nicht in data), damit ein Umschalten
-        # kein Reconfigure der Verbindung erfordert.
+        # DEV registers: one switch, off by default. It lives in the options (not
+        # in data) so that toggling it needs no reconfiguration of the connection.
         _opts = entry.options or {}
-        # Migration: der alte Sammelschalter aus 1.1.5-beta.1 schaltet beide
-        # Gruppen, solange die neuen Schluessel noch nicht gesetzt sind.
-        _legacy = bool(_opts.get(CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS))
         # Clamped rather than validated: an out-of-range value must not make the
         # usable-energy sensors disappear, and 0-100 is the only meaningful range.
         self.discharge_floor = min(
@@ -90,11 +87,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
         if not 0 <= self.pack_count <= MAX_PACK_COUNT:
             self.pack_count = PACK_COUNT_AUTO
 
-        self.dev_unknown_enabled = bool(_opts.get(CONF_DEV_REGISTERS_UNKNOWN, _legacy))
-        self.dev_duplicate_enabled = bool(_opts.get(CONF_DEV_REGISTERS_DUPLICATE, _legacy))
+        # Also honours the obsolete keys of an entry that has not been migrated yet.
+        self.dev_enabled = dev_registers_enabled(_opts)
 
         # Mapping from sensor key to entity type for logging and processing
         self._entity_types: dict[str, str] = {}
+
+        # Serialises the set_wifi service: two interleaved calls would mix the
+        # SSID and password buffers of the communication module.
+        self.wifi_write_lock = asyncio.Lock()
 
         # Store the config entry for potential future use
         self.config_entry = entry
@@ -115,6 +116,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.SWITCH_DEFINITIONS = []
         self.NUMBER_DEFINITIONS = []
         self.BUTTON_DEFINITIONS = []
+        self.DEV_BUTTON_DEFINITIONS = []
         self.EFFICIENCY_SENSOR_DEFINITIONS = []
         self.SOLAR_POWER_SENSOR_DEFINITIONS = []
         self.VERSION_SENSOR_DEFINITIONS = []
@@ -182,7 +184,19 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # nothing, and it keeps the battery back within a minute of being
         # switched on.
         self._offline_probe_interval = 60
-        
+
+        # Start-up. The setup does not wait for the first poll cycle: it runs
+        # as a background task (async_start_first_refresh), makes the
+        # connection, and reads the fastest group first, so the state of charge
+        # and the power show up before the firmware strings. Both flags are
+        # cleared by the first cycle that gets an answer.
+        self._initial_connect_pending = True
+        self._first_cycle_staged = True
+        self._first_refresh_task: asyncio.Task | None = None
+        # True only while the listeners are told about a first cycle that is
+        # not complete yet; calculated sensors wait for the complete cycle.
+        self.partial_update = False
+
         self._consecutive_timeout_cycles = 0
         self._max_consecutive_timeout_cycles = 3
         self._timeout_ratio_reconnect_threshold = 0.5
@@ -211,6 +225,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # told apart by what came back: a Modbus exception is the device
         # refusing these registers, a timeout is the device being busy.
         self._max_read_gap = DEFAULT_MAX_READ_GAP
+        # Register ranges a block read must never touch, from the register map
+        # (NO_BLOCK_READ_RANGES). Some registers do something when they are
+        # read - on a Venus D a read in 38000-39014 starts a CAN broadcast that
+        # runs until the next reboot - so they are never bridged into, whether
+        # or not a definition for them is loaded.
+        self._no_block_ranges: list[tuple[int, int]] = []
         self._bad_gaps: set[tuple[int, int]] = set()
         self._good_gaps: set[tuple[int, int]] = set()
         self._gap_memory_firmware = (self.config_entry.options or {}).get(CONF_BAD_GAPS_FIRMWARE)
@@ -387,7 +407,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # the single attempt plus one connect.
         return self._call_guard_timeout(max_retries=1) + 0.02 * block_count
 
-    async def _async_recover_half_open(self, context: str) -> bool:
+    async def _async_recover_half_open(
+        self, context: str, cause: str = "a timeout"
+    ) -> bool:
         """Rebuild the connection after a call was cancelled by the outer guard.
 
         A cancelled transaction never reads its response, so every later request
@@ -399,6 +421,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         Throttled to one reconnect per cooldown so a stalled cycle with dozens of
         timing-out registers cannot turn into a reconnect storm.
+
+        `cause` only words the log lines: a block that failed without a timeout
+        (a lost socket, an unexpected error) gets the same rebuild as one that
+        timed out, and should not be reported as a timeout. A block the device
+        refused with a Modbus exception reply gets no rebuild at all.
         """
         from homeassistant.util.dt import utcnow
 
@@ -417,19 +444,19 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._last_half_open_reconnect_at = now
         self._reconnect_attempts += 1
         self._half_open_reconnects += 1
-        _LOGGER.info("Rebuilding the connection after a timeout on %s", context)
+        _LOGGER.info("Rebuilding the connection after %s on %s", cause, context)
         try:
             connected = await self.client.async_reconnect()
         except Exception as exc:
-            _LOGGER.error("Reconnect after the timeout on %s raised: %s", context, exc)
+            _LOGGER.error("Reconnect after %s on %s raised: %s", cause, context, exc)
             return False
 
         if connected:
             self._last_reconnect_time = utcnow()
-            _LOGGER.info("Connection rebuilt after the timeout on %s", context)
+            _LOGGER.info("Connection rebuilt after %s on %s", cause, context)
             return True
 
-        _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
+        _LOGGER.warning("Reconnect after %s on %s did not succeed", cause, context)
         return False
 
     @staticmethod
@@ -783,6 +810,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
         asked for is cheaper than a second round trip - but only where the
         device tolerates it, which `_bad_gaps` records and `_max_read_gap`
         bounds. Both are per device, never assumed.
+
+        Some definitions are never part of a block. One marked `isolated`, or
+        one inside a range of `NO_BLOCK_READ_RANGES`, is read in a request of
+        its own, and no block is allowed to span one of those ranges either,
+        so a register that does something when it is read is only ever read
+        because its own entity was enabled.
         """
         if not sensors:
             return []
@@ -796,6 +829,16 @@ class MarstekCoordinator(DataUpdateCoordinator):
             register = sensor["register"]
             span = self._definition_register_count(sensor)
             sensor_end = register + span - 1
+
+            if self._is_isolated(sensor):
+                # Close the running block first, so nothing after this
+                # definition can bridge back across it.
+                if current_group:
+                    groups.append(current_group)
+                current_group = []
+                current_end = None
+                groups.append([sensor])
+                continue
 
             if not current_group:
                 current_group = [sensor]
@@ -813,6 +856,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 current_end is not None
                 and bridgeable
                 and sensor_end - current_group[0]["register"] < 125
+                and not self._touches_no_block_range(current_group[0]["register"], sensor_end)
             ):
                 current_group.append(sensor)
                 current_end = max(current_end, sensor_end)
@@ -826,6 +870,40 @@ class MarstekCoordinator(DataUpdateCoordinator):
             groups.append(current_group)
 
         return groups
+
+    def _touches_no_block_range(self, first: int, last: int) -> bool:
+        """Does the register span first..last overlap a no-block range?"""
+        return any(first <= high and low <= last for low, high in self._no_block_ranges)
+
+    def _is_isolated(self, definition: dict) -> bool:
+        """Must this definition be read in a request of its own?"""
+        if definition.get("isolated") is True:
+            return True
+        register = definition["register"]
+        last = register + self._definition_register_count(definition) - 1
+        return self._touches_no_block_range(register, last)
+
+    @staticmethod
+    def _parse_no_block_ranges(raw) -> list[tuple[int, int]]:
+        """Read NO_BLOCK_READ_RANGES: a list of [first, last] register pairs.
+
+        A malformed entry is skipped with a warning rather than failing the
+        whole map; a single number stands for a range of one register.
+        """
+        ranges: list[tuple[int, int]] = []
+        for item in raw or []:
+            try:
+                if isinstance(item, (list, tuple)) and len(item) == 2:
+                    low, high = int(item[0]), int(item[1])
+                else:
+                    low = high = int(item)
+            except (TypeError, ValueError):
+                _LOGGER.warning("Ignoring malformed NO_BLOCK_READ_RANGES entry %r", item)
+                continue
+            if low > high:
+                low, high = high, low
+            ranges.append((low, high))
+        return ranges
 
     def _gap_is_refused(self, left: int, right: int) -> bool:
         """Has the device refused a block that spanned this gap?
@@ -1117,6 +1195,56 @@ class MarstekCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Successfully connected to Modbus device at %s:%d", self.host, self.port)
         return connected
 
+    def async_start_first_refresh(self) -> None:
+        """Run the first poll cycle as a background task of the config entry.
+
+        The setup used to await it, which held up Home Assistant's whole start
+        for as long as the cycle took: every enabled value, one request after
+        the other, tens of seconds on a slow link. A background task of the
+        entry blocks neither the start nor an unload.
+
+        It is the regular refresh, under the coordinator's own lock, so it never
+        overlaps a scheduled cycle. Started eagerly, it takes that lock and
+        cancels the interval timer before setup returns; the regular schedule
+        starts when this cycle ends.
+        """
+        self._first_refresh_task = self.config_entry.async_create_background_task(
+            self.hass,
+            self.async_refresh(),
+            name=f"marstek_modbus first refresh {self.host}:{self.port}",
+        )
+
+    async def async_cancel_first_refresh(self) -> None:
+        """Stop a first cycle that is still running.
+
+        Must happen before the connection is closed: a cycle left running would
+        otherwise reconnect on its next read and leave a socket behind.
+        """
+        task = self._first_refresh_task
+        self._first_refresh_task = None
+        if task is None or task.done():
+            return
+        task.cancel()
+        # asyncio.wait rather than await: it does not raise the task's
+        # cancellation into the caller.
+        await asyncio.wait({task})
+
+    def _publish_first_cycle_values(self, updated_data: dict) -> None:
+        """Hand what the first cycle has read so far to the entities.
+
+        Called between the stages of the first cycle, so the fast values do not
+        wait for the slow ones. Register values only: derived and calculated
+        values wait for the complete cycle, so nothing shows a figure built on
+        half the inputs. Uses no `async_set_updated_data`, which would restart
+        the interval timer under the running cycle.
+        """
+        self._commit_cycle_values(updated_data, derive=False)
+        self.partial_update = True
+        try:
+            self.async_update_listeners()
+        finally:
+            self.partial_update = False
+
 
     async def async_load_registers(self, version: str | None = None):
         """Load register definitions from YAML (off the event loop) and populate coordinator attributes.
@@ -1174,23 +1302,27 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.PACK_AGGREGATE_SENSOR_DEFINITIONS = data.get(
                 "PACK_AGGREGATE_SENSOR_DEFINITIONS", []
             )
-            # DEV-Register: je Gruppe nur laden, wenn die zugehoerige Option
-            # gesetzt ist. Beide sind experimentell und standardmaessig aus.
-            if self.dev_unknown_enabled:
+            # DEV registers (and DEV buttons): only loaded when the one DEV
+            # switch is on. The duplicates group is empty on every model today
+            # but is still loaded here, so a map that fills it works unchanged.
+            if self.dev_enabled:
                 self.DEV_UNKNOWN_SENSOR_DEFINITIONS = data.get(
                     "DEV_UNKNOWN_SENSOR_DEFINITIONS", []
                 )
-            else:
-                self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
-            if self.dev_duplicate_enabled:
                 self.DEV_DUPLICATE_SENSOR_DEFINITIONS = data.get(
                     "DEV_DUPLICATE_SENSOR_DEFINITIONS", []
                 )
+                self.DEV_BUTTON_DEFINITIONS = data.get("DEV_BUTTON_DEFINITIONS", [])
             else:
+                self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
                 self.DEV_DUPLICATE_SENSOR_DEFINITIONS = []
-            if self.dev_unknown_enabled or self.dev_duplicate_enabled:
+                self.DEV_BUTTON_DEFINITIONS = []
+            self._no_block_ranges = self._parse_no_block_ranges(
+                data.get("NO_BLOCK_READ_RANGES")
+            )
+            if self.dev_enabled:
                 _LOGGER.info(
-                    "DEV-Register aktiv: %d unbekannt, %d Doppelungen",
+                    "DEV registers on: %d unsettled, %d duplicates",
                     len(self.DEV_UNKNOWN_SENSOR_DEFINITIONS),
                     len(self.DEV_DUPLICATE_SENSOR_DEFINITIONS),
                 )
@@ -1377,9 +1509,19 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 block_end,
             )
             # A block runs with max_retries=1, so the client never reconnects on
-            # its own here — whether it timed out or gave up cleanly. Without
-            # this, every fallback read below starts on the same suspect socket.
-            await self._async_recover_half_open(f"block read {block_start}-{block_end}")
+            # its own here. After a timeout or a lost socket every fallback read
+            # below would start on the same suspect socket, so it is rebuilt.
+            # A clean refusal (a Modbus exception reply) is different: the
+            # reply was framed and matched, the socket is in step, and a
+            # rebuild would only cost about half a second.
+            refused_cleanly = not block_timeout_occurred and getattr(
+                self.client, "last_read_refused", False
+            )
+            if not refused_cleanly:
+                await self._async_recover_half_open(
+                    f"block {block_start}-{block_end}",
+                    "a timeout" if block_timeout_occurred else "a failed read",
+                )
             values: dict[str, object] = {}
             for sensor in due_sensors:
                 key = sensor["key"]
@@ -1554,6 +1696,47 @@ class MarstekCoordinator(DataUpdateCoordinator):
             )
             return False
 
+    async def async_write_secret_register(
+        self, register: int, value: int, max_retries: int = 3
+    ) -> bool:
+        """Write one register whose value is a secret, and never log the value.
+
+        For the Wi-Fi credentials of the communication module (service
+        set_wifi). The value is not logged here, not by the client and not by
+        tmodbus's raw frame log, and it is not kept in _last_write_values.
+        Only the register is named in a message. Returns True once the device
+        has echoed the write.
+        """
+        if not hasattr(self, "client") or self.client is None:
+            _LOGGER.error("Modbus client is not available when writing register %d", register)
+            return False
+
+        try:
+            return bool(
+                await asyncio.wait_for(
+                    self.client.async_write_register(
+                        register=register,
+                        value=value,
+                        max_retries=max_retries,
+                        sensitive=True,
+                    ),
+                    timeout=self._call_guard_timeout(
+                        max_retries=max_retries, retry_delay=0.2
+                    ),
+                )
+            )
+        except asyncio.TimeoutError:
+            _LOGGER.error(
+                "Timeout writing to register 0x%X - connection may be half-open", register
+            )
+            await self._async_recover_half_open(f"secret write at register {register}")
+            return False
+        except Exception as err:  # noqa: BLE001 - the text of err could quote the value
+            _LOGGER.error(
+                "Failed to write to register 0x%X: %s", register, type(err).__name__
+            )
+            return False
+
     async def _async_update_data(self):
         """Update all sensors asynchronously with per-sensor interval skipping.
 
@@ -1577,6 +1760,26 @@ class MarstekCoordinator(DataUpdateCoordinator):
         if self.polling_paused:
             _LOGGER.debug("Polling paused for %s:%d - nothing to do", self.host, self.port)
             return self.data or {}
+
+        # The first cycle makes the connection the setup used to make, so the
+        # setup itself does no network I/O. A device that cannot be reached
+        # leaves the entry loaded with its entities unavailable; the offline
+        # probe below takes over, tries again at the next tick and then once a
+        # minute, and this used to be Home Assistant's setup retry.
+        if self._initial_connect_pending:
+            self._initial_connect_pending = False
+            if not self.client.is_connected and not await self.async_init():
+                _LOGGER.info(
+                    "%s:%d is not reachable yet - its entities stay unavailable "
+                    "and the connection is retried every %ds",
+                    self.host,
+                    self.port,
+                    self._offline_probe_interval,
+                )
+                self._link_offline = True
+                self._connection_suspended = True
+                self._last_probe_at = None
+                return self.data or {}
 
         # While the device counts as offline the cycle is a single probe register
         # on its own interval, not every due read waiting out its own timeout at
@@ -1728,8 +1931,30 @@ class MarstekCoordinator(DataUpdateCoordinator):
             due_sensors.append(sensor)
 
         due_by_key = self._definitions_by_key(due_sensors)
+        block_groups = self._build_contiguous_read_groups(readable_sensors)
 
-        for block_group in self._build_contiguous_read_groups(readable_sensors):
+        # The first cycle reads everything at once. Staged, it reads the blocks
+        # of the fastest poll group first (high, then low, then ultra; a block
+        # counts with its fastest due value) and hands each finished stage to
+        # the entities. The blocks themselves are built as always, by address,
+        # so nothing is read twice; only their order changes.
+        staged = self._first_cycle_staged
+
+        def block_stage(group: list[dict]) -> float:
+            intervals = [
+                self.scan_intervals.get(sensor.get("scan_interval"))
+                for sensor in group
+                if sensor["key"] in due_by_key
+            ]
+            return min((i for i in intervals if i is not None), default=float("inf"))
+
+        if staged:
+            block_groups.sort(key=block_stage)  # stable: address order within a stage
+        current_stage = None
+        cycle_started = perf_counter()
+        fast_values_after = None
+
+        for block_group in block_groups:
             # The mode can change under a running cycle: the select that sets it
             # runs in a task of its own. Carrying on would mean a timeout per
             # remaining register at a device somebody just said to leave alone.
@@ -1740,6 +1965,21 @@ class MarstekCoordinator(DataUpdateCoordinator):
             group_due_sensors = [sensor for sensor in block_group if sensor["key"] in due_by_key]
             if not group_due_sensors:
                 continue
+
+            if staged:
+                stage = block_stage(block_group)
+                if current_stage is not None and stage != current_stage and updated_data:
+                    _LOGGER.debug(
+                        "First cycle: publishing %d value(s) of the %ss group after %.1fs",
+                        len(updated_data),
+                        current_stage,
+                        perf_counter() - cycle_started,
+                    )
+                    if fast_values_after is None:
+                        fast_values_after = perf_counter() - cycle_started
+                    self._publish_first_cycle_values(updated_data)
+                    updated_data = {}
+                current_stage = stage
 
             grouped_blocks += 1
             group_values, group_stats = await self._async_read_contiguous_group(block_group, group_due_sensors)
@@ -1960,6 +2200,29 @@ class MarstekCoordinator(DataUpdateCoordinator):
             "last_cycle_at": now,
         }
 
+        self._commit_cycle_values(updated_data)
+
+        # The first cycle that got an answer ends the start-up staging.
+        if staged and successful_reads > 0:
+            self._first_cycle_staged = False
+            _LOGGER.info(
+                "First poll cycle of %s:%d done in %.1fs (%d requests; fast values after %.1fs)",
+                self.host,
+                self.port,
+                perf_counter() - cycle_started,
+                top_level_requests,
+                fast_values_after if fast_values_after is not None else perf_counter() - cycle_started,
+            )
+        return self.data
+
+    def _commit_cycle_values(self, updated_data: dict, derive: bool = True) -> None:
+        """Merge the values of a cycle (or of a first-cycle stage) into `data`.
+
+        `derive=False` for a first-cycle stage: the derived values (battery
+        power, pack averages) count missing inputs as zero or leave them out,
+        which is right for an absent string or pack but wrong for one that is
+        simply not read yet. They wait for the complete cycle.
+        """
         # Defensive check
         if self.data is None:
             self.data = {}
@@ -1980,9 +2243,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         # Update the coordinator's data
         self.data.update(updated_data)
-        self._derive_battery_power()
-        self._derive_pack_averages()
-        return self.data
+        if derive:
+            self._derive_battery_power()
+            self._derive_pack_averages()
 
     def _derive_pack_averages(self) -> None:
         """Average a per-pack reading over the packs that are actually fitted.
@@ -2106,9 +2369,13 @@ def get_registers(version: str):
     - PACK_AGGREGATE_SENSOR_DEFINITIONS
     - DEV_UNKNOWN_SENSOR_DEFINITIONS
     - DEV_DUPLICATE_SENSOR_DEFINITIONS
+    - DEV_BUTTON_DEFINITIONS
+    - NO_BLOCK_READ_RANGES (register ranges, not definitions)
 
-    If an unknown version is requested, the function falls back to the v1/v2
-    register set (because v1 and v2 share the same registers in this integration).
+    An unknown or missing version raises ValueError; there is no fallback to
+    the v1/v2 map. The legacy tokens "v1/v2" and "v3" are mapped to "e v1/v2"
+    and "e v3" first. If the YAML file cannot be loaded the function logs a
+    warning and returns None, and the caller then keeps empty definitions.
     """
     # Normalize incoming version value and accept legacy tokens.
     version_raw = (version or "").strip()
@@ -2120,12 +2387,8 @@ def get_registers(version: str):
     )
     # Accept legacy tokens 'v1/v2' and 'v3' and automatically map them
     # to the new tokens used by the integration ('e v1/v2', 'e v3').
-    legacy_to_new = {
-        "v1/v2": "e v1/v2",
-        "v3": "e v3",
-    }
-    if version in legacy_to_new:
-        mapped = legacy_to_new[version]
+    if version in LEGACY_DEVICE_VERSIONS:
+        mapped = LEGACY_DEVICE_VERSIONS[version]
         _LOGGER.info(
             "Mapping legacy device version '%s' to '%s' for backwards compatibility",
             version_raw,
@@ -2234,6 +2497,13 @@ def get_registers(version: str):
                     "DEV_DUPLICATE_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("DEV_DUPLICATE_SENSOR_DEFINITIONS")
                     ),
+                    "DEV_BUTTON_DEFINITIONS": _normalize_section(
+                        data.get("DEV_BUTTON_DEFINITIONS")
+                    ),
+                    # Not a section of definitions: [first, last] register
+                    # pairs that no block read may touch. Parsed by the
+                    # coordinator, passed through unchanged here.
+                    "NO_BLOCK_READ_RANGES": data.get("NO_BLOCK_READ_RANGES") or [],
                 }
             except Exception as e:
                 _LOGGER.warning("Failed to load YAML registers %s: %s", yaml_path, e)

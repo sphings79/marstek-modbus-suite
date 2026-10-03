@@ -3,7 +3,7 @@
  *
  * English is bundled because it is the fallback for every missing key. The
  * other languages are separate chunks loaded on demand, so a German install
- * never downloads the Polish catalogue.
+ * never downloads the Dutch catalogue.
  */
 
 import { en } from "./locales/en";
@@ -13,6 +13,7 @@ export type Strings = Record<string, string>;
 /** Languages with their own catalogue, beyond the bundled English. */
 const LOADERS: Record<string, () => Promise<Strings>> = {
   de: () => import("./locales/de").then((m) => m.de),
+  nl: () => import("./locales/nl").then((m) => m.nl),
 };
 
 export const AVAILABLE_LANGUAGES = ["en", ...Object.keys(LOADERS)].sort();

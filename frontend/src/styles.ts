@@ -122,6 +122,9 @@ export const baseStyles = css`
   .magenta {
     color: var(--mk-magenta);
   }
+  .accent {
+    color: var(--mk-accent);
+  }
 
   /* Wide content scrolls inside its own box so the page never does. */
   .scroll {
@@ -153,6 +156,12 @@ export const baseStyles = css`
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+  /* Decoded fault texts can run to a sentence; they wrap rather than push
+     the card wider than the screen. */
+  .kv > b.wrap {
+    white-space: normal;
+    text-align: right;
   }
 
   .head {

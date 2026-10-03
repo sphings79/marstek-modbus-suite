@@ -192,11 +192,6 @@ DEFAULT_DEVICE_NAME = "Marstek Venus"
 # Note: register loading logic (get_registers) was moved to
 # `coordinator.py` to keep `const.py` focused on constants only.
 
-# Optionsschluessel fuer die DEV-Register. Getrennt schaltbar, weil die beiden
-# Gruppen unterschiedlichen Zwecken dienen:
-#   unknown   - Register ohne geklaerte Bedeutung (117)
-#   duplicate - Register, die denselben Wert liefern wie ein bereits
-#               integrierter Sensor: Aliase, Spiegel, Folgeregister (14)
 # Lower end of the usable energy window, in percent of the pack.
 # Venus A, D and E v3 do not expose discharging_cutoff_capacity, so the floor
 # the user set in the Marstek app cannot be read back and is configured here
@@ -205,14 +200,20 @@ CONF_DISCHARGE_FLOOR = "discharge_floor_percent"
 DEFAULT_DISCHARGE_FLOOR = 12
 
 # How many battery packs are actually stacked, on the models that take more than
-# one. The register map always describes all seven blocks, so without this every
-# Venus D and A shows seven packs whatever is installed.
+# one. The register map describes every block the model can carry (seven on the
+# Venus D, six on the Venus A), so without this every Venus D and A shows all of
+# them whatever is installed.
 #
 # 0 means "read it off the device": a pack that is not there answers its whole
 # block with zeros, so the panel can recognise it. That costs the reads - the
 # integration cannot leave out a block and still see whether it answers - which
 # is what a fixed number is for. Set 1 to 7 and the blocks above it are not
-# polled at all: four absent packs are 64 registers a cycle out of 234.
+# polled at all: on a Venus D with the default entities, four absent packs are
+# 68 registers a cycle out of 240 (counted from d.yaml, dependencies included).
+#
+# The cap of 7 is the generic one, the number of pack records the Control keeps.
+# The Venus A BMS sends packs 1 to 6 only, so on the A a value of 7 polls
+# nothing that exists; 6 is the highest that makes sense there.
 CONF_PACK_COUNT = "pack_count"
 PACK_COUNT_AUTO = 0
 MAX_PACK_COUNT = 7
@@ -225,13 +226,56 @@ PACK_REGISTER_STRIDE = 100
 # battery and never show the setting.
 PACK_COUNT_VERSIONS = {"d", "a"}
 
+# The one stored flag behind the options step "DEV registers". Its name is a
+# leftover of the time when there were two switches; it stays so that existing
+# installations keep working.
 CONF_DEV_REGISTERS_UNKNOWN = "dev_registers_unknown"
-CONF_DEV_REGISTERS_DUPLICATE = "dev_registers_duplicate"
 DEFAULT_DEV_REGISTERS = False
 
-# Alter Sammelschalter aus 1.1.5-beta.1. Wird nur noch gelesen, um bestehende
-# Konfigurationen zu migrieren: war er an, gelten beide neuen Optionen als an.
+# Obsolete keys. They are only read to migrate an existing entry and are dropped
+# from the stored options afterwards:
+#   dev_registers            the single switch of 1.1.5-beta.1
+#   dev_registers_duplicate  the second switch of 3.1.0-beta.1/2 ("Show duplicates")
 CONF_DEV_REGISTERS_LEGACY = "dev_registers"
+_OBSOLETE_DEV_REGISTERS_DUPLICATE = "dev_registers_duplicate"
+
+
+def dev_registers_enabled(options) -> bool:
+    """Whether the DEV registers are on for these stored options.
+
+    On if the current flag is on, or - for an entry written before the two
+    switches were merged - if either the old duplicates switch or the oldest
+    single switch is on. A key that is set wins over the older switch it
+    replaced, exactly as it did while there were two.
+    """
+    options = options or {}
+    legacy = bool(options.get(CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS))
+    return bool(options.get(CONF_DEV_REGISTERS_UNKNOWN, legacy)) or bool(
+        options.get(_OBSOLETE_DEV_REGISTERS_DUPLICATE, legacy)
+    )
+
+
+def migrate_dev_registers_options(options):
+    """Return the options with the obsolete DEV keys folded in, or None.
+
+    None means nothing to do (already migrated, or never had a DEV key), so the
+    call is idempotent. Otherwise the returned dict carries the single flag and
+    neither obsolete key. The register definitions are loaded by that flag
+    alone, which is why an entry that only had the duplicates switch on must
+    end up with the flag on: its DEV entities keep their unique_ids.
+    """
+    options = dict(options or {})
+    if (
+        _OBSOLETE_DEV_REGISTERS_DUPLICATE not in options
+        and CONF_DEV_REGISTERS_LEGACY not in options
+    ):
+        return None
+    enabled = dev_registers_enabled(options)
+    options.pop(_OBSOLETE_DEV_REGISTERS_DUPLICATE, None)
+    options.pop(CONF_DEV_REGISTERS_LEGACY, None)
+    options[CONF_DEV_REGISTERS_UNKNOWN] = enabled
+    return options
+
 
 # Steuermodus (Register 42000). Der Firmware-Write-Handler zeigt, was dahinter
 # steckt: 42000 und 43000 schreiben dieselbe Variable. `42000 = 0x55AA` setzt das
@@ -280,3 +324,65 @@ POLLING_MODES = [
     POLLING_MODE_PAUSED_FROZEN,
 ]
 DEFAULT_POLLING_MODE = POLLING_MODE_ACTIVE
+
+# How long a button with `confirm: true` stays armed after its first press, in
+# seconds. The first press only shows the warning; a second one inside this
+# window writes the command.
+BUTTON_CONFIRM_WINDOW = 15
+
+# Device version tokens older installations stored in the config entry, as old
+# -> current SUPPORTED_VERSIONS token (lower-cased). The coordinator loads the
+# register map through it, and the rename migration has to look the entry up
+# under the current token as well.
+LEGACY_DEVICE_VERSIONS = {
+    "v1/v2": "e v1/v2",
+    "v3": "e v3",
+}
+
+# Entity keys renamed per register map, as old key -> new key. The unique id of
+# an entity is "<entry id>_<key>", so a rename would otherwise orphan the old
+# entity and create a new one; __init__.py moves the registry entries over
+# before the platforms are set up, which keeps the entity id, the history and
+# every customisation. Keyed by the lower-cased device version, because the
+# other register maps still use the old keys.
+RENAMED_KEYS = {
+    "d": {
+        # 3.1.0-beta.3
+        "device_name": "device_model",
+        "vms_version": "vns_version",
+        "battery_total_energy": "battery_rated_capacity",
+        "min_cell_temperature": "battery_1_min_cell_temperature",
+        "schedule_1_mode": "schedule_1_power",
+        "schedule_2_mode": "schedule_2_power",
+        "schedule_3_mode": "schedule_3_power",
+        "schedule_4_mode": "schedule_4_power",
+        "schedule_5_mode": "schedule_5_power",
+        "schedule_6_mode": "schedule_6_power",
+    },
+    "a": {
+        # 3.1.0-beta.3, same renames as the Venus D
+        "device_name": "device_model",
+        "vms_version": "vns_version",
+        "battery_total_energy": "battery_rated_capacity",
+        "min_cell_temperature": "battery_1_min_cell_temperature",
+        "schedule_1_mode": "schedule_1_power",
+        "schedule_2_mode": "schedule_2_power",
+        "schedule_3_mode": "schedule_3_power",
+        "schedule_4_mode": "schedule_4_power",
+        "schedule_5_mode": "schedule_5_power",
+        "schedule_6_mode": "schedule_6_power",
+    },
+    "e v3": {
+        # 3.1.0-beta.3. The Venus E v3 keeps min_cell_temperature: it has one
+        # fixed pack, so 35010 / 35011 are a consistent maximum / minimum pair.
+        "device_name": "device_model",
+        "vms_version": "vns_version",
+        "battery_total_energy": "battery_rated_capacity",
+        "schedule_1_mode": "schedule_1_power",
+        "schedule_2_mode": "schedule_2_power",
+        "schedule_3_mode": "schedule_3_power",
+        "schedule_4_mode": "schedule_4_power",
+        "schedule_5_mode": "schedule_5_power",
+        "schedule_6_mode": "schedule_6_power",
+    },
+}

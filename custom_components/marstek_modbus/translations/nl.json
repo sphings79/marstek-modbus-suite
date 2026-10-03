@@ -57,7 +57,7 @@
           "polling": "Polling-intervallen",
           "limits": "Energievenster",
           "packs": "Batterijpakketten",
-          "dev": "DEV-registers (experimenteel)"
+          "dev": "DEV-registers"
         }
       },
       "polling": {
@@ -89,10 +89,9 @@
       },
       "dev": {
         "title": "DEV-registers",
-        "description": "Twee afzonderlijk schakelbare groepen extra diagnosesensoren. Beide heten \"DEV [register] ([vermoeden]?)\" en staan daardoor bij elkaar; het vraagteken betekent dat de naam een vermoeden is.\n\n**Onbekend (117)** – registers waarvan de betekenis niet vaststaat. Deels lage of middelmatige zekerheid uit de firmware-analyse, deels registers in het 40000-bereik die aantoonbaar op een leesopdracht antwoorden. Veel blijven permanent 0.\n\n**Dubbelingen (14)** – registers die dezelfde waarde geven als een bestaande sensor: aliassen op dezelfde geheugenplek, spiegelregisters, vervolgregisters van een blok. Handig om te controleren of twee registers echt gelijk lopen.\n\nAlleen voor analyse. De integratie wordt na het omschakelen opnieuw geladen.",
+        "description": "Schakelt extra diagnose-items in die anders verborgen zijn. Ze heten \"DEV [register] ([betekenis])\"; een vraagteken betekent dat de naam een vermoeden is.\n\nDaaronder vallen:\n\n- registers waarvan de betekenis niet vaststaat: de eenheid erachter heeft geen controleerbare firmware, of ze geven pas na een opdracht een waarde\n- spiegel- en dubbele registers, op de modellen die er hebben\n- de DEV-knoppen voor serviceopdrachten: standaard uitgeschakeld, en wat niet ongedaan te maken is vraagt een tweede druk\n- de service set_wifi (wifi-gegevens van de communicatiemodule)\n\nAlle DEV-entiteiten worden uitgeschakeld aangemaakt; schakel zelf in wat je wilt. Alleen voor gevorderde gebruikers en analyse. De integratie wordt na het omschakelen opnieuw geladen.",
         "data": {
-          "dev_registers_unknown": "Onbekende registers tonen (117)",
-          "dev_registers_duplicate": "Dubbelingen tonen (14)"
+          "dev_registers_unknown": "DEV-registers tonen"
         }
       },
       "limits": {
@@ -165,10 +164,19 @@
         "name": "VNS-bootloaderversie"
       },
       "battery_1_mos_status": {
-        "name": "Batterij pack 1 MOSFET-status"
+        "name": "Batterij pack 1 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_1_bms_version": {
         "name": "Batterij pack 1 BMS-versie"
+      },
+      "battery_1_bms_warnings": {
+        "name": "Batterij pack 1 BMS-waarschuwingen"
       },
       "battery_1_cycle_count": {
         "name": "Batterij pack 1 Cyclusaantal"
@@ -177,37 +185,73 @@
         "name": "Batterij pack 2 Cyclusaantal"
       },
       "battery_2_mos_status": {
-        "name": "Batterij pack 2 MOSFET-status"
+        "name": "Batterij pack 2 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_2_bms_version": {
         "name": "Batterij pack 2 BMS-versie"
+      },
+      "battery_2_bms_warnings": {
+        "name": "Batterij pack 2 BMS-waarschuwingen"
       },
       "battery_3_cycle_count": {
         "name": "Batterij pack 3 Cyclusaantal"
       },
       "battery_3_mos_status": {
-        "name": "Batterij pack 3 MOSFET-status"
+        "name": "Batterij pack 3 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_3_bms_version": {
         "name": "Batterij pack 3 BMS-versie"
+      },
+      "battery_3_bms_warnings": {
+        "name": "Batterij pack 3 BMS-waarschuwingen"
       },
       "battery_4_cycle_count": {
         "name": "Batterij pack 4 Cyclusaantal"
       },
       "battery_4_mos_status": {
-        "name": "Batterij pack 4 MOSFET-status"
+        "name": "Batterij pack 4 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_4_bms_version": {
         "name": "Batterij pack 4 BMS-versie"
+      },
+      "battery_4_bms_warnings": {
+        "name": "Batterij pack 4 BMS-waarschuwingen"
       },
       "battery_5_cycle_count": {
         "name": "Batterij pack 5 Cyclusaantal"
       },
       "battery_5_mos_status": {
-        "name": "Batterij pack 5 MOSFET-status"
+        "name": "Batterij pack 5 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_5_bms_version": {
         "name": "Batterij pack 5 BMS-versie"
+      },
+      "battery_5_bms_warnings": {
+        "name": "Batterij pack 5 BMS-waarschuwingen"
       },
       "battery_6_cycle_count": {
         "name": "Batterij pack 6 Cyclusaantal"
@@ -216,16 +260,34 @@
         "name": "Batterij pack 7 Cyclusaantal"
       },
       "battery_6_mos_status": {
-        "name": "Batterij pack 6 MOSFET-status"
+        "name": "Batterij pack 6 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_7_mos_status": {
-        "name": "Batterij pack 7 MOSFET-status"
+        "name": "Batterij pack 7 MOSFET-status",
+        "state": {
+          "0": "Laden en ontladen uit",
+          "1": "Alleen laden",
+          "2": "Alleen ontladen",
+          "3": "Laden en ontladen aan"
+        }
       },
       "battery_6_bms_version": {
         "name": "Batterij pack 6 BMS-versie"
       },
+      "battery_6_bms_warnings": {
+        "name": "Batterij pack 6 BMS-waarschuwingen"
+      },
       "battery_7_bms_version": {
         "name": "Batterij pack 7 BMS-versie"
+      },
+      "battery_7_bms_warnings": {
+        "name": "Batterij pack 7 BMS-waarschuwingen"
       },
       "battery_1_max_cell_voltage": {
         "name": "Batterij pack 1 Max celspanning"
@@ -440,6 +502,9 @@
       "device_name": {
         "name": "Apparaatnaam"
       },
+      "device_model": {
+        "name": "Model"
+      },
       "sn_code": {
         "name": "Serienummer"
       },
@@ -456,7 +521,10 @@
         "name": "Firmwareversie"
       },
       "vms_version": {
-        "name": "VMS-versie"
+        "name": "VNS-versie"
+      },
+      "vns_version": {
+        "name": "VNS-versie"
       },
       "comm_module_firmware": {
         "name": "Communicatiemodule Firmware"
@@ -490,6 +558,9 @@
       },
       "battery_total_energy": {
         "name": "Batterij Totale Energie"
+      },
+      "battery_rated_capacity": {
+        "name": "Batterij nominale capaciteit"
       },
       "battery_voltage": {
         "name": "Batterijspanning"
@@ -592,6 +663,9 @@
       },
       "min_cell_temperature": {
         "name": "Min. Celtemperatuur"
+      },
+      "battery_1_min_cell_temperature": {
+        "name": "Batterij pack 1 Min celtemperatuur"
       },
       "max_cell_voltage": {
         "name": "Max. Celspanning"
@@ -953,9 +1027,6 @@
       "alarm_status": {
         "name": "Alarmstatus"
       },
-      "alarm_status_low": {
-        "name": "Alarmstatus laag woord"
-      },
       "modbus_address": {
         "name": "Modbus-adres"
       },
@@ -976,6 +1047,9 @@
       },
       "wifi_signal_strength": {
         "name": "WiFi-signaalsterkte"
+      },
+      "wifi_ssid": {
+        "name": "WiFi-SSID"
       },
       "round_trip_efficiency_total": {
         "name": "Totaal rendement"
@@ -1062,6 +1136,9 @@
       "mppt_version": {
         "name": "MPPT-versie"
       },
+      "ethernet_chip_version": {
+        "name": "Ethernet-chipversie"
+      },
       "device_ip_address": {
         "name": "IP-adres"
       },
@@ -1095,9 +1172,6 @@
       "fault_status_low": {
         "name": "Foutstatus laag woord"
       },
-      "fault_status_2": {
-        "name": "Foutstatus 2 hoog woord"
-      },
       "fault_status_2_low": {
         "name": "Foutstatus 2 laag woord"
       },
@@ -1106,9 +1180,6 @@
       },
       "fault_status_low_description": {
         "name": "Foutstatus laag woord beschrijving"
-      },
-      "fault_status_2_description": {
-        "name": "Foutstatus 2 hoog woord beschrijving"
       },
       "fault_status_2_low_description": {
         "name": "Foutstatus 2 laag woord beschrijving"
@@ -1128,8 +1199,32 @@
       "bms_charge_current_limit": {
         "name": "BMS-laadstroomlimiet"
       },
+      "bms_discharge_current_limit": {
+        "name": "BMS-ontlaadstroomlimiet"
+      },
       "bms_charge_power_limit": {
         "name": "BMS-laadvermogenlimiet"
+      },
+      "inverter_radiator_1_temperature": {
+        "name": "Omvormer Koellichaam 1 Temperatuur"
+      },
+      "inverter_radiator_2_temperature": {
+        "name": "Omvormer Koellichaam 2 Temperatuur"
+      },
+      "inverter_temperature_ntc_ch12": {
+        "name": "Omvormer Temperatuur NTC CH12"
+      },
+      "inverter_temperature_ntc_ch5": {
+        "name": "Omvormer Temperatuur NTC CH5"
+      },
+      "inverter_dc_voltage": {
+        "name": "Omvormer DC-spanning"
+      },
+      "battery_1_profile": {
+        "name": "BMS-batterijprofiel"
+      },
+      "pv_lifetime_energy": {
+        "name": "PV Totale Opbrengst"
       }
     },
     "binary_sensor": {
@@ -1142,6 +1237,12 @@
       "cloud_status": {
         "name": "Cloud-status"
       },
+      "bms_lock_active": {
+        "name": "BMS-vergrendeling"
+      },
+      "bms_factory_mode": {
+        "name": "BMS-fabrieksmodus"
+      },
       "discharge_limit_mode": {
         "name": "Ontlaadlimiet"
       }
@@ -1153,6 +1254,7 @@
           "manual": "Handmatig",
           "anti_feed": "Anti-teruglevering",
           "trade_mode": "Handelsmodus",
+          "ai": "AI-optimalisatie",
           "ups": "UPS"
         }
       },
@@ -1359,20 +1461,38 @@
       "schedule_1_mode": {
         "name": "Schema 1 Modus"
       },
+      "schedule_1_power": {
+        "name": "Schema 1 Vermogen"
+      },
       "schedule_2_mode": {
         "name": "Schema 2 Modus"
+      },
+      "schedule_2_power": {
+        "name": "Schema 2 Vermogen"
       },
       "schedule_3_mode": {
         "name": "Schema 3 Modus"
       },
+      "schedule_3_power": {
+        "name": "Schema 3 Vermogen"
+      },
       "schedule_4_mode": {
         "name": "Schema 4 Modus"
+      },
+      "schedule_4_power": {
+        "name": "Schema 4 Vermogen"
       },
       "schedule_5_mode": {
         "name": "Schema 5 Modus"
       },
+      "schedule_5_power": {
+        "name": "Schema 5 Vermogen"
+      },
       "schedule_6_mode": {
         "name": "Schema 6 Modus"
+      },
+      "schedule_6_power": {
+        "name": "Schema 6 Vermogen"
       }
     },
     "button": {
@@ -1381,6 +1501,45 @@
       },
       "factory_reset": {
         "name": "Fabrieksinstellingen Herstellen"
+      },
+      "led_test": {
+        "name": "LED-test"
+      },
+      "read_inverter_input_pb1": {
+        "name": "Omvormeringang PB1 uitlezen"
+      },
+      "inverter_eeprom_test": {
+        "name": "Omvormer-EEPROM-test"
+      },
+      "pack_coding": {
+        "name": "Pack-codering (batterijpack-herstel)"
+      },
+      "dev_45027_bms_master_reboot": {
+        "name": "DEV 45027 BMS-master herstarten"
+      },
+      "dev_45028_bms_factory_reset": {
+        "name": "DEV 45028 BMS-fabrieksreset"
+      },
+      "dev_45002_inverter_disable": {
+        "name": "DEV 45002 Omvormer uit tot herstart"
+      },
+      "dev_45002_inverter_sleep_request": {
+        "name": "DEV 45002 Slaapaanvraag omvormer (korte stop)"
+      },
+      "dev_45020_pv_restart": {
+        "name": "DEV 45020 PV herstarten (referentie 50 W)"
+      },
+      "dev_45021_pv_off": {
+        "name": "DEV 45021 PV uit"
+      },
+      "dev_45021_pv_on": {
+        "name": "DEV 45021 PV aan"
+      },
+      "dev_45030_bms_set_master": {
+        "name": "DEV 45030 BMS-masterrol instellen"
+      },
+      "dev_45030_bms_clear_master": {
+        "name": "DEV 45030 BMS-masterrol wissen"
       }
     }
   },
@@ -1407,6 +1566,100 @@
     },
     "schedule_overlap": {
       "message": "Schema {slot} zou op een gedeelde dag overlappen met schema {other}. Het apparaat voert alleen het eerste passende schema uit, daarom worden overlappingen geweigerd."
+    },
+    "schedule_time": {
+      "message": "Schema {slot}: start en einde zijn kloktijden in de vorm HHMM, bijvoorbeeld 1830 voor 18:30, en de laatste twee cijfers moeten onder 60 liggen. Andere waarden weigert het apparaat en schakelt het schema daarbij uit."
+    },
+    "confirm_factory_reset": {
+      "message": "Fabrieksreset: hiermee worden de besturingseenheid, de omvormer en alle batterijpacks teruggezet naar de fabrieksinstellingen en worden de wifi- en cloudinstellingen gewist; daarna start het apparaat opnieuw op. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het uit te voeren."
+    },
+    "confirm_factory_reset_e3": {
+      "message": "Fabrieksreset van de Venus E v3: de besturingseenheid wordt teruggezet naar de fabrieksinstellingen (alle gebruikersinstellingen inclusief limieten en schema's, de energiestatistieken en de cloudidentiteit) en de TLS-certificaten van de wifi-module worden gewist; de omvormer-micro gaat terug naar zijn fabrieksinstellingen, dus limieten van 3000 W / 3000 W en netnorm 0 - de netnorm is alleen te herstellen via de eigen RS485-interface van de micro of zijn shell; het BMS zet alleen zijn beschermingsparameters terug, het batterijprofiel blijft. Daarna start het apparaat opnieuw op. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het uit te voeren."
+    },
+    "confirm_pack_coding": {
+      "message": "De pack-codering (batterijpack-herstel in de Marstek-app) wijst de BMS-packadressen opnieuw toe. Op de Venus D lukt dit alleen met precies twee packs; met één of meer dan twee eindigt het na ongeveer 10 seconden met een time-out. De status toont de DEV-sensor 32114. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om te starten."
+    },
+    "confirm_dev_45027_bms_master_reboot": {
+      "message": "DEV-opdracht: herstart de master-BMS. Op een Venus D wist een pack dat pas tijdens bedrijf master werd daarbij ook zijn opgeslagen rol; op een Venus A schakelt het pack over naar een blijvende fabrieksmodus die de coördinatie van meerdere packs uitschakelt tot een BMS-fabrieksreset. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "confirm_dev_45028_bms_factory_reset": {
+      "message": "DEV-opdracht: zet alle BMS-packs terug naar de fabrieksinstellingen. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "confirm_dev_45028_bms_factory_reset_e3": {
+      "message": "DEV-opdracht: zet de beschermingsparameters van het BMS terug naar hun standaardwaarden en start het BMS opnieuw op; de batterij is daarbij ongeveer 1,5 seconden plus de opstarttijd losgekoppeld, ook onder belasting. De SOC-kalibratiegegevens en het batterijprofiel blijven behouden. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "confirm_dev_45002_inverter_disable": {
+      "message": "DEV-opdracht: schakelt de omvormer uit. De AC-uitgang stopt en blijft uit tot de omvormer opnieuw wordt gestart (apparaat resetten of spanning verbreken). Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "confirm_dev_45002_inverter_sleep_request": {
+      "message": "DEV-opdracht: zet de slaapvlag van de omvormer. Op de Venus D en de Venus E v3 stopt de uitgang ongeveer 0 tot 5 seconden, tot de firmware de vlag weer wist, tenzij het BMS zelf slaap aanvraagt; de omvormer schrijft daarbij ook naar zijn EEPROM. Een herstart is niet nodig. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "confirm_dev_45030_bms_set_master": {
+      "message": "DEV-opdracht: schrijft de BMS-masterrol naar elk aangesloten pack (broadcast) en zet het terug naar de fabrieksinstellingen. Bij meerdere packs worden ze allemaal master: de uitgangen blijven tot een herstart geblokkeerd en het conflict keert na elke herstart terug. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "confirm_dev_45030_bms_clear_master": {
+      "message": "DEV-opdracht: verwijdert de BMS-masterrol van elk aangesloten pack (broadcast). Alle packs starten daarna zonder toewijzing en met uitgeschakelde uitgangen, de batterij laadt en ontlaadt dan niet totdat er weer een master is aangewezen. Er is nog niets verzonden. Druk binnen {seconds} seconden nogmaals op de knop om het te verzenden."
+    },
+    "set_wifi_disabled": {
+      "message": "De service set_wifi is voor deze batterij uitgeschakeld. Schakel eerst Opties > DEV-registers > DEV-registers tonen in. Er is niets geschreven."
+    },
+    "set_wifi_unsupported": {
+      "message": "De service set_wifi bestaat alleen voor de Venus D, de Venus A en de Venus E v3. Er is niets geschreven."
+    },
+    "set_wifi_paused": {
+      "message": "Het uitlezen van deze batterij is gepauzeerd, daarom wordt er niets geschreven. Hervat eerst het uitlezen."
+    },
+    "set_wifi_unknown_device": {
+      "message": "Het gekozen apparaat hoort niet bij de Marstek Modbus Suite. Er is niets geschreven."
+    },
+    "set_wifi_target_needed": {
+      "message": "Er is meer dan één batterij ingesteld. Kies de batterij die de wifi-gegevens krijgt. Er is niets geschreven."
+    },
+    "set_wifi_ssid_length": {
+      "message": "De SSID moet 1 tot {max} tekens lang zijn. Er is niets geschreven."
+    },
+    "set_wifi_ssid_chars": {
+      "message": "De SSID mag alleen afdrukbare ASCII-tekens bevatten, zonder komma en zonder dubbele aanhalingsteken. Er is niets geschreven."
+    },
+    "set_wifi_password_length": {
+      "message": "Het wachtwoord moet leeg (open netwerk) of {min} tot {max} tekens lang zijn. Er is niets geschreven."
+    },
+    "set_wifi_password_chars": {
+      "message": "Het wachtwoord mag alleen afdrukbare ASCII-tekens bevatten, zonder komma en zonder dubbele aanhalingsteken. Er is niets geschreven."
+    },
+    "set_wifi_write_failed_ssid": {
+      "message": "Het schrijven van de SSID is mislukt bij register {register}. Er is niets overgenomen: de communicatiemodule neemt nieuwe gegevens pas over als het wachtwoord is geschreven."
+    },
+    "set_wifi_write_failed_password": {
+      "message": "Het schrijven van het wachtwoord is mislukt bij register {register}. Gebeurde dat vóór het laatste register, dan is er niets overgenomen; is het laatste register zelf mislukt, dan is onduidelijk of de module de gegevens heeft overgenomen. Controleer de wifi-verbinding van de batterij, herhaal de aanroep en houd een andere toegang tot de batterij (app, kabel) bij de hand."
+    },
+    "press_confirm_expired": {
+      "message": "De bevestiging is verlopen of al gebruikt. Er is niets geschreven. Druk nogmaals op de knop om een nieuwe waarschuwing te krijgen."
+    },
+    "press_disabled": {
+      "message": "Deze knop-entiteit is uitgeschakeld. Er is niets geschreven."
+    },
+    "press_unavailable": {
+      "message": "De batterij is niet bereikbaar of het uitlezen is gepauzeerd, daarom wordt er niets geschreven."
+    },
+    "press_write_failed": {
+      "message": "Het schrijven van de opdracht naar de batterij is mislukt. Controleer de verbinding en probeer het opnieuw."
+    }
+  },
+  "services": {
+    "set_wifi": {
+      "name": "Wifi-gegevens instellen",
+      "description": "Schrijft de wifi-netwerknaam en het wachtwoord naar de communicatiemodule van een Venus D, Venus A of Venus E v3. Geavanceerd: vereist Opties > DEV-registers > DEV-registers tonen. De firmware slaat de gegevens op in een EEPROM-gebied dat overlapt met een andere instelling (een firmwarefout); een verkeerde of afgebroken schrijfactie kan de module met verkeerde gegevens achterlaten. Gebruik het alleen als de batterij op een andere manier (app, kabel) bereikbaar is om dat te corrigeren. Het wachtwoord wordt nooit teruggelezen en nooit gelogd.",
+      "fields": {
+        "ssid": {
+          "name": "SSID",
+          "description": "De netwerknaam: 1 tot 31 afdrukbare ASCII-tekens, zonder komma en zonder dubbele aanhalingsteken."
+        },
+        "password": {
+          "name": "Wachtwoord",
+          "description": "Leeg voor een open netwerk, anders 8 tot 31 afdrukbare ASCII-tekens, zonder komma en zonder dubbele aanhalingsteken."
+        }
+      }
     }
   }
 }

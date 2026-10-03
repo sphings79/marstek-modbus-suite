@@ -14,6 +14,14 @@ with them decides everything in here:
 - The first matching slot wins and the others are ignored, so two enabled
   slots that overlap never run side by side. That is refused here rather
   than left to the order of the slots.
+- Start and end are clock times written as HHMM (1830 = 18:30). A value
+  whose minutes are 60 or more is rejected by the firmware, which switches
+  the slot off while doing so, so such a value is refused here before it is
+  written.
+
+The power register is `schedule_N_power` on the maps that have been checked
+against the firmware and `schedule_N_mode` on the others; both are the same
+register and both are accepted.
 
 A select entity can only hold one value, so the day select reports single
 days by name, everything else as "custom", and an empty mask as "none". The
@@ -56,10 +64,15 @@ OPTION_CUSTOM = "custom"
 SLOTS = range(1, 7)
 # The order a slot is written in. Enabled goes last: every other write but
 # the power switches the slot off on the device.
-FIELDS = ("days", "start", "end", "mode", "enabled")
+FIELDS = ("days", "start", "end", "power", "enabled")
 DISABLING_FIELDS = ("days", "start", "end")
+TIME_FIELDS = ("start", "end")
 
-_KEY = re.compile(r"^schedule_([1-6])_(days|start|end|mode|enabled)$")
+# The power field under the key names in use: "power" where the map was
+# corrected, "mode" where it still carries the old name.
+POWER_KEY_NAMES = ("power", "mode")
+
+_KEY = re.compile(r"^schedule_([1-6])_(days|start|end|mode|power|enabled)$")
 
 WS_SET = f"{DOMAIN}/schedule/set"
 DATA_COMMAND_REGISTERED = "schedule_api_registered"
@@ -89,13 +102,28 @@ def option_from_mask(mask: int) -> str:
 
 
 def parse_key(key: str) -> tuple[int, str] | None:
-    """Return (slot, field) for a schedule register key, None for any other."""
+    """Return (slot, field) for a schedule register key, None for any other.
+
+    Both names of the power register come back as the field "power".
+    """
     match = _KEY.match(key)
-    return (int(match.group(1)), match.group(2)) if match else None
+    if not match:
+        return None
+    field = match.group(2)
+    return int(match.group(1)), "power" if field in POWER_KEY_NAMES else field
 
 
 def _key(slot: int, field: str) -> str:
     return f"schedule_{slot}_{field}"
+
+
+def is_hhmm(value: Any) -> bool:
+    """True for a clock time written as HHMM: hours 0-23, minutes 0-59."""
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return False
+    return value >= 0 and value // 100 < 24 and value % 100 < 60
 
 
 def _int(value: Any) -> int | None:
@@ -122,11 +150,21 @@ def validate(data: dict[str, Any], slot: int, changes: dict[str, int]) -> None:
     Only enabled slots are checked, so a slot can be prepared while it is off,
     and switching one off is always allowed. A change to the power alone is
     not checked either: it moves neither the window nor the days.
+
+    A start or end that is not a valid HHMM time is refused in any slot,
+    enabled or not: the firmware would reject it and switch the slot off.
     """
+    for field in TIME_FIELDS:
+        if field in changes and not is_hhmm(changes[field]):
+            raise ScheduleConflict("schedule_time", slot=slot)
+
     if not set(changes) & {"days", "start", "end", "enabled"}:
         return
 
-    slot_now = {f: changes.get(f, _int(data.get(_key(slot, f)))) for f in FIELDS}
+    slot_now = {
+        f: changes.get(f, _int(data.get(_key(slot, f))))
+        for f in ("days", "start", "end", "enabled")
+    }
     if slot_now["enabled"] != 1:
         return
 
@@ -164,6 +202,20 @@ def _definition(coordinator: MarstekCoordinator, key: str) -> dict[str, Any] | N
     return None
 
 
+def _slot_key(coordinator: MarstekCoordinator, slot: int, field: str) -> str:
+    """The register key of a field in this coordinator's map.
+
+    Only the power field has two names; the first one the map defines wins.
+    """
+    if field != "power":
+        return _key(slot, field)
+    for name in POWER_KEY_NAMES:
+        key = _key(slot, name)
+        if _definition(coordinator, key) is not None:
+            return key
+    return _key(slot, POWER_KEY_NAMES[0])
+
+
 async def async_write_slot(
     coordinator: MarstekCoordinator, slot: int, changes: dict[str, int]
 ) -> bool:
@@ -186,7 +238,7 @@ async def async_write_slot(
 
     ok = True
     for field, value in writes:
-        key = _key(slot, field)
+        key = _slot_key(coordinator, slot, field)
         definition = _definition(coordinator, key)
         if definition is None:
             _LOGGER.warning("No register definition for %s", key)
@@ -223,10 +275,9 @@ def async_register_schedule_api(hass: HomeAssistant) -> None:
 
 
 def _hhmm(value: Any) -> int:
-    value = int(value)
-    if not (0 <= value // 100 < 24 and 0 <= value % 100 < 60):
+    if not is_hhmm(value):
         raise vol.Invalid("not a HHMM time")
-    return value
+    return int(value)
 
 
 @websocket_api.websocket_command(

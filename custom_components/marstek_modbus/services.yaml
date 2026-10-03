@@ -1,0 +1,16 @@
+set_wifi:
+  target:
+    device:
+      integration: marstek_modbus
+  fields:
+    ssid:
+      required: true
+      example: "MyNetwork"
+      selector:
+        text:
+    password:
+      required: false
+      example: "my-wifi-password"
+      selector:
+        text:
+          type: password

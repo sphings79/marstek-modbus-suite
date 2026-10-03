@@ -57,7 +57,7 @@
           "polling": "Polling-Intervalle",
           "limits": "Energiefenster",
           "packs": "Batteriepacks",
-          "dev": "DEV-Register (experimentell)"
+          "dev": "DEV-Register"
         }
       },
       "polling": {
@@ -89,10 +89,9 @@
       },
       "dev": {
         "title": "DEV-Register",
-        "description": "Zwei getrennt schaltbare Gruppen zusätzlicher Diagnose-Sensoren. Beide heißen \"DEV [Register] ([Verdacht]?)\" und stehen dadurch beieinander; das Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\n**Unbekannt (117)** – Register ohne geklärte Bedeutung. Teils mit Konfidenz niedrig oder mittel aus der Firmware-Analyse, teils Register aus dem 40000er-Bereich, die nachweislich auf einen Lesezugriff antworten. Viele stehen dauerhaft auf 0.\n\n**Doppelungen (14)** – Register, die denselben Wert liefern wie ein bereits vorhandener Sensor: Aliase auf dieselbe Speicherstelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks. Nützlich, um zu prüfen, ob zwei Register wirklich synchron laufen.\n\nNur für Analysezwecke. Nach dem Umschalten wird die Integration neu geladen.",
+        "description": "Schaltet zusätzliche Diagnose-Elemente ein, die sonst ausgeblendet sind. Sie heißen \"DEV [Register] ([Bedeutung])\"; ein Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\nDazu gehören:\n\n- Register ohne geklärte Bedeutung: Die Einheit dahinter hat keine prüfbare Firmware, oder sie liefern erst nach einem Befehl einen Wert\n- Spiegel- und Doppel-Register, auf den Modellen, die welche haben\n- die DEV-Tasten für Service-Befehle: standardmäßig deaktiviert, die nicht umkehrbaren brauchen einen zweiten Druck\n- der Dienst set_wifi (WLAN-Zugangsdaten des Kommunikationsmoduls)\n\nAlle DEV-Entitäten werden deaktiviert angelegt; die gewünschten selbst aktivieren. Nur für fortgeschrittene Nutzer und zur Analyse. Nach dem Umschalten wird die Integration neu geladen.",
         "data": {
-          "dev_registers_unknown": "Unbekannte Register anzeigen (117)",
-          "dev_registers_duplicate": "Doppelungen anzeigen (14)"
+          "dev_registers_unknown": "DEV-Register anzeigen"
         }
       },
       "limits": {
@@ -165,10 +164,19 @@
         "name": "VNS-Bootloader-Version"
       },
       "battery_1_mos_status": {
-        "name": "Batteriepack 1 MOSFET-Status"
+        "name": "Batteriepack 1 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_1_bms_version": {
         "name": "Batteriepack 1 BMS-Version"
+      },
+      "battery_1_bms_warnings": {
+        "name": "Batteriepack 1 BMS-Warnungen"
       },
       "battery_1_cycle_count": {
         "name": "Batteriepack 1 Zyklenzahl"
@@ -177,37 +185,73 @@
         "name": "Batteriepack 2 Zyklenzahl"
       },
       "battery_2_mos_status": {
-        "name": "Batteriepack 2 MOSFET-Status"
+        "name": "Batteriepack 2 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_2_bms_version": {
         "name": "Batteriepack 2 BMS-Version"
+      },
+      "battery_2_bms_warnings": {
+        "name": "Batteriepack 2 BMS-Warnungen"
       },
       "battery_3_cycle_count": {
         "name": "Batteriepack 3 Zyklenzahl"
       },
       "battery_3_mos_status": {
-        "name": "Batteriepack 3 MOSFET-Status"
+        "name": "Batteriepack 3 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_3_bms_version": {
         "name": "Batteriepack 3 BMS-Version"
+      },
+      "battery_3_bms_warnings": {
+        "name": "Batteriepack 3 BMS-Warnungen"
       },
       "battery_4_cycle_count": {
         "name": "Batteriepack 4 Zyklenzahl"
       },
       "battery_4_mos_status": {
-        "name": "Batteriepack 4 MOSFET-Status"
+        "name": "Batteriepack 4 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_4_bms_version": {
         "name": "Batteriepack 4 BMS-Version"
+      },
+      "battery_4_bms_warnings": {
+        "name": "Batteriepack 4 BMS-Warnungen"
       },
       "battery_5_cycle_count": {
         "name": "Batteriepack 5 Zyklenzahl"
       },
       "battery_5_mos_status": {
-        "name": "Batteriepack 5 MOSFET-Status"
+        "name": "Batteriepack 5 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_5_bms_version": {
         "name": "Batteriepack 5 BMS-Version"
+      },
+      "battery_5_bms_warnings": {
+        "name": "Batteriepack 5 BMS-Warnungen"
       },
       "battery_6_cycle_count": {
         "name": "Batteriepack 6 Zyklenzahl"
@@ -216,16 +260,34 @@
         "name": "Batteriepack 7 Zyklenzahl"
       },
       "battery_6_mos_status": {
-        "name": "Batteriepack 6 MOSFET-Status"
+        "name": "Batteriepack 6 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_7_mos_status": {
-        "name": "Batteriepack 7 MOSFET-Status"
+        "name": "Batteriepack 7 MOSFET-Status",
+        "state": {
+          "0": "Laden und Entladen aus",
+          "1": "Nur Laden",
+          "2": "Nur Entladen",
+          "3": "Laden und Entladen ein"
+        }
       },
       "battery_6_bms_version": {
         "name": "Batteriepack 6 BMS-Version"
       },
+      "battery_6_bms_warnings": {
+        "name": "Batteriepack 6 BMS-Warnungen"
+      },
       "battery_7_bms_version": {
         "name": "Batteriepack 7 BMS-Version"
+      },
+      "battery_7_bms_warnings": {
+        "name": "Batteriepack 7 BMS-Warnungen"
       },
       "battery_1_max_cell_voltage": {
         "name": "Batteriepack 1 max. Zellspannung"
@@ -440,6 +502,9 @@
       "device_name": {
         "name": "Gerätename"
       },
+      "device_model": {
+        "name": "Modell"
+      },
       "sn_code": {
         "name": "Seriennummer"
       },
@@ -487,6 +552,9 @@
       },
       "battery_total_energy": {
         "name": "Batterie-Gesamtenergie"
+      },
+      "battery_rated_capacity": {
+        "name": "Batterie-Nennkapazität"
       },
       "battery_voltage": {
         "name": "Batteriespannung"
@@ -589,6 +657,9 @@
       },
       "min_cell_temperature": {
         "name": "Minimale Zellentemperatur"
+      },
+      "battery_1_min_cell_temperature": {
+        "name": "Batteriepack 1 min. Zelltemperatur"
       },
       "max_cell_voltage": {
         "name": "Maximale Zellenspannung"
@@ -950,9 +1021,6 @@
       "alarm_status": {
         "name": "Alarmstatus"
       },
-      "alarm_status_low": {
-        "name": "Alarmstatus Low-Word"
-      },
       "modbus_address": {
         "name": "Modbus-Adresse"
       },
@@ -973,6 +1041,9 @@
       },
       "wifi_signal_strength": {
         "name": "WLAN-Signalstärke"
+      },
+      "wifi_ssid": {
+        "name": "WLAN-SSID"
       },
       "round_trip_efficiency_total": {
         "name": "Gesamt-Roundtrip-Effizienz"
@@ -1059,8 +1130,14 @@
       "mppt_version": {
         "name": "MPPT-Version"
       },
+      "ethernet_chip_version": {
+        "name": "Ethernet-Chip-Version"
+      },
       "vms_version": {
-        "name": "VMS-Version"
+        "name": "VNS-Version"
+      },
+      "vns_version": {
+        "name": "VNS-Version"
       },
       "device_ip_address": {
         "name": "IP-Adresse"
@@ -1095,9 +1172,6 @@
       "fault_status_low": {
         "name": "Fehlerstatus Low-Word"
       },
-      "fault_status_2": {
-        "name": "Fehlerstatus 2 High-Word"
-      },
       "fault_status_2_low": {
         "name": "Fehlerstatus 2 Low-Word"
       },
@@ -1106,9 +1180,6 @@
       },
       "fault_status_low_description": {
         "name": "Fehlerstatus Low-Word Beschreibung"
-      },
-      "fault_status_2_description": {
-        "name": "Fehlerstatus 2 High-Word Beschreibung"
       },
       "fault_status_2_low_description": {
         "name": "Fehlerstatus 2 Low-Word Beschreibung"
@@ -1128,8 +1199,32 @@
       "bms_charge_current_limit": {
         "name": "BMS-Ladestromlimit"
       },
+      "bms_discharge_current_limit": {
+        "name": "BMS-Entladestromlimit"
+      },
       "bms_charge_power_limit": {
         "name": "BMS-Ladeleistungslimit"
+      },
+      "inverter_radiator_1_temperature": {
+        "name": "Wechselrichter-Kühlkörper 1 Temperatur"
+      },
+      "inverter_radiator_2_temperature": {
+        "name": "Wechselrichter-Kühlkörper 2 Temperatur"
+      },
+      "inverter_temperature_ntc_ch12": {
+        "name": "Wechselrichter-Temperatur NTC CH12"
+      },
+      "inverter_temperature_ntc_ch5": {
+        "name": "Wechselrichter-Temperatur NTC CH5"
+      },
+      "inverter_dc_voltage": {
+        "name": "Wechselrichter-Gleichspannung"
+      },
+      "battery_1_profile": {
+        "name": "BMS-Batterieprofil"
+      },
+      "pv_lifetime_energy": {
+        "name": "PV-Gesamtertrag"
       }
     },
     "binary_sensor": {
@@ -1142,6 +1237,12 @@
       "cloud_status": {
         "name": "Cloud-Status"
       },
+      "bms_lock_active": {
+        "name": "BMS-Sperre"
+      },
+      "bms_factory_mode": {
+        "name": "BMS-Werksmodus"
+      },
       "discharge_limit_mode": {
         "name": "Entladebegrenzung"
       }
@@ -1153,6 +1254,7 @@
           "manual": "Manuell",
           "anti_feed": "Nulleinspeisung",
           "trade_mode": "AI-Optimierung (Dynamischer Stromtarif)",
+          "ai": "AI-Optimierung (Dynamischer Stromtarif)",
           "ups": "UPS"
         }
       },
@@ -1359,20 +1461,38 @@
       "schedule_1_mode": {
         "name": "Zeitplan 1 Modus"
       },
+      "schedule_1_power": {
+        "name": "Zeitplan 1 Leistung"
+      },
       "schedule_2_mode": {
         "name": "Zeitplan 2 Modus"
+      },
+      "schedule_2_power": {
+        "name": "Zeitplan 2 Leistung"
       },
       "schedule_3_mode": {
         "name": "Zeitplan 3 Modus"
       },
+      "schedule_3_power": {
+        "name": "Zeitplan 3 Leistung"
+      },
       "schedule_4_mode": {
         "name": "Zeitplan 4 Modus"
+      },
+      "schedule_4_power": {
+        "name": "Zeitplan 4 Leistung"
       },
       "schedule_5_mode": {
         "name": "Zeitplan 5 Modus"
       },
+      "schedule_5_power": {
+        "name": "Zeitplan 5 Leistung"
+      },
       "schedule_6_mode": {
         "name": "Zeitplan 6 Modus"
+      },
+      "schedule_6_power": {
+        "name": "Zeitplan 6 Leistung"
       }
     },
     "button": {
@@ -1381,6 +1501,45 @@
       },
       "factory_reset": {
         "name": "Werkseinstellungen"
+      },
+      "led_test": {
+        "name": "LED-Test"
+      },
+      "read_inverter_input_pb1": {
+        "name": "Wechselrichter-Eingang PB1 abfragen"
+      },
+      "inverter_eeprom_test": {
+        "name": "Wechselrichter-EEPROM-Test"
+      },
+      "pack_coding": {
+        "name": "Pack-Codierung (Batteriepack-Wiederherstellung)"
+      },
+      "dev_45027_bms_master_reboot": {
+        "name": "DEV 45027 BMS-Master-Neustart"
+      },
+      "dev_45028_bms_factory_reset": {
+        "name": "DEV 45028 BMS-Werksreset"
+      },
+      "dev_45002_inverter_disable": {
+        "name": "DEV 45002 Wechselrichter aus bis Neustart"
+      },
+      "dev_45002_inverter_sleep_request": {
+        "name": "DEV 45002 Wechselrichter-Schlafanforderung (kurzer Stopp)"
+      },
+      "dev_45020_pv_restart": {
+        "name": "DEV 45020 PV-Neustart (50 W Referenz)"
+      },
+      "dev_45021_pv_off": {
+        "name": "DEV 45021 PV aus"
+      },
+      "dev_45021_pv_on": {
+        "name": "DEV 45021 PV an"
+      },
+      "dev_45030_bms_set_master": {
+        "name": "DEV 45030 BMS-Master-Rolle setzen"
+      },
+      "dev_45030_bms_clear_master": {
+        "name": "DEV 45030 BMS-Master-Rolle löschen"
       }
     }
   },
@@ -1407,6 +1566,100 @@
     },
     "schedule_overlap": {
       "message": "Zeitplan {slot} würde sich an einem gemeinsamen Tag mit Zeitplan {other} überschneiden. Das Gerät führt nur den ersten passenden Zeitplan aus, deshalb werden Überschneidungen abgelehnt."
+    },
+    "schedule_time": {
+      "message": "Zeitplan {slot}: Start und Ende sind Uhrzeiten im Format HHMM, zum Beispiel 1830 für 18:30, und die letzten beiden Ziffern müssen unter 60 liegen. Andere Werte lehnt das Gerät ab und schaltet den Zeitplan dabei aus."
+    },
+    "confirm_factory_reset": {
+      "message": "Werksreset: Damit werden Steuereinheit, Wechselrichter und alle Batteriepacks auf Werkseinstellungen zurückgesetzt und die WLAN- und Cloud-Einstellungen gelöscht; danach startet das Gerät neu. Noch wurde nichts gesendet. Zum Ausführen die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_factory_reset_e3": {
+      "message": "Werksreset der Venus E v3: Die Steuereinheit wird auf Werkseinstellungen zurückgesetzt (alle Benutzereinstellungen samt Limits und Zeitplänen, die Energiestatistik und die Cloud-Identität) und die TLS-Zertifikate des WLAN-Moduls werden gelöscht; der Wechselrichter-Micro geht auf seine Werkseinstellungen, also Limits von 3000 W / 3000 W und Netznorm 0 – die Netznorm lässt sich nur über die eigene RS485-Schnittstelle des Micro oder dessen Shell wiederherstellen; das BMS setzt nur seine Schutzparameter zurück, das Batterieprofil bleibt. Danach startet das Gerät neu. Noch wurde nichts gesendet. Zum Ausführen die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_pack_coding": {
+      "message": "Die Pack-Codierung (Batteriepack-Wiederherstellung in der Marstek-App) vergibt die BMS-Pack-Adressen neu. Auf der Venus D gelingt sie nur mit genau zwei Packs; mit einem oder mehr als zwei endet sie nach etwa 10 Sekunden mit einer Zeitüberschreitung. Den Status zeigt der DEV-Sensor 32114. Noch wurde nichts gesendet. Zum Starten die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45027_bms_master_reboot": {
+      "message": "DEV-Befehl: startet das Master-BMS neu. Auf der Venus D löscht ein Pack, das erst im Betrieb Master wurde, dabei auch seine gespeicherte Rolle; auf der Venus A wechselt das Pack in einen dauerhaften Werksmodus, der die Koordination mehrerer Packs bis zu einem BMS-Werksreset abschaltet. Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45028_bms_factory_reset": {
+      "message": "DEV-Befehl: setzt alle BMS-Packs auf Werkseinstellungen zurück. Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45028_bms_factory_reset_e3": {
+      "message": "DEV-Befehl: setzt die Schutzparameter des BMS auf ihre Standardwerte zurück und startet das BMS neu; die Batterie ist dabei etwa 1,5 Sekunden plus Bootzeit getrennt, auch unter Last. Die SOC-Kalibrierdaten und das Batterieprofil bleiben erhalten. Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45002_inverter_disable": {
+      "message": "DEV-Befehl: schaltet den Wechselrichter aus. Der AC-Ausgang stoppt und bleibt aus, bis der Wechselrichter neu gestartet wird (Gerät zurücksetzen oder Netztrennung). Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45002_inverter_sleep_request": {
+      "message": "DEV-Befehl: setzt das Schlaf-Flag des Wechselrichters. Auf der Venus D und der Venus E v3 stoppt der Ausgang etwa 0 bis 5 Sekunden, bis die Firmware das Flag wieder löscht, es sei denn, das BMS fordert selbst den Schlaf an; der Wechselrichter schreibt dabei außerdem in sein EEPROM. Ein Neustart ist nicht nötig. Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45030_bms_set_master": {
+      "message": "DEV-Befehl: schreibt die BMS-Master-Rolle an jedes angeschlossene Pack (Broadcast) und setzt es auf Werkseinstellungen zurück. Bei mehreren Packs werden alle zum Master: die Ausgänge bleiben bis zu einem Neustart gesperrt, und der Konflikt kehrt nach jedem Neustart zurück. Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "confirm_dev_45030_bms_clear_master": {
+      "message": "DEV-Befehl: entfernt die BMS-Master-Rolle von jedem angeschlossenen Pack (Broadcast). Alle Packs starten danach ohne Zuordnung und mit abgeschalteten Ausgängen, die Batterie lädt und entlädt dann nicht, bis wieder ein Master bestimmt wird. Noch wurde nichts gesendet. Zum Senden die Taste innerhalb von {seconds} Sekunden erneut drücken."
+    },
+    "set_wifi_disabled": {
+      "message": "Der Dienst set_wifi ist für diese Batterie ausgeschaltet. Zuerst Optionen > DEV-Register > DEV-Register anzeigen einschalten. Es wurde nichts geschrieben."
+    },
+    "set_wifi_unsupported": {
+      "message": "Der Dienst set_wifi gibt es nur für die Venus D, die Venus A und die Venus E v3. Es wurde nichts geschrieben."
+    },
+    "set_wifi_paused": {
+      "message": "Die Abfrage dieser Batterie ist pausiert, deshalb wird nichts geschrieben. Zuerst die Abfrage wieder aufnehmen."
+    },
+    "set_wifi_unknown_device": {
+      "message": "Das gewählte Gerät gehört nicht zur Marstek Modbus Suite. Es wurde nichts geschrieben."
+    },
+    "set_wifi_target_needed": {
+      "message": "Es ist mehr als eine Batterie eingerichtet. Die Batterie wählen, die die WLAN-Zugangsdaten bekommt. Es wurde nichts geschrieben."
+    },
+    "set_wifi_ssid_length": {
+      "message": "Die SSID muss 1 bis {max} Zeichen lang sein. Es wurde nichts geschrieben."
+    },
+    "set_wifi_ssid_chars": {
+      "message": "Die SSID darf nur druckbare ASCII-Zeichen enthalten, ohne Komma und ohne Anführungszeichen. Es wurde nichts geschrieben."
+    },
+    "set_wifi_password_length": {
+      "message": "Das Passwort muss leer (offenes Netz) oder {min} bis {max} Zeichen lang sein. Es wurde nichts geschrieben."
+    },
+    "set_wifi_password_chars": {
+      "message": "Das Passwort darf nur druckbare ASCII-Zeichen enthalten, ohne Komma und ohne Anführungszeichen. Es wurde nichts geschrieben."
+    },
+    "set_wifi_write_failed_ssid": {
+      "message": "Das Schreiben der SSID ist bei Register {register} fehlgeschlagen. Es wurde nichts übernommen: Das Kommunikationsmodul übernimmt neue Zugangsdaten erst, wenn das Passwort geschrieben wurde."
+    },
+    "set_wifi_write_failed_password": {
+      "message": "Das Schreiben des Passworts ist bei Register {register} fehlgeschlagen. Ist es vor dem letzten Register passiert, wurde nichts übernommen; ist das letzte Register selbst fehlgeschlagen, ist unklar, ob das Modul die Zugangsdaten übernommen hat. Die WLAN-Verbindung der Batterie prüfen, den Aufruf wiederholen und einen anderen Zugang zur Batterie (App, Kabel) bereithalten."
+    },
+    "press_confirm_expired": {
+      "message": "Die Bestätigung ist abgelaufen oder wurde bereits verwendet. Es wurde nichts geschrieben. Die Taste erneut drücken, um eine neue Warnung zu erhalten."
+    },
+    "press_disabled": {
+      "message": "Diese Tasten-Entität ist deaktiviert. Es wurde nichts geschrieben."
+    },
+    "press_unavailable": {
+      "message": "Die Batterie ist nicht erreichbar oder ihre Abfrage ist pausiert, daher wird nichts geschrieben."
+    },
+    "press_write_failed": {
+      "message": "Das Schreiben des Befehls an die Batterie ist fehlgeschlagen. Die Verbindung prüfen und es erneut versuchen."
+    }
+  },
+  "services": {
+    "set_wifi": {
+      "name": "WLAN-Zugangsdaten setzen",
+      "description": "Schreibt WLAN-Name und Passwort in das Kommunikationsmodul einer Venus D, Venus A oder Venus E v3. Für Fortgeschrittene: braucht Optionen > DEV-Register > DEV-Register anzeigen. Die Firmware legt die Zugangsdaten in einem EEPROM-Bereich ab, der sich mit einer anderen Einstellung überschneidet (ein Firmware-Fehler); ein falscher oder abgebrochener Schreibvorgang kann das Modul mit falschen Zugangsdaten zurücklassen. Nur verwenden, wenn die Batterie auf anderem Weg (App, Kabel) erreichbar ist, um das zu korrigieren. Das Passwort wird nie zurückgelesen und nie protokolliert.",
+      "fields": {
+        "ssid": {
+          "name": "SSID",
+          "description": "Der Netzwerkname: 1 bis 31 druckbare ASCII-Zeichen, ohne Komma und ohne Anführungszeichen."
+        },
+        "password": {
+          "name": "Passwort",
+          "description": "Leer für ein offenes Netz, sonst 8 bis 31 druckbare ASCII-Zeichen, ohne Komma und ohne Anführungszeichen."
+        }
+      }
     }
   }
 }

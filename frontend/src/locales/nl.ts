@@ -1,0 +1,409 @@
+/**
+ * Dutch catalogue. Terms follow the integration's own translations/nl.json
+ * (omvormer, batterij, pack, knop), so the panel and the entity names speak
+ * the same language.
+ */
+export const nl: Record<string, string> = {
+  "tab.core": "OVERZICHT",
+  "tab.cells": "CELLEN",
+  "tab.packs": "PACKS",
+  "tab.solar": "ZONNE-ENERGIE",
+  "tab.energy": "ENERGIE",
+  "tab.system": "SYSTEEM",
+
+  // ---- besturing ----
+  "tab.control": "BESTURING",
+  "update.available": "Er is een nieuwe versie van de integratie geïnstalleerd. Deze pagina draait nog de oude.",
+  "update.reload": "Opnieuw laden",
+  "control.power": "Vermogen nu",
+  "control.power_hint":
+    "Deze twee zetten het werkpunt direct. Alles wat de batterij van buitenaf regelt — een nul-teruglever-automatisering, een energiemanager — schrijft dezelfde registers en wint binnen enkele seconden.",
+  "control.limits": "Limieten",
+  "control.limits_hint":
+    "Na een herstart van het apparaat lezen deze drie vaak 0. De eerder ingestelde limiet blijft gelden en hoeft niet opnieuw geschreven te worden.",
+  "control.limits_floor":
+    "De twee maximale vermogens beginnen bij {min} W en kunnen niet op 0 worden gezet; de bovengrens, {max} W, komt uit de entiteit van het apparaat (2500 W bij de Venus D en E v3, 1450 W bij de Venus A). Om laden of ontladen te stoppen, zet je de geforceerde modus op standby of het vermogen op 0.",
+  "control.mode": "Modus",
+  "control.mode_hint":
+    "Heeft geen effect zolang het apparaat via Modbus wordt bestuurd.",
+  "control.polling": "Uitlezen",
+  "control.polling_hint":
+    "Stopt het uitlezen van deze batterij volledig en sluit de verbinding, voor een apparaat dat 's winters uit staat. Gepauzeerde entiteiten houden hun laatste waarde of worden niet beschikbaar, afhankelijk van wat je hier kiest. Na een herstart van Home Assistant worden de waarden niet hersteld.",
+  "control.backup_hint": "Schakelt het noodstroomstopcontact in en uit.",
+  "control.rs485_hint":
+    "Moet aan staan voordat het apparaat Modbus-besturing überhaupt accepteert — vanaf deze pagina, vanuit een automatisering of vanuit de integratie. Uitgeschakeld regelt het apparaat zichzelf weer.",
+  "control.overwritten":
+    "Iets anders heeft {names} direct na dit paneel gewijzigd. Een externe regeling schrijft dezelfde registers.",
+  "control.schedules": "Schema's",
+  "control.schedules_axis": "tijden zijn die van het apparaat, in zijn lokale tijd",
+  "control.schedules_hint":
+    "Een schema heeft een tijdvenster, een vermogen en minstens één dag nodig voordat inschakelen iets doet. Positief vermogen ontlaadt, negatief laadt; −1 W regelt in het venster op eigen verbruik. Het einde hoort niet meer bij het venster, en een venster over middernacht loopt nooit — gebruik daarvoor twee schema's. Actieve schema's mogen elkaar niet overlappen.",
+  "control.err.schedule_window":
+    "Schema {slot}: de start moet voor het einde liggen. Verdeel een venster over middernacht over twee schema's.",
+  "control.err.schedule_overlap":
+    "Schema {slot} zou op een gedeelde dag overlappen met schema {other}. Het apparaat voert alleen de eerste overeenkomst uit.",
+  "control.err.schedule_time":
+    "Schema {slot}: start en einde zijn HHMM-tijden met minuten onder 60.",
+  "control.no_schedules": "Deze batterij biedt geen schema's.",
+  "control.window": "Venster",
+  "control.sched_power": "Vermogen",
+  "control.days": "Dagen",
+  "control.active": "Aan",
+  "control.device": "Apparaat",
+  "control.reset": "Apparaat herstarten",
+  "control.reset_confirm": "Echt herstarten",
+  "control.reset_title": "Apparaat herstarten?",
+  "control.reset_message":
+    "De batterij verbreekt de verbinding en start opnieuw op. Tot ze terug is komen er geen waarden binnen en kan ze ook niet worden bestuurd. De ingestelde limieten blijven daarna gelden.",
+  "control.cancel": "Annuleren",
+
+  "control.opt.manual": "Handmatig",
+  "control.opt.anti_feed": "Anti-teruglevering",
+  "control.opt.trade_mode": "Handel",
+  "control.opt.ai": "AI",
+  "control.opt.standby": "Standby",
+  "control.opt.charge": "Laden",
+  "control.opt.discharge": "Ontladen",
+  "control.opt.active": "Aan",
+  "control.opt.paused_unavailable": "Gepauzeerd · entiteiten niet beschikbaar",
+  "control.opt.paused_frozen": "Gepauzeerd · entiteiten bevroren",
+
+  "control.day.monday": "Ma",
+  "control.day.tuesday": "Di",
+  "control.day.wednesday": "Wo",
+  "control.day.thursday": "Do",
+  "control.day.friday": "Vr",
+  "control.day.saturday": "Za",
+  "control.day.sunday": "Zo",
+
+  "status.modbus": "MODBUS",
+  "status.modbus_offline": "MODBUS OFFLINE",
+  "status.modbus_offline_since": "MODBUS OFFLINE · laatste antwoord {time}",
+  "status.modbus_paused": "MODBUS GEPAUZEERD",
+  "status.modbus_paused_hint":
+    "Het uitlezen is voor deze batterij uitgeschakeld. Er wordt niets gelezen, en de waarden hieronder zijn de laatst geziene.",
+  "status.modbus_offline_hint":
+    "De batterij antwoordt niet. Elke waarde hieronder is de laatste die gelezen werd voordat de verbinding wegviel.",
+  "status.modbus_degraded": "De verbinding antwoordt, maar bij de laatste uitlezing liepen registers in een time-out.",
+
+  "common.pack": "PACK",
+  "common.pack_n": "pack {pack}",
+  "common.standby": "standby",
+  "common.active_pack": "actief pack {pack}",
+  "common.active_pack_hint":
+    "Het pack dat de batterij op dit moment heeft ingeschakeld; de andere staan stil.",
+  "common.voltage": "Spanning",
+  "common.current": "Stroom",
+  "common.device": "Apparaat",
+  "common.pack_entities_disabled":
+    "Enkele waarden van dit pack ontbreken, omdat hun entiteiten bij dit model standaard uitgeschakeld zijn: celspanningen, packtemperaturen, beveiligings- en waarschuwingswoorden, MOSFET-status, batterijprofiel. Schakel de gewenste in op de apparaatpagina (Instellingen → Apparaten & diensten → Marstek Modbus Suite → deze batterij → entiteiten); ze verschijnen hier zodra ze waarden leveren.",
+
+  // ---- overzicht ----
+  "core.electrical": "Elektrisch · nu",
+  "core.reserve": "Reserve · levensduur",
+  "core.stored": "Opgeslagen",
+  "core.capacity": "Capaciteit",
+  "core.stored_of_total": "Opgeslagen / totaal",
+  "core.usable": "Bruikbare energie",
+  "core.to_full": "Energie tot vol",
+  "core.pv_passthrough": "PV-doorvoer",
+  "core.runtime": "Looptijd",
+  "core.to_empty": "Tot leeg",
+  "core.until_full": "Tot vol",
+  "core.until_pct": "Tot {value} %",
+  "core.packs": "Packs",
+  "core.soc_bms": "SOC · BMS",
+  "core.soc_usable": "bruikbaar {value} %",
+  "core.discharging_to_house": "ontlaadt",
+  "core.charging_from_grid": "laadt",
+  "core.at_rest": "in rust",
+  "core.today_charged": "Vandaag geladen",
+  "core.today_discharged": "Vandaag ontladen",
+  "core.cell_delta": "Grootste celdelta",
+  "core.internal_temp": "Apparaattemperatuur",
+  "core.mppt_total": "MPPT totaal",
+  "core.in_pack": "in pack {pack}",
+  "core.no_delta": "geen waarden per pack",
+
+  // ---- cellen ----
+  "cells.highest": "Hoogste cel",
+  "cells.lowest": "Laagste cel",
+  "cells.in_pack": "pack {pack}",
+  "cells.stack_spread": "Spreiding over de stack",
+  "cells.stack_hint": "packs laden/ontladen om de beurt, spreiding is normaal",
+  "cells.mean_delta": "Gem. delta in pack",
+  "cells.worst_pack": "grootste: pack {pack}, {value} mV",
+  "cells.temp_span": "Celtemp.-spreiding in pack",
+  "cells.temp_span_pack": "grootste: pack {pack}, {range}",
+  "cells.packs_online": "Gedetecteerde packs",
+  "cells.cells_total": "{count} cellen",
+  "cells.matrix_title": "Celspanningsbereik per pack · gedeelde as",
+  "cells.matrix_axis": "balk = laagste tot hoogste cel · vaste as 3,0 – 3,7 V",
+  "cells.matrix_legend":
+    "Het streepje in elke balk is het midden van het pack. Een smalle balk is een gebalanceerd pack, een brede is drift binnen het pack, en een balk die apart van de andere staat is een pack op een ander niveau dan de rest. De as ligt vast op 3,0 – 3,7 V en wordt alleen in stappen van 0,1 V verbreed als een pack erbuiten valt.",
+  "cells.no_ranges": "Deze batterij meldt geen celspanningen per pack.",
+  "cells.protection": "Beveiliging en storingen",
+  "cells.protection_all": "Beveiliging · alle {count} packs",
+  "cells.clear": "vrij",
+  "cells.conducting": "Pack geschakeld",
+  "cells.conducting_none": "geen — elk pack losgekoppeld",
+  "cells.conducting_hint":
+    "Het apparaat werkt met één pack tegelijk en schakelt dat pack in zolang het werkt: alleen de laad-MOSFET, alleen de ontlaad-MOSFET of beide. Een pack dat hier staat doet het werk en meldt geen storing.",
+  "cells.mos_unexpected": "onverwachte MOSFET-status",
+  "cells.mos_off": "beide MOSFETs uit",
+  "cells.mos_charge": "alleen laden",
+  "cells.mos_discharge": "alleen ontladen",
+  "cells.mos_both": "laden en ontladen",
+  "cells.lock_on": "actief",
+  "cells.lock_off": "inactief",
+  "cells.cell_voltages": "Celspanningen",
+  "cells.raised": "actief",
+  "cells.bms": "BMS",
+  "cells.bms_version": "BMS-versie",
+  "cells.uniform": "op elk pack gelijk",
+
+  // ---- packs ----
+  "packs.device_reading": "zoals het apparaat het meldt",
+  "packs.mean_soc": "Gemiddelde van de packs",
+  "packs.from_n_packs": "uit {count} packs",
+  "packs.spread": "Spreiding",
+  "packs.stored_total": "Opgeslagen energie",
+  "packs.of_max": "van {value} kWh mogelijk",
+  "packs.per_pack": "Per pack",
+  "packs.nominal": "nominaal, capaciteit ÷ packs",
+  "packs.cycles_mean": "Cycli",
+  "packs.cycles_basis": "gemiddelde over de packs",
+  "packs.cycles_partial": "{have} van {total} packs melden",
+  "packs.fill_title": "Laadtoestand per pack",
+  "packs.fill_axis": "kolomhoogte = SOC",
+  "packs.fill_legend":
+    "De gestippelde lijn markeert de ontlaadgrens bij {floor} %. De energie per pack is berekend uit de SOC en de nominale packgrootte; de batterij meldt zelf geen energiewaarde per pack.",
+  "packs.fill_legend_backup": "De gepunte lijn bij {backup} % is hoe ver het noodstroomstopcontact bij een stroomuitval ontlaadt.",
+  "packs.fill_legend_nofloor":
+    "De energie per pack is berekend uit de SOC en de nominale packgrootte; de batterij meldt zelf geen energiewaarde per pack.",
+  "packs.none": "Deze batterij meldt geen laadtoestand per pack.",
+  "packs.table_title": "Elk pack in detail",
+  "packs.table_legend":
+    "Er wordt niets gemarkeerd tot de spreiding hierboven {spread} % bereikt; dan worden de packs gemarkeerd die verder dan {points} % van het middelste pack liggen. Zolang de stack bij elkaar blijft, blijven kolommen en rijen rustig. Een pack dat een hoge SOC bij een lage celspanning meldt, verdient een tweede blik: de twee waarden spreken elkaar tegen.",
+  "packs.conducting": "werkt nu",
+  "packs.col_soc": "SOC",
+  "packs.col_energy": "kWh",
+  "packs.col_min": "Cel min",
+  "packs.col_max": "Cel max",
+  "packs.col_delta": "Delta",
+  "packs.col_voltage": "Spanning",
+  "packs.col_current": "Stroom",
+  "packs.col_cycles": "Cycli",
+  "packs.col_mos": "MOSFET",
+  "packs.col_env": "Omgeving",
+  "packs.col_ntc": "NTC 1–4",
+
+  // ---- zonne-energie ----
+  "solar.active": "ACTIEF",
+  "solar.floating": "ZWEVEND",
+  "solar.summary": "Alle ingangen",
+  "solar.some_active": "levert vermogen",
+  "solar.all_idle": "niets aangesloten",
+  "solar.note_active":
+    "De spanning volgt de panelen en het vermogen volgt de zon door de dag.",
+  "solar.note_floating":
+    "Alle ingangen staan op een lage spanning zonder stroom; zo ziet een ongebruikte MPPT-ingang eruit. Sluit panelen aan en de spanning stijgt naar moduleniveau.",
+  "solar.diagnostics": "Diagnose",
+  "solar.channels_reporting": "Ingangen melden",
+  "solar.none": "Deze batterij heeft geen MPPT-ingangen.",
+
+  // ---- energie ----
+  "energy.today": "Vandaag",
+  "energy.month": "Deze maand",
+  "energy.lifetime": "Sinds ingebruikname",
+  "energy.charged": "geladen kWh",
+  "energy.discharged": "ontladen kWh",
+  "energy.loss": "Verlies",
+  "energy.returned": "Teruggegeven",
+  "energy.rte": "Rondgang",
+  "energy.rte_hint":
+    "Het rondgangsrendement is hoeveel van de in de batterij gestopte energie er weer uitkomt. Het omzettingsrendement is het verlies op dit moment, in het huidige werkpunt.",
+  "energy.efficiency": "Rendement vergeleken",
+  "energy.throughput": "Doorvoer en slijtage",
+  "energy.gap_hint":
+    "De maandwaarde ligt {value} punten onder de levensduurwaarde. Dat verschil is geen omzettingsverlies maar stand-byverbruik tussen de cycli: hoe ondieper de cycli, hoe zwaarder het weegt.",
+
+  // ---- systeem ----
+  "system.no_faults": "Er staat geen storingsregister.",
+  "system.faults_raised": "Gezet: {list}",
+  "system.grid_wait":
+    "De omvormer wacht op de netvrijgave (alarmwoord bit 0). Dit is geen storing; de melding verdwijnt zodra het net geaccepteerd is.",
+  "system.bms_lock_active":
+    "BMS-vergrendeling actief: het BMS houdt de MOSFETs van de packs na een storing open, de batterij laadt en ontlaadt niet.",
+  "system.bms_factory_mode":
+    "De BMS-fabrieksmodus staat aan: het BMS is niet in zijn normale bedrijfsmodus.",
+  "system.device": "Apparaat",
+  "system.packs": "Batterijpacks",
+  "system.firmware": "Firmware",
+  "system.connection": "Verbinding",
+  "system.faults": "Storingsregisters",
+  "system.control": "Besturing en limieten",
+  "system.thermal": "Thermisch en elektrisch",
+  "system.cell_temp_max_all": "Celtemperatuur, hoogste (alle packs)",
+  "system.cell_temp_min_all": "Celtemperatuur, laagste (alle packs)",
+  "system.cell_temp_max": "Celtemperatuur, hoogste",
+  "system.cell_temp_min": "Celtemperatuur, laagste",
+  "system.cell_temp_max_bms": "Celtemperatuur, hoogste (BMS)",
+  "system.cell_temp_min_bms": "Celtemperatuur, laagste (BMS)",
+  "system.cell_temp_holder": "Pack {packs}",
+  "system.set_charge_power": "Laadvermogen (setpoint)",
+  "system.set_discharge_power": "Ontlaadvermogen (setpoint)",
+  "system.set_power_hint":
+    "Op dit moment gevraagd door de regelaar (geforceerde modus, schema of een externe regelaar); niet het gemeten vermogen.",
+  "system.selftest_5": "Ethernet-chip meldt een andere versie dan verwacht (onschadelijk)",
+  "system.selftest_5_hint":
+    "De zelftest vergelijkt de versie van de Ethernet-chip (CH395) met die de firmware verwacht: de chip meldt 0x4A in plaats van 0x4B. Gemeten op twee Venus D met een werkend LAN, onschadelijk. Een echte SRAM-fout zou de controller stoppen; de echte fouten zijn 2 (EEPROM) en 3 (flash).",
+  "system.ceiling_used":
+    "Het paneel gebruikt {value} % als laadplafond, gelezen uit dit register.",
+  "system.ceiling_ignored":
+    "Dit register meldt {value} %, buiten zijn eigen bereik {min}-100, dus het apparaat gebruikt het niet. Het paneel rekent in plaats daarvan tot 100 %.",
+
+  // ---- onderhoud ----
+  "maint.title": "Onderhoud · gevarenzone",
+  "maint.warning":
+    "Deze opdrachten werken direct op het apparaat. Meerdere ervan kunnen niet ongedaan worden gemaakt — een fabrieksreset wist de wifi- en cloudinstellingen. Gebruik ze alleen als je weet wat ze doen.",
+  "maint.buttons": "Opdrachten",
+  "maint.dev": "DEV-opdrachten",
+  "maint.none":
+    "Voor deze batterij is geen opdracht ingeschakeld. De knop-entiteiten zijn standaard uitgeschakeld; schakel de benodigde in op de apparaatpagina, dan verschijnen ze hier.",
+  "maint.buttons_hint":
+    "Een opdracht met een bevestiging in twee stappen toont eerst de waarschuwing van de integratie en wordt pas verzonden als je binnen het tijdvenster bevestigt.",
+  "maint.press": "Indrukken",
+  "maint.run": "Starten",
+  "maint.pressing": "Verzenden…",
+  "maint.confirm": "Nu verzenden",
+  "maint.close": "Sluiten",
+  "maint.countdown": "Bevestig binnen {seconds} s. Er is nog niets verzonden.",
+  "maint.expired":
+    "Het bevestigingsvenster is verlopen. Er is niets verzonden. Sluit dit en druk de opdracht opnieuw in om opnieuw te beginnen.",
+  "maint.admin_required":
+    "Hiervoor is een beheerdersaccount nodig. Vraag een Home Assistant-beheerder om dit te doen.",
+  "maint.sent": "{name}: verzonden.",
+  "maint.cancelled":
+    "{name}: geannuleerd, er is niets verzonden.",
+  "maint.ask_message":
+    "Deze opdracht wordt bij de eerste druk verzonden, zonder bevestigingsstap van de integratie. Nu verzenden?",
+
+  // ---- wifi ----
+  "wifi.title": "Wifi",
+  "wifi.warning":
+    "Schrijft nieuwe wifi-gegevens naar de communicatiemodule van de batterij. De firmware slaat het wachtwoord op in een EEPROM-gebied dat een andere instelling overlapt (een bekende firmwarefout), en een verkeerde of afgebroken schrijfactie kan verkeerde gegevens in de module achterlaten. Gebruik dit alleen zolang de batterij op een andere manier bereikbaar blijft — via de Marstek-app of een kabel — om dat te corrigeren. Het vereist de integratieoptie Opties → DEV-registers → DEV-registers tonen.",
+  "wifi.ssid": "SSID",
+  "wifi.password": "Wachtwoord",
+  "wifi.hint":
+    "SSID 1 tot 31 tekens; wachtwoord leeg voor een open netwerk of 8 tot 31 tekens. Alleen afdrukbare ASCII-tekens, zonder komma en dubbel aanhalingsteken. Het wachtwoord wordt niet opgeslagen en het veld wordt na elke poging geleegd.",
+  "wifi.send": "Gegevens verzenden",
+  "wifi.sent": "Gegevens verzonden. De communicatiemodule neemt ze nu over en maakt opnieuw verbinding.",
+  "wifi.err.ssid_length": "De SSID moet 1 tot {max} tekens lang zijn. Er is niets verzonden.",
+  "wifi.err.ssid_chars":
+    "De SSID mag alleen afdrukbare ASCII-tekens bevatten, zonder komma en zonder dubbel aanhalingsteken. Er is niets verzonden.",
+  "wifi.err.password_length":
+    "Het wachtwoord moet leeg (open netwerk) of {min} tot {max} tekens lang zijn. Er is niets verzonden.",
+  "wifi.err.password_chars":
+    "Het wachtwoord mag alleen afdrukbare ASCII-tekens bevatten, zonder komma en zonder dubbel aanhalingsteken. Er is niets verzonden.",
+
+  // ---- instellingen ----
+  "settings.title": "Instellingen",
+  "settings.scheme": "Kleurenschema",
+  "settings.scheme_hint":
+    "Elk schema heeft een eigen lichte en donkere versie. Het staal is geschilderd in het schema dat het aanbiedt.",
+  "settings.scheme_theme": "volgt je thema",
+  "settings.appearance": "Weergave",
+  "settings.mode": "Licht of donker",
+  "settings.mode.auto": "Home Assistant",
+  "settings.mode.dark": "Donker",
+  "settings.mode.light": "Licht",
+  "settings.mode_ha":
+    "Dit schema neemt zijn kleuren over van je Home Assistant-thema, dat zelf al licht of donker bepaalt.",
+  "settings.digits": "Decimalen",
+  "settings.digits.normal": "Normaal",
+  "settings.digits.more": "Eén meer",
+  "settings.spread":
+    "Spreiding van de packs",
+  "settings.spread_hint":
+    "Wanneer de packs als uit elkaar gelopen gelden. Het apparaat werkt met één pack tegelijk, dus in normaal bedrijf liggen ze regelmatig een goede tien punten uit elkaar — zo werkt het ontwerp. De tabel markeert afzonderlijke packs pas als de spreiding zelf het waarschuwingsniveau bereikt.",
+  "settings.spread_warn":
+    "Waarschuwen boven",
+  "settings.spread_crit":
+    "Kritiek boven",
+  "settings.start_tab": "Tabblad bij openen",
+  "settings.start_tab.last": "Laatst gebruikt",
+  "settings.start_tab_hint":
+    "Een vast tabblad dat de batterij niet kan vullen valt terug op het overzicht.",
+  "settings.tabs": "Tabbladen",
+  "settings.tabs_hint":
+    "Grijs betekent dat deze batterij niet meldt wat het tabblad toont, dus verbergen is geen keuze die je hoeft te maken.",
+  "settings.always": "altijd zichtbaar",
+  "settings.unavail.cells": "geen celspanningen",
+  "settings.unavail.packs": "geen laadtoestand per pack",
+  "settings.unavail.solar": "geen PV-ingangen",
+  "settings.unavail.control": "geen beschrijfbare registers",
+  "settings.scale": "Schaal",
+  "settings.width": "Inhoudsbreedte",
+  "settings.width.full": "Volle breedte",
+  "settings.screen_hint":
+    "Schaal en breedte horen bij deze browser: een telefoon en een 4K-monitor willen verschillende waarden, dus ze gaan niet mee naar andere apparaten en zitten niet in de export.",
+  "settings.storage": "Opgeslagen instellingen",
+  "settings.reset": "Standaardwaarden herstellen",
+  "settings.transfer": "Importeren / exporteren",
+  "settings.transfer_hint":
+    "Kopieer dit hier en plak het ergens anders. Schaal en breedte horen er niet bij.",
+  "settings.transfer_bad": "Dat is geen instellingenobject.",
+  "settings.import": "Geplakte toepassen",
+  "settings.export_again": "Huidige tonen",
+  "settings.storage_hint":
+    "Alles behalve schaal en breedte wordt in Home Assistant onder je gebruiker opgeslagen, zodat hetzelfde paneel je naar elk apparaat volgt. Anderen houden hun eigen instellingen.",
+  "settings.offline":
+    "Home Assistant antwoordde niet, dus wat hier verandert wordt niet bewaard. Laad het paneel opnieuw om het nog eens te proberen.",
+
+  // ---- lege toestanden ----
+  "empty.no_device": "Geen Marstek-batterij gevonden",
+  "empty.no_device_hint":
+    "Dit paneel leest de integratie Marstek Modbus Suite. Voeg daar eerst een batterij toe.",
+
+  "common.unavailable": "—",
+
+  // ---- decoded fault and warning codes (Venus A MPPT stage) ----
+  "code.mppt_error.0": "Geen fout",
+  "code.mppt_error.1088": "Batterij-overspanning",
+  "code.mppt_error.1089": "Batterij-overstroom",
+  "code.mppt_error.1093": "MPPT-chip oververhit",
+  "code.mppt_error.1094": "PV4-overstroom",
+  "code.mppt_error.1095": "PV3-overstroom",
+  "code.mppt_error.1096": "PV2-overstroom",
+  "code.mppt_error.1097": "PV1-overstroom",
+  "code.mppt_error.1098": "PV4-terugstroom",
+  "code.mppt_error.1099": "PV3-terugstroom",
+  "code.mppt_error.1100": "PV2-terugstroom",
+  "code.mppt_error.1101": "PV1-terugstroom",
+  "code.mppt_error.1105": "PE-(aarde-)spanningswaarschuwing",
+  "code.mppt_error.1106": "PE-(aarde-)overspanning",
+  "code.mppt_error.1107": "Batterij-overspanning (hardwarematige uitschakeling)",
+  "code.mppt_error.1109": "PV4-overspanning",
+  "code.mppt_error.1110": "PV3-overspanning",
+  "code.mppt_error.1111": "PV2-overspanning",
+  "code.mppt_error.1112": "PV1-overspanning",
+  "code.mppt_error.1123": "PV4-overstroom (hardwarematige uitschakeling)",
+  "code.mppt_error.1124": "PV3-overstroom (hardwarematige uitschakeling)",
+  "code.mppt_error.1125": "PV2-overstroom (hardwarematige uitschakeling)",
+  "code.mppt_error.1126": "PV1-overstroom (hardwarematige uitschakeling)",
+  "code.mppt_error.1127": "Koellichaam 1 boven 90 °C",
+  "code.mppt_error.1128": "Koellichaam 2 boven 90 °C",
+  "code.mppt_error.1129": "Omgeving boven 90 °C",
+  "code.mppt_error.1130": "Batterij-overstroom (hardwarematige uitschakeling)",
+  "code.mppt_warning.0": "Geen waarschuwing",
+  "code.mppt_warning.1345": "MPPT-vermogens- of spanningsreferentie buiten bereik",
+  "code.mppt_warning.1363": "Vermogensreductie, koellichaam of omgeving boven 73 °C",
+  "code.mppt_warning.1364": "Sensor koellichaam 1 open of kortgesloten",
+  "code.mppt_warning.1365": "Sensor koellichaam 2 open of kortgesloten",
+  "code.mppt_warning.1366": "Omgevingssensor open of kortgesloten",
+  "code.mppt_warning.1367": "MPPT-chip boven 85 °C",
+  "code.mppt_warning.1368": "Koellichaam 1 boven 73 °C",
+  "code.mppt_warning.1369": "Koellichaam 2 boven 73 °C",
+  "code.mppt_warning.1370": "Omgeving boven 73 °C",
+};

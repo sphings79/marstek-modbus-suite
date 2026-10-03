@@ -59,7 +59,7 @@ def load():
     for short in MAPS:
         data = yaml.safe_load((REGISTERS / f"{short}.yaml").read_text())
         for section, body in (data or {}).items():
-            if not isinstance(body, dict) or section == "MISSING" or section.startswith("DEV"):
+            if not isinstance(body, dict) or section.startswith("DEV"):
                 continue
             for key, entry in body.items():
                 if not isinstance(entry, dict) or "register" not in entry:

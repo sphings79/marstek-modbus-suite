@@ -1,7 +1,7 @@
-import { html, css, nothing } from "lit";
+import { html, css, nothing, type TemplateResult } from "lit";
 import { customElement } from "../define";
 import { MkView } from "./view-base";
-import { MOS_CONDUCTING } from "../entities";
+import { MIN_CELL_TEMP_KEYS, MOS_BOTH, MOS_CHARGE_ONLY, MOS_DISCHARGE_ONLY, MOS_OFF, mosConducts } from "../entities";
 import { baseStyles } from "../styles";
 import type { PackRange } from "../components/mk-pack-matrix";
 import "../components/mk-pack-matrix";
@@ -19,11 +19,13 @@ import "../components/mk-stat";
  * the tile beside it and the table below report.
  */
 
-/**
- * mos_status values seen in the field. 3 means the pack's MOSFETs are closed
- * and it is the one working; 2 is the brief handover state; 0 is disconnected.
- */
-const MOS_KNOWN = [0, 2, 3];
+/** Panel text for each battery_N_mos_status value; anything else is unexpected. */
+const MOS_TEXT: Record<number, string> = {
+  [MOS_OFF]: "cells.mos_off",
+  [MOS_CHARGE_ONLY]: "cells.mos_charge",
+  [MOS_DISCHARGE_ONLY]: "cells.mos_discharge",
+  [MOS_BOTH]: "cells.mos_both",
+};
 
 @customElement("mk-view-cells")
 export class MkViewCells extends MkView {
@@ -48,6 +50,11 @@ export class MkViewCells extends MkView {
         grid-template-columns: 1.5fr 1fr;
         margin-top: var(--mk-gap);
       }
+      .cellgrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        gap: 0 18px;
+      }
       @media (max-width: 1100px) {
         .below {
           grid-template-columns: 1fr;
@@ -63,11 +70,11 @@ export class MkViewCells extends MkView {
     );
     const out: PackRange[] = [];
     for (const i of this.packs) {
-      const min = r.num(`battery_${i}_min_cell_voltage`);
-      const max = r.num(`battery_${i}_max_cell_voltage`);
+      const min = r.packNum(i, "min_cell_voltage");
+      const max = r.packNum(i, "max_cell_voltage");
       if (min === null || max === null) continue;
 
-      const cycles = r.num(`battery_${i}_cycle_count`);
+      const cycles = r.packNum(i, "cycle_count");
       const temp = r.num(`battery_${i}_mos_temperature`);
       const note = [
         cycles === null ? null : `${this.fmt.num(cycles, 0)} ⟳`,
@@ -103,9 +110,22 @@ export class MkViewCells extends MkView {
     const meanDelta = inPackDeltas.length
       ? inPackDeltas.reduce((a, b) => a + b, 0) / inPackDeltas.length
       : null;
-    const tempUnit = this.unitOf("max_cell_temperature", "min_cell_temperature");
+    const tempUnit = this.unitOf(
+      ...this.packs.map((i) => `battery_${i}_cell_temperature_1`),
+      "max_cell_temperature",
+      ...MIN_CELL_TEMP_KEYS,
+    );
 
     return html`
+      ${this.disabledPackNote([
+        "max_cell_voltage",
+        "min_cell_voltage",
+        "cell_1_voltage",
+        "cell_temperature_1",
+        "protection_1",
+        "bms_warnings",
+        "mos_status",
+      ])}
       <div class="grid tiles">
         <mk-stat
           label=${t("cells.highest")}
@@ -144,15 +164,7 @@ export class MkViewCells extends MkView {
               })
             : ""}
         ></mk-stat>
-        <mk-stat
-          label=${t("cells.temp_span")}
-          value=${f.num(this.tempSpan(), 1)}
-          unit=${tempUnit}
-          foot=${`${f.num(r.num("min_cell_temperature"), 1)} – ${f.num(
-            r.num("max_cell_temperature"),
-            1,
-          )}${tempUnit ? ` ${tempUnit}` : ""}`}
-        ></mk-stat>
+        ${this.tempSpanTile(tempUnit)}
         <mk-stat
           label=${t("cells.packs_online")}
           value=${`${ranges.length} / ${r.num("bms_pack_count") ?? ranges.length}`}
@@ -171,11 +183,14 @@ export class MkViewCells extends MkView {
                 .ranges=${ranges}
                 packLabel=${t("common.pack")}
                 .formatVolts=${(v: number) => f.num(v, 3)}
+                .formatTick=${(v: number) => f.num(v, 1)}
               ></mk-pack-matrix>
             `
           : html`<div class="note">${t("cells.no_ranges")}</div>`}
         <div class="note">${t("cells.matrix_legend")}</div>
       </div>
+
+      ${this.cellVoltages()}
 
       <div class="grid below">
         <div class="panel">
@@ -186,51 +201,138 @@ export class MkViewCells extends MkView {
           <div class="head"><div class="label">${t("cells.bms")}</div></div>
           ${this.kv("bms_pack_count", 0)} ${this.kv("bms_online_mask", 0)}
           ${this.kv("bms_active_pack_index", 0)} ${this.kv("bms_battery_voltage", 2)}
-          ${this.kv("bms_charge_voltage_limit", 2)} ${this.kv("alarm_status", 0)}
+          ${this.kv("bms_charge_voltage_limit", 2)}
+          ${this.kv("bms_charge_current_limit", 1)} ${this.kv("bms_discharge_current_limit", 1)}
+          ${this.kv("battery_1_profile", 0, { raw: true })}
         </div>
       </div>
     `;
   }
 
-  private tempSpan(): number | null {
-    const hi = this.reader.num("max_cell_temperature");
-    const lo = this.reader.num("min_cell_temperature");
-    return hi === null || lo === null ? null : hi - lo;
+  /**
+   * The widest spread of cell temperatures inside one pack, from each pack's
+   * own NTCs, and which pack that is.
+   *
+   * Not max_cell_temperature minus battery_1_min_cell_temperature: on the
+   * Venus D and A the first is the maximum across the stack and the second
+   * pack 1's minimum, and the firmware serves no minimum across the stack, so
+   * the difference mixes two different things. Where no pack NTC reports
+   * (Venus E v1/v2, or the E v3 with its pack NTCs left disabled), the
+   * single pack's own maximum and minimum stand in.
+   */
+  private tempSpanTile(unit: string) {
+    const r = this.reader;
+    const f = this.fmt;
+    const t = this.t;
+    const suffix = unit ? ` ${unit}` : "";
+
+    let widest: { pack: number; lo: number; hi: number } | null = null;
+    for (const i of this.packs) {
+      const temps = this.packCellTemps(i);
+      if (temps.length < 2) continue;
+      const lo = Math.min(...temps);
+      const hi = Math.max(...temps);
+      if (!widest || hi - lo > widest.hi - widest.lo) widest = { pack: i, lo, hi };
+    }
+
+    if (widest) {
+      return html`<mk-stat
+        label=${t("cells.temp_span")}
+        value=${f.num(widest.hi - widest.lo, 1)}
+        unit=${unit}
+        foot=${t("cells.temp_span_pack", {
+          pack: widest.pack,
+          range: `${f.num(widest.lo, 1)} – ${f.num(widest.hi, 1)}${suffix}`,
+        })}
+      ></mk-stat>`;
+    }
+
+    // Only meaningful for one pack: on a stack the two registers describe
+    // different packs (see above).
+    const hi = this.packs.length <= 1 ? r.num("max_cell_temperature") : null;
+    const lo = this.packs.length <= 1 ? r.numFirst(MIN_CELL_TEMP_KEYS) : null;
+    return html`<mk-stat
+      label=${t("cells.temp_span")}
+      value=${f.num(hi === null || lo === null ? null : hi - lo, 1)}
+      unit=${unit}
+      foot=${hi === null || lo === null ? "" : `${f.num(lo, 1)} – ${f.num(hi, 1)}${suffix}`}
+    ></mk-stat>`;
   }
 
   /**
-   * Protection registers, and which pack is currently carrying the current.
+   * The single cell voltages of a one-pack battery (Venus E v3), when the
+   * user has enabled them. A stack of seven packs would make this a wall of
+   * 112 numbers, and the range bars above already say what matters there.
+   */
+  private cellVoltages() {
+    const r = this.reader;
+    if (this.packs.length !== 1) return nothing;
+    const count = r.cellsPerPack();
+    if (!count) return nothing;
+
+    const cells = Array.from({ length: count }, (_, i) => i + 1).filter((cell) =>
+      r.entityId(`battery_1_cell_${cell}_voltage`),
+    );
+    const values = cells
+      .map((cell) => r.num(`battery_1_cell_${cell}_voltage`))
+      .filter((v): v is number => v !== null);
+    const hi = values.length ? Math.max(...values) : null;
+    const lo = values.length ? Math.min(...values) : null;
+
+    return html`
+      <div class="panel" style="margin-top:var(--mk-gap)">
+        <div class="head">
+          <div class="label">${this.t("cells.cell_voltages")}</div>
+          <div class="label">${this.t("cells.cells_total", { count: cells.length })}</div>
+        </div>
+        <div class="cellgrid">
+          ${cells.map((cell) => {
+            const v = r.num(`battery_1_cell_${cell}_voltage`);
+            const tone = v === null || values.length < 2 ? "" : v === hi ? "accent" : v === lo ? "warn" : "";
+            return this.row(`#${cell}`, `${this.fmt.num(v, 3)} V`, tone);
+          })}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Protection words, warnings, the BMS lock, and which pack is switched in.
    *
-   * Only protection_1 and protection_2 are fault registers. mos_status is a
-   * state, not an alarm: the device works one pack at a time and closes that
-   * pack's MOSFETs while it does, so treating any non-zero value as a fault
-   * reported normal operation in red.
+   * protection_1 and protection_2 are fault words and the BMS warnings their
+   * early stage; each set bit arrives decoded in the entity's
+   * `active_faults` attribute, so the row names the cause and keeps the raw
+   * number as a tooltip.
    *
-   * Observed over ten days on a Venus D: 0 while a pack is disconnected, 3
-   * while it conducts, and 2 for a few seconds either side of the handover -
-   * one contactor closed and the other not yet. A 1 never appeared, so which
-   * bit is charge and which is discharge is not established, and this does not
-   * claim to know. Anything outside those three is worth showing.
+   * mos_status is a state, not an alarm: the device works one pack at a time
+   * and switches that pack in while it does. 0 means both MOSFETs are off,
+   * 1 only the charge MOSFET conducts, 2 only the discharge MOSFET, 3 both.
+   * Any of 1 to 3 is a pack that is switched in; anything above 3 is worth
+   * showing.
    */
   private protectionRows() {
     const r = this.reader;
     const t = this.t;
-    const flagged: string[] = [];
-    const conducting: number[] = [];
+    const faults: TemplateResult[] = [];
+    const warnings: TemplateResult[] = [];
+    const conducting: string[] = [];
     const odd: string[] = [];
+    const single = this.packs.length === 1;
 
     for (const i of this.packs) {
-      const p1 = r.num(`battery_${i}_protection_1`);
-      const p2 = r.num(`battery_${i}_protection_2`);
-      const parts: string[] = [];
-      if (p1) parts.push(`P1 ${p1}`);
-      if (p2) parts.push(`P2 ${p2}`);
-      if (parts.length) flagged.push(`${t("common.pack")} ${i}: ${parts.join(", ")}`);
+      for (const key of [`battery_${i}_protection_1`, `battery_${i}_protection_2`]) {
+        const raw = r.num(key);
+        if (raw) faults.push(this.bitRow(key, raw, "crit"));
+      }
+      const warn = r.num(`battery_${i}_bms_warnings`);
+      if (warn) warnings.push(this.bitRow(`battery_${i}_bms_warnings`, warn, "warn"));
 
-      const mos = r.num(`battery_${i}_mos_status`);
-      if (mos === MOS_CONDUCTING) conducting.push(i);
-      else if (mos !== null && !MOS_KNOWN.includes(mos)) {
-        odd.push(`${t("common.pack")} ${i}: ${mos}`);
+      const mos = r.packNum(i, "mos_status");
+      if (mos === null) continue;
+      const text = MOS_TEXT[mos];
+      if (!text) odd.push(`${t("common.pack")} ${i}: ${mos}`);
+      else if (mosConducts(mos)) {
+        conducting.push(single ? t(text) : `${t("common.pack")} ${i} · ${t(text)}`);
       }
     }
 
@@ -238,26 +340,66 @@ export class MkViewCells extends MkView {
       return html`<div class="note">${t("cells.no_ranges")}</div>`;
     }
 
+    const protectionKnown = this.packs.some((i) => r.has(`battery_${i}_protection_1`));
+    const mosKnown = this.packs.some((i) => r.has(r.packKey(i, "mos_status")));
+
     return html`
-      ${flagged.length
-        ? flagged.map((line) => this.row(line, t("cells.raised"), "crit"))
-        : this.row(
-            t("cells.protection_all", { count: this.packs.length }),
-            t("cells.clear"),
-            "ok",
-          )}
-      ${this.row(
-        t("cells.conducting"),
-        conducting.length
-          ? conducting.map((i) => `${t("common.pack")} ${i}`).join(", ")
-          : t("cells.conducting_none"),
-        conducting.length ? "ok" : "",
-      )}
+      ${this.lockRows()}
+      ${faults.length
+        ? faults
+        : protectionKnown
+          ? this.row(
+              t("cells.protection_all", { count: this.packs.length }),
+              t("cells.clear"),
+              "ok",
+            )
+          : nothing}
+      ${warnings}
+      ${mosKnown
+        ? this.row(
+            t("cells.conducting"),
+            conducting.length ? conducting.join(", ") : t("cells.conducting_none"),
+            conducting.length ? "ok" : "",
+          )
+        : nothing}
       ${odd.map((line) => this.row(line, t("cells.mos_unexpected"), "warn"))}
-      ${this.kv("fault_status", 0)} ${this.kv("fault_status_2", 0)}
+      ${this.kv("fault_status", 0, { raw: true })}
       ${this.bmsVersions()}
-      <div class="note">${t("cells.conducting_hint")}</div>
+      ${mosKnown ? html`<div class="note">${t("cells.conducting_hint")}</div>` : nothing}
     `;
+  }
+
+  /**
+   * A raised bit word, its set bits named. The number stays reachable as the
+   * tooltip, and stands in when the entity carries no decoded bits.
+   */
+  private bitRow(key: string, raw: number, tone: string) {
+    const texts = this.reader.activeFaults(key);
+    return this.row(
+      this.reader.label(key),
+      texts && texts.length ? texts.join(", ") : String(raw),
+      tone,
+      { title: String(raw), wrap: true },
+    );
+  }
+
+  /**
+   * The BMS fault lock, and the BMS factory mode where the user enabled that
+   * entity. A lock holds the MOSFETs open whatever the packs report, so it
+   * leads the list.
+   */
+  private lockRows() {
+    const r = this.reader;
+    const t = this.t;
+    return ["bms_lock_active", "bms_factory_mode"].map((key) =>
+      r.has(key)
+        ? this.row(
+            r.label(key),
+            r.isOn(key) ? t("cells.lock_on") : t("cells.lock_off"),
+            r.isOn(key) ? "warn" : "ok",
+          )
+        : nothing,
+    );
   }
 
   /** Firmware across packs: one line when they agree, a list when they do not. */
@@ -265,7 +407,7 @@ export class MkViewCells extends MkView {
     const r = this.reader;
     const versions = new Map<string, number[]>();
     for (const i of this.packs) {
-      const v = r.str(`battery_${i}_bms_version`);
+      const v = r.str(r.packKey(i, "bms_version"));
       if (v === null) continue;
       versions.set(v, [...(versions.get(v) ?? []), i]);
     }

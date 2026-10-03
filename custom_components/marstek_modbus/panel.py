@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN
+from .schedules import DATA_COMMAND_REGISTERED as DATA_SCHEDULE_REGISTERED
 from .schedules import async_register_schedule_api
 from .panel_settings import (
     DATA_COMMANDS_REGISTERED,
@@ -54,6 +55,7 @@ _OWN_DATA_KEYS = frozenset(
         DATA_ICONS_REGISTERED,
         DATA_STORE,
         DATA_COMMANDS_REGISTERED,
+        DATA_SCHEDULE_REGISTERED,
     }
 )
 

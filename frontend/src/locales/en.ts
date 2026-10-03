@@ -24,6 +24,8 @@ export const en: Record<string, string> = {
   "control.limits": "Limits",
   "control.limits_hint":
     "After the device restarts these three often read 0. The limit set earlier still applies and does not have to be written again.",
+  "control.limits_floor":
+    "The two maximum powers start at {min} W and cannot be set to 0; the upper end, {max} W, comes from the device's entity (2500 W on the Venus D and E v3, 1450 W on the Venus A). To stop charging or discharging, set the force mode to standby or the power to 0.",
   "control.mode": "Mode",
   "control.mode_hint":
     "Has no effect while the device is being controlled over Modbus.",
@@ -43,6 +45,8 @@ export const en: Record<string, string> = {
     "Schedule {slot}: the start has to be before the end. Split a window across midnight into two schedules.",
   "control.err.schedule_overlap":
     "Schedule {slot} would overlap schedule {other} on a shared day. The device runs only the first match.",
+  "control.err.schedule_time":
+    "Schedule {slot}: start and end are HHMM times with minutes below 60.",
   "control.no_schedules": "This battery exposes no schedules.",
   "control.window": "Window",
   "control.sched_power": "Power",
@@ -59,6 +63,7 @@ export const en: Record<string, string> = {
   "control.opt.manual": "Manual",
   "control.opt.anti_feed": "Anti-feed",
   "control.opt.trade_mode": "Trade",
+  "control.opt.ai": "AI",
   "control.opt.standby": "Standby",
   "control.opt.charge": "Charge",
   "control.opt.discharge": "Discharge",
@@ -87,9 +92,14 @@ export const en: Record<string, string> = {
   "common.pack": "PACK",
   "common.pack_n": "pack {pack}",
   "common.standby": "standby",
+  "common.active_pack": "active pack {pack}",
+  "common.active_pack_hint":
+    "The pack the battery has switched in right now; the others are idle.",
   "common.voltage": "Voltage",
   "common.current": "Current",
   "common.device": "Device",
+  "common.pack_entities_disabled":
+    "Some readings of this pack are missing because their entities are disabled by default on this model: cell voltages, pack temperatures, protection and warning words, MOSFET status, battery profile. Enable the ones you want on the device page (Settings → Devices & services → Marstek Modbus Suite → this battery → entities), and they appear here once they report.",
 
   // ---- overview ----
   "core.electrical": "Electrical · now",
@@ -123,16 +133,17 @@ export const en: Record<string, string> = {
   "cells.lowest": "Lowest cell",
   "cells.in_pack": "pack {pack}",
   "cells.stack_spread": "Spread across stack",
-  "cells.stack_hint": "packs charge in turn, so a spread is expected",
+  "cells.stack_hint": "packs charge and discharge in turn, so a spread is expected",
   "cells.mean_delta": "Mean delta in pack",
   "cells.worst_pack": "widest: pack {pack}, {value} mV",
-  "cells.temp_span": "Cell temperature span",
-  "cells.packs_online": "Packs reporting",
+  "cells.temp_span": "Cell temp. span in pack",
+  "cells.temp_span_pack": "widest: pack {pack}, {range}",
+  "cells.packs_online": "Detected packs",
   "cells.cells_total": "{count} cells",
   "cells.matrix_title": "Cell voltage range per pack · shared axis",
-  "cells.matrix_axis": "bar = lowest to highest cell",
+  "cells.matrix_axis": "bar = lowest to highest cell · fixed axis 3.0 – 3.7 V",
   "cells.matrix_legend":
-    "The tick inside each bar is the pack's midpoint. A narrow bar is a balanced pack, a wide one is drift inside it, and a bar sitting apart from the others is a pack at a different level than the rest.",
+    "The tick inside each bar is the pack's midpoint. A narrow bar is a balanced pack, a wide one is drift inside it, and a bar sitting apart from the others is a pack at a different level than the rest. The axis is fixed at 3.0 – 3.7 V and only widens, in steps of 0.1 V, when a pack reads outside it.",
   "cells.no_ranges": "This battery reports no per-pack cell voltages.",
   "cells.protection": "Protection and faults",
   "cells.protection_all": "Protection · all {count} packs",
@@ -140,8 +151,15 @@ export const en: Record<string, string> = {
   "cells.conducting": "Pack conducting",
   "cells.conducting_none": "none — every pack disconnected",
   "cells.conducting_hint":
-    "The device works one pack at a time and closes that pack's MOSFETs while it does. A pack listed here is doing the work, not reporting a fault.",
+    "The device works one pack at a time and switches that pack in while it does: charge MOSFET only, discharge MOSFET only, or both. A pack listed here is doing the work, not reporting a fault.",
   "cells.mos_unexpected": "unexpected MOSFET status",
+  "cells.mos_off": "both MOSFETs off",
+  "cells.mos_charge": "charge only",
+  "cells.mos_discharge": "discharge only",
+  "cells.mos_both": "charge and discharge",
+  "cells.lock_on": "active",
+  "cells.lock_off": "inactive",
+  "cells.cell_voltages": "Cell voltages",
   "cells.raised": "raised",
   "cells.bms": "BMS",
   "cells.bms_version": "BMS version",
@@ -216,6 +234,12 @@ export const en: Record<string, string> = {
   // ---- system ----
   "system.no_faults": "No fault register is raised.",
   "system.faults_raised": "Raised: {list}",
+  "system.grid_wait":
+    "The inverter is waiting for the grid release (alarm word bit 0). This is not a fault; it clears once the grid is accepted.",
+  "system.bms_lock_active":
+    "BMS lock active: the BMS holds the pack MOSFETs open after a fault, so the battery neither charges nor discharges.",
+  "system.bms_factory_mode":
+    "BMS factory mode is on: the BMS is not in its normal operating mode.",
   "system.device": "Device",
   "system.packs": "Battery packs",
   "system.firmware": "Firmware",
@@ -223,10 +247,68 @@ export const en: Record<string, string> = {
   "system.faults": "Fault registers",
   "system.control": "Control and limits",
   "system.thermal": "Thermal and electrical",
+  "system.cell_temp_max_all": "Cell temperature, highest (all packs)",
+  "system.cell_temp_min_all": "Cell temperature, lowest (all packs)",
+  "system.cell_temp_max": "Cell temperature, highest",
+  "system.cell_temp_min": "Cell temperature, lowest",
+  "system.cell_temp_max_bms": "Cell temperature, highest (BMS)",
+  "system.cell_temp_min_bms": "Cell temperature, lowest (BMS)",
+  "system.cell_temp_holder": "Pack {packs}",
+  "system.set_charge_power": "Charge power set-point",
+  "system.set_discharge_power": "Discharge power set-point",
+  "system.set_power_hint":
+    "Currently requested by the controller (force mode, schedule or an external controller); not the measured power.",
+  "system.selftest_5": "Ethernet chip reports another version than expected (harmless)",
+  "system.selftest_5_hint":
+    "The self-test compares the version of the Ethernet chip (CH395) with the one the firmware expects: the chip reports 0x4A instead of 0x4B. Measured on two Venus D with a working LAN, harmless. A real SRAM fault would stop the controller; the real faults are 2 (EEPROM) and 3 (flash).",
   "system.ceiling_used":
     "The panel treats {value} % as the charge ceiling, read from this register.",
   "system.ceiling_ignored":
-    "This register reads {value} %, outside its own 10-100 range, so the device is not using it. The panel charges towards 100 % instead.",
+    "This register reads {value} %, outside its own {min}-100 range, so the device is not using it. The panel charges towards 100 % instead.",
+
+  // ---- maintenance ----
+  "maint.title": "Maintenance · danger zone",
+  "maint.warning":
+    "These commands act on the device directly. Several of them cannot be undone - a factory reset deletes the Wi-Fi and cloud settings. Use them only when you know what they do.",
+  "maint.buttons": "Commands",
+  "maint.dev": "DEV commands",
+  "maint.none":
+    "No command is enabled for this battery. The command entities are disabled by default; enable the ones you need on the device page and they appear here.",
+  "maint.buttons_hint":
+    "A command with a two-step confirmation shows the integration's warning first and is only sent when you confirm within its time window.",
+  "maint.press": "Press",
+  "maint.run": "Run",
+  "maint.pressing": "Sending…",
+  "maint.confirm": "Send now",
+  "maint.close": "Close",
+  "maint.countdown": "Confirm within {seconds} s. Nothing has been sent yet.",
+  "maint.expired":
+    "The confirmation window has run out. Nothing was sent. Close this and press the command again to start over.",
+  "maint.admin_required":
+    "This needs an administrator account. Ask a Home Assistant administrator to do it.",
+  "maint.sent": "{name}: sent.",
+  "maint.cancelled":
+    "{name}: cancelled, nothing was sent.",
+  "maint.ask_message":
+    "This command is sent on the first press, without a confirmation step of the integration. Send it now?",
+
+  // ---- Wi-Fi ----
+  "wifi.title": "Wi-Fi",
+  "wifi.warning":
+    "Writes new Wi-Fi credentials to the battery's communication module. The firmware stores the password in an EEPROM area that overlaps another setting (a known firmware bug), and a wrong or aborted write can leave the module with wrong credentials. Use this only while the battery stays reachable another way - the Marstek app or a cable - to correct it. It needs the integration option Options → DEV registers → Show DEV registers.",
+  "wifi.ssid": "SSID",
+  "wifi.password": "Password",
+  "wifi.hint":
+    "SSID 1 to 31 characters; password empty for an open network or 8 to 31 characters. Printable ASCII only, without comma and double quote. The password is not stored and the field is emptied after every attempt.",
+  "wifi.send": "Send credentials",
+  "wifi.sent": "Credentials sent. The communication module applies them now and reconnects.",
+  "wifi.err.ssid_length": "The SSID has to be 1 to {max} characters long. Nothing has been sent.",
+  "wifi.err.ssid_chars":
+    "The SSID may only contain printable ASCII characters, without a comma and without a double quote. Nothing has been sent.",
+  "wifi.err.password_length":
+    "The password has to be empty (open network) or {min} to {max} characters long. Nothing has been sent.",
+  "wifi.err.password_chars":
+    "The password may only contain printable ASCII characters, without a comma and without a double quote. Nothing has been sent.",
 
   // ---- settings ----
   "settings.title": "Settings",
@@ -288,4 +370,43 @@ export const en: Record<string, string> = {
     "This panel reads the Marstek Modbus Suite integration. Add a battery there first.",
 
   "common.unavailable": "—",
+
+  // ---- decoded fault and warning codes (Venus A MPPT stage) ----
+  "code.mppt_error.0": "No error",
+  "code.mppt_error.1088": "Battery over-voltage",
+  "code.mppt_error.1089": "Battery over-current",
+  "code.mppt_error.1093": "MPPT chip over-temperature",
+  "code.mppt_error.1094": "PV4 over-current",
+  "code.mppt_error.1095": "PV3 over-current",
+  "code.mppt_error.1096": "PV2 over-current",
+  "code.mppt_error.1097": "PV1 over-current",
+  "code.mppt_error.1098": "PV4 reverse current",
+  "code.mppt_error.1099": "PV3 reverse current",
+  "code.mppt_error.1100": "PV2 reverse current",
+  "code.mppt_error.1101": "PV1 reverse current",
+  "code.mppt_error.1105": "PE (earth) voltage warning",
+  "code.mppt_error.1106": "PE (earth) over-voltage",
+  "code.mppt_error.1107": "Battery over-voltage (hardware trip)",
+  "code.mppt_error.1109": "PV4 over-voltage",
+  "code.mppt_error.1110": "PV3 over-voltage",
+  "code.mppt_error.1111": "PV2 over-voltage",
+  "code.mppt_error.1112": "PV1 over-voltage",
+  "code.mppt_error.1123": "PV4 over-current (hardware trip)",
+  "code.mppt_error.1124": "PV3 over-current (hardware trip)",
+  "code.mppt_error.1125": "PV2 over-current (hardware trip)",
+  "code.mppt_error.1126": "PV1 over-current (hardware trip)",
+  "code.mppt_error.1127": "Radiator 1 above 90 °C",
+  "code.mppt_error.1128": "Radiator 2 above 90 °C",
+  "code.mppt_error.1129": "Ambient above 90 °C",
+  "code.mppt_error.1130": "Battery over-current (hardware trip)",
+  "code.mppt_warning.0": "No warning",
+  "code.mppt_warning.1345": "MPPT power or voltage reference out of range",
+  "code.mppt_warning.1363": "Power derating, radiator or ambient above 73 °C",
+  "code.mppt_warning.1364": "Radiator 1 sensor open or shorted",
+  "code.mppt_warning.1365": "Radiator 2 sensor open or shorted",
+  "code.mppt_warning.1366": "Ambient sensor open or shorted",
+  "code.mppt_warning.1367": "MPPT chip above 85 °C",
+  "code.mppt_warning.1368": "Radiator 1 above 73 °C",
+  "code.mppt_warning.1369": "Radiator 2 above 73 °C",
+  "code.mppt_warning.1370": "Ambient above 73 °C",
 };

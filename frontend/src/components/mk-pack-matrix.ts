@@ -2,6 +2,7 @@ import { LitElement, html, css, nothing } from "lit";
 import { property } from "lit/decorators.js";
 import { customElement } from "../define";
 import { baseStyles } from "../styles";
+import { axisTicks, axisWindow } from "../pack-axis";
 import { cellDeltaFlag } from "../thresholds";
 
 export interface PackRange {
@@ -19,6 +20,11 @@ export interface PackRange {
  * pack sitting at a different level than its neighbours is invisible in the
  * numbers. Here it is the one bar that has drifted sideways. A narrow bar is a
  * healthy pack; a wide one is internal drift.
+ *
+ * The axis is fixed, not fitted to the data (see `pack-axis.ts`): 3.0 - 3.7 V
+ * with a tick every 0.1 V, widened in whole 0.1 V steps only when a reading
+ * falls outside. A fitted axis rescales on every refresh and hides exactly the
+ * sideways drift this card exists to show.
  */
 @customElement("mk-pack-matrix")
 export class MkPackMatrix extends LitElement {
@@ -26,6 +32,9 @@ export class MkPackMatrix extends LitElement {
   @property({ type: String }) packLabel = "PACK";
   @property({ attribute: false }) formatVolts: (v: number) => string = (v) =>
     v.toFixed(3);
+  /** Axis labels: round values, so one decimal is enough. */
+  @property({ attribute: false }) formatTick: (v: number) => string = (v) =>
+    v.toFixed(1);
 
   static styles = [
     baseStyles,
@@ -47,6 +56,33 @@ export class MkPackMatrix extends LitElement {
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--mk-dim);
+      }
+      .ticks > span.first {
+        transform: none;
+      }
+      .ticks > span {
+        transform: translateX(-50%);
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+      }
+      .ticks > span.last {
+        transform: translateX(-100%);
+      }
+      /* Faint lines at the labelled values, so a bar's position can be read
+         against the same grid on every refresh. */
+      .gl {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        display: block;
+        background: var(--mk-line-soft);
+      }
+      /* Medium widths: label every second tick (the grid lines stay). */
+      @media (max-width: 960px) {
+        .ticks > span.alt {
+          display: none;
+        }
       }
       .row {
         display: grid;
@@ -139,29 +175,33 @@ export class MkPackMatrix extends LitElement {
     `,
   ];
 
-  /** Axis bounds, padded so no bar touches an edge. */
+  /** Fixed 3.0 - 3.7 V window, widened in whole 0.1 V steps if needed. */
   private get bounds(): { lo: number; hi: number } {
-    const values = this.ranges.flatMap((r) => [r.min, r.max]);
-    if (!values.length) return { lo: 3.2, hi: 3.4 };
-    const lo = Math.min(...values);
-    const hi = Math.max(...values);
-    const pad = Math.max((hi - lo) * 0.15, 0.005);
-    return { lo: lo - pad, hi: hi + pad };
+    return axisWindow(this.ranges.flatMap((r) => [r.min, r.max]));
   }
 
+  /** Position on the axis in percent, clamped to the window. */
   private pct(value: number): number {
     const { lo, hi } = this.bounds;
     const span = hi - lo || 1;
-    return ((value - lo) / span) * 100;
+    return Math.min(100, Math.max(0, ((value - lo) / span) * 100));
   }
 
   render() {
     if (!this.ranges.length) return nothing;
 
     const { lo, hi } = this.bounds;
-    const ticks = [0, 0.25, 0.5, 0.75].map((f) => ({
-      at: f * 100,
-      value: lo + (hi - lo) * f,
+    const values = axisTicks({ lo, hi });
+    const ticks = values.map((value, i) => ({
+      at: ((value - lo) / (hi - lo)) * 100,
+      value,
+      cls: [
+        i === 0 && value === lo ? "first" : "",
+        i === values.length - 1 && value === hi ? "last" : "",
+        i % 2 ? "alt" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
     }));
 
     return html`
@@ -170,7 +210,9 @@ export class MkPackMatrix extends LitElement {
         <div class="ticks">
           ${ticks.map(
             (t) =>
-              html`<span style="left:${t.at}%">${this.formatVolts(t.value)}</span>`,
+              html`<span class=${t.cls} style="left:${t.at}%"
+                >${this.formatTick(t.value)}</span
+              >`,
           )}
         </div>
         <div class="right"><span class="label">Δ</span></div>
@@ -179,14 +221,15 @@ export class MkPackMatrix extends LitElement {
       ${this.ranges.map((range) => {
         const delta = range.max - range.min;
         const tone = cellDeltaFlag(delta);
-        const left = this.pct(range.min);
-        const width = Math.max(this.pct(range.max) - left, 0.6);
+        const width = Math.max(this.pct(range.max) - this.pct(range.min), 0.6);
+        const left = Math.min(this.pct(range.min), 100 - width);
         const mid = this.pct((range.min + range.max) / 2);
 
         return html`
           <div class="row">
             <div><span class="name ${tone}">${this.packLabel} ${range.index}</span></div>
             <div class="rail">
+              ${ticks.map((t) => html`<i class="gl" style="left:${t.at}%"></i>`)}
               <i class="bar ${tone}" style="left:${left}%;width:${width}%"></i>
               <i class="mid" style="left:${mid}%"></i>
             </div>

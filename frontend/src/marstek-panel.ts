@@ -7,7 +7,7 @@ import {
   latestBundleVersion,
 } from "./define";
 import { themeStyles, baseStyles } from "./styles";
-import { findDevices, DeviceReader, type MarstekDevice } from "./entities";
+import { findDevices, DeviceReader, CAPACITY_KEYS, type MarstekDevice } from "./entities";
 import type { HassEntity } from "./types";
 import { DeviceControls } from "./controls";
 import { loadCatalogue, translate, type Strings } from "./localize";
@@ -47,12 +47,11 @@ type TabId =
 const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "control", "system"];
 
 /**
- * A tab appears only when the battery has something to put in it. Venus E
- * reports no MPPT inputs, no per-cell voltages and no state of charge per
- * pack, so three of these would otherwise be empty rooms. The key named here
- * is looked up in the entity registry, so a tab also survives its sensors
- * being disabled - it then shows its own empty state rather than vanishing
- * as a side effect of a checkbox.
+ * A tab appears only when the battery has something to put in it. The Venus E
+ * reports no MPPT inputs, so the solar tab would otherwise be an empty room.
+ * The key named here is looked up in the registry list Home Assistant hands
+ * the frontend, which leaves disabled entities out: disabling it takes the
+ * tab away too.
  */
 const TAB_REQUIRES: Partial<Record<TabId, string>> = {
   cells: "battery_1_max_cell_voltage",
@@ -60,6 +59,14 @@ const TAB_REQUIRES: Partial<Record<TabId, string>> = {
   solar: "mppt1_power",
   control: "set_charge_power",
 };
+
+/**
+ * Tabs a single-pack Venus E v3 gets for its one pack, although its pack
+ * readings are disabled by default and the keys above do not exist there.
+ * The views say which readings are missing instead of vanishing. The Venus E
+ * v1/v2 serves no pack block and keeps without them.
+ */
+const SINGLE_PACK_TABS: TabId[] = ["cells", "packs"];
 
 /** Remembering the selected battery is worth a line of storage: the panel is
  *  opened repeatedly, and re-picking the same one every time is friction. */
@@ -553,7 +560,8 @@ export class MarstekPanel extends LitElement {
 
   private supports(reader: DeviceReader, id: TabId): boolean {
     const key = TAB_REQUIRES[id];
-    return !key || reader.entityId(key) !== undefined;
+    if (!key || reader.entityId(key) !== undefined) return true;
+    return SINGLE_PACK_TABS.includes(id) && reader.isSinglePack() && !reader.isLegacyE();
   }
 
   /** Every tab, with whether the battery can fill it, for the settings list. */
@@ -786,7 +794,7 @@ export class MarstekPanel extends LitElement {
   private floorPercent(reader: DeviceReader): number | null {
     const stored = reader.num("stored_energy");
     const usable = reader.num("usable_energy");
-    const capacity = reader.num("battery_total_energy");
+    const capacity = reader.numFirst(CAPACITY_KEYS);
     if (stored === null || usable === null || !capacity) return null;
     const floor = ((stored - usable) / capacity) * 100;
     return floor >= 0 && floor <= 100 ? floor : null;
@@ -839,6 +847,7 @@ export class MarstekPanel extends LitElement {
           .reader=${shared.reader}
           .fmt=${shared.fmt}
           .t=${shared.t}
+          .controls=${new DeviceControls(this.hass, reader)}
         ></mk-view-system>`;
       default:
         return html`<mk-view-core

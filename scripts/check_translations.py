@@ -73,9 +73,42 @@ def definitions(path: Path):
         for name, item in pairs:
             if not isinstance(item, dict):
                 continue
-            key = item.get("key") or name
+            # translation_key names another translation entry than the key.
+            key = item.get("translation_key") or item.get("key") or name
             if key:
                 yield platform, key
+
+
+def confirmed_buttons(path: Path):
+    """Yield the warning key of every button that asks for a second press.
+
+    `confirm: true` makes the first press raise the warning stored under
+    exceptions.confirm_<key>; without that text the warning has no message.
+    A definition with `confirm_key` uses that name for the warning instead of
+    its own key (one model needs another text for the same button).
+    """
+    data = yaml.safe_load(path.read_text()) or {}
+    for section, body in data.items():
+        if platform_of(section) != "button" or not isinstance(body, dict):
+            continue
+        for name, item in body.items():
+            if isinstance(item, dict) and item.get("confirm") is True:
+                yield item.get("confirm_key") or item.get("key") or name
+
+
+def service_texts(path: Path):
+    """Yield the translation path of every text a service needs.
+
+    services.yaml defines a service and its fields; the catalogues carry their
+    names and descriptions under services.<service>.
+    """
+    data = yaml.safe_load(path.read_text()) or {}
+    for service, body in data.items():
+        yield (service, "name")
+        yield (service, "description")
+        for field in (body or {}).get("fields") or {}:
+            yield (service, "fields", field, "name")
+            yield (service, "fields", field, "description")
 
 
 def main() -> int:
@@ -101,13 +134,31 @@ def main() -> int:
                 if "name" not in entry:
                     missing[(platform, key)].add(lang)
 
+    for path in maps:
+        for key in confirmed_buttons(path):
+            for lang, catalogue in catalogues.items():
+                entry = catalogue.get("exceptions", {}).get(f"confirm_{key}", {})
+                if "message" not in entry:
+                    missing[("exception", f"confirm_{key}")].add(lang)
+
+    services_file = COMPONENT / "services.yaml"
+    if services_file.exists():
+        for parts in service_texts(services_file):
+            for lang, catalogue in catalogues.items():
+                node = catalogue.get("services", {})
+                for part in parts:
+                    node = node.get(part, {}) if isinstance(node, dict) else {}
+                if not node:
+                    missing[("service", ".".join(parts))].add(lang)
+
     languages = ", ".join(sorted(catalogues))
     if missing:
         print(f"{len(missing)} entities have no name in every catalogue:\n")
         for (platform, key), langs in sorted(missing.items()):
             print(f"  {platform:14s} {key:36s} missing in {', '.join(sorted(langs))}")
         print(
-            f"\nAdd them under entity.<platform>.<key>.name in "
+            f"\nAdd them under entity.<platform>.<key>.name (buttons with confirm: "
+            f"true also under exceptions.confirm_<key>.message) in "
             f"custom_components/marstek_modbus/translations/."
         )
         return 1

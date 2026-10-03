@@ -5,6 +5,7 @@ import { MkView } from "./view-base";
 import { baseStyles } from "../styles";
 import type { DeviceControls } from "../controls";
 import type { ScheduleRow } from "../components/mk-schedule";
+import { schedulePowerKeys } from "../entities";
 import "../components/mk-slider";
 import "../components/mk-confirm";
 import "../components/mk-segment";
@@ -27,6 +28,8 @@ export class MkViewControl extends MkView {
   @state() private confirmReset = false;
   /** Why the last schedule change was refused; empty once one goes through. */
   @state() private scheduleError = "";
+  /** Why the last change of a limit, mode or the restart was refused. */
+  @state() private actionError = "";
 
   static styles = [
     baseStyles,
@@ -133,6 +136,21 @@ export class MkViewControl extends MkView {
     }
   }
 
+  /**
+   * Run a write and keep a refusal on screen. Rethrows, so a slider that
+   * marked itself pending can let go of the value it never got.
+   */
+  private async action(write: Promise<unknown>): Promise<unknown> {
+    try {
+      const result = await write;
+      this.actionError = "";
+      return result;
+    } catch (err) {
+      this.actionError = await this.controls.errorText(err);
+      throw err;
+    }
+  }
+
   private slider(key: string) {
     const r = this.reader;
     if (!r.entityId(key)) return nothing;
@@ -148,7 +166,7 @@ export class MkViewControl extends MkView {
         .formatNumber=${(v: number | null) => this.fmt.num(v, 0)}
         .onCommit=${(value: number) => {
           this.note(key);
-          this.controls.setNumber(key, value);
+          return this.action(this.controls.setNumber(key, value));
         }}
       ></mk-slider>
     `;
@@ -170,7 +188,7 @@ export class MkViewControl extends MkView {
         ?disabled=${!r.writable(key)}
         .onSelect=${(option: string) => {
           this.note(key);
-          this.controls.selectOption(key, option);
+          this.action(this.controls.selectOption(key, option)).catch(() => undefined);
         }}
       ></mk-segment>
     `;
@@ -187,7 +205,7 @@ export class MkViewControl extends MkView {
         .checked=${raw && raw.state !== "unavailable" ? raw.state === "on" : null}
         .onToggle=${(on: boolean) => {
           this.note(key);
-          this.controls.setSwitch(key, on);
+          this.action(this.controls.setSwitch(key, on)).catch(() => undefined);
         }}
       ></mk-toggle>
     `;
@@ -196,7 +214,7 @@ export class MkViewControl extends MkView {
   private get scheduleRows(): ScheduleRow[] {
     const r = this.reader;
     return SCHEDULES.filter((i) => r.entityId(`schedule_${i}_start`)).map((i) => {
-      const modeKey = `schedule_${i}_mode`;
+      const modeKey = r.firstKey(schedulePowerKeys(i)) ?? `schedule_${i}_mode`;
       const enabled = r.rawState(`schedule_${i}_enabled`);
       return {
         index: i,
@@ -210,6 +228,25 @@ export class MkViewControl extends MkView {
         powerStep: r.attr(modeKey, "step", 1),
         days: r.attr<string[] | null>(`schedule_${i}_days`, "days", null),
       };
+    });
+  }
+
+  /**
+   * The lower end and the model's upper end of the two maximum powers, read
+   * off the entity. On the Venus D, A and E v3 the slider starts at 50 W: the
+   * firmware does not take 0 there, so stopping goes through the force mode
+   * or a set point of 0 instead. The Venus E v1/v2 still starts at 0 and gets
+   * no such sentence.
+   */
+  private limitsFloorHint() {
+    const key = LIMIT_KEYS.find((k) => this.reader.entityId(k));
+    if (!key) return nothing;
+    const min = Number(this.reader.attr(key, "min", 0));
+    const max = Number(this.reader.attr(key, "max", 0));
+    if (!(min > 0) || !(max > 0)) return nothing;
+    return this.t("control.limits_floor", {
+      min: this.fmt.num(min, 0),
+      max: this.fmt.num(max, 0),
     });
   }
 
@@ -240,7 +277,7 @@ export class MkViewControl extends MkView {
         <div class="panel stack">
           <div class="head"><div class="label">${t("control.limits")}</div></div>
           ${LIMIT_KEYS.map((k) => this.slider(k))} ${this.slider("charge_to_soc")}
-          <div class="note">${t("control.limits_hint")}</div>
+          <div class="note">${t("control.limits_hint")} ${this.limitsFloorHint()}</div>
         </div>
 
         <div class="panel stack">
@@ -253,6 +290,12 @@ export class MkViewControl extends MkView {
           </div>
         </div>
       </div>
+
+      ${this.actionError
+        ? html`<div class="warn-note sched-error" role="alert">
+            <b>!</b><span>${this.actionError}</span>
+          </div>`
+        : nothing}
 
       <div class="grid below">
         <div class="panel stack">
@@ -287,7 +330,12 @@ export class MkViewControl extends MkView {
                       this.controls.setSchedule(`schedule_${i}_start`, { start, end }),
                     )}
                   .onPower=${(i: number, watts: number) =>
-                    this.schedule(this.controls.setNumber(`schedule_${i}_mode`, watts))}
+                    this.schedule(
+                      this.controls.setNumber(
+                        this.reader.firstKey(schedulePowerKeys(i)) ?? `schedule_${i}_mode`,
+                        watts,
+                      ),
+                    )}
                   .onDays=${(i: number, days: string[]) =>
                     this.schedule(
                       this.controls.setSchedule(`schedule_${i}_start`, { days }),
@@ -321,8 +369,8 @@ export class MkViewControl extends MkView {
                   confirmLabel=${t("control.reset_confirm")}
                   cancelLabel=${t("control.cancel")}
                   .onConfirm=${() => {
-                    this.controls.press("reset_device");
                     this.confirmReset = false;
+                    this.action(this.controls.press("reset_device")).catch(() => undefined);
                   }}
                   .onCancel=${() => (this.confirmReset = false)}
                 ></mk-confirm>

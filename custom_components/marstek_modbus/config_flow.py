@@ -13,8 +13,6 @@ from homeassistant.util import slugify
 
 from .const import (
     BEACON_MODEL_VERSIONS,
-    CONF_DEV_REGISTERS_DUPLICATE,
-    CONF_DEV_REGISTERS_LEGACY,
     CONF_DEV_REGISTERS_UNKNOWN,
     discovery_manual_label,
     CONF_DISCHARGE_FLOOR,
@@ -29,6 +27,8 @@ from .const import (
     DEVICE_NAME_DEFAULTS,
     DEVICE_VERSION_LABELS,
     DOMAIN,
+    dev_registers_enabled,
+    migrate_dev_registers_options,
     min_scan_intervals,
     polling_doc_url,
     MAX_PACK_COUNT,
@@ -123,7 +123,8 @@ SCHEMA_LIMITS = vol.Schema(
 )
 
 # 0 is "work it out from the readings", 1 to 7 pins it and stops the blocks
-# above being polled.
+# above being polled. 7 is the Control's number of pack records; the Venus A BMS
+# sends packs 1 to 6 only, so 6 is the highest useful value there.
 SCHEMA_PACKS = vol.Schema(
     {
         vol.Required(CONF_PACK_COUNT): vol.All(
@@ -542,50 +543,32 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_dev(self, user_input=None):
-        """DEV-Register ein- oder ausschalten.
+        """Switch the DEV registers on or off.
 
-        Zwei getrennte Gruppen zusaetzlicher Diagnose-Sensoren:
+        One switch for the extra diagnostic items that are hidden otherwise:
+        registers whose meaning is not settled, mirror/duplicate registers on the
+        models that have any, the DEV buttons for service commands, and the
+        service set_wifi. The sensors are named "DEV <register> (<guess>?)" and
+        sit in the diagnostic category. The register definitions are read at
+        startup, so the config entry is reloaded after a change.
 
-        unbekannt   Register, deren Bedeutung nicht geklaert ist - teils mit
-                    Konfidenz niedrig/mittel aus der Firmware-Analyse, teils
-                    Register aus dem 40000er-Bereich, die nachweislich auf
-                    einen Lesezugriff antworten.
-        Doppelungen Register, die denselben Wert liefern wie ein bereits
-                    integrierter Sensor: Aliase auf dieselbe SRAM-Quelle,
-                    Spiegelregister, Folgeregister eines mehrteiligen Blocks.
-
-        Beide heissen "DEV <register> (<verdacht>?)" und liegen in der Kategorie
-        Diagnose. Nach dem Umschalten wird der Config-Entry neu geladen, weil die
-        Registerdefinitionen beim Start eingelesen werden.
+        The stored key keeps its old name (dev_registers_unknown) so that
+        existing installations keep working; the second switch and the
+        1.1.5-beta.1 switch are folded into it (see dev_registers_enabled).
         """
         config = self._config_entry
         options = config.options or {}
-        # Migration: der alte Sammelschalter schaltet beide Gruppen, solange die
-        # neuen Schluessel fehlen.
-        legacy = bool(options.get(CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS))
-        current = {
-            CONF_DEV_REGISTERS_UNKNOWN: bool(
-                options.get(CONF_DEV_REGISTERS_UNKNOWN, legacy)
-            ),
-            CONF_DEV_REGISTERS_DUPLICATE: bool(
-                options.get(CONF_DEV_REGISTERS_DUPLICATE, legacy)
-            ),
-        }
+        current = dev_registers_enabled(options)
 
         if user_input is not None:
-            new = {
-                key: bool(user_input.get(key, DEFAULT_DEV_REGISTERS))
-                for key in current
-            }
-            merged = {
-                key: value
-                for key, value in options.items()
-                if key != CONF_DEV_REGISTERS_LEGACY
-            }
-            merged.update(new)
+            new = bool(user_input.get(CONF_DEV_REGISTERS_UNKNOWN, DEFAULT_DEV_REGISTERS))
+            # Rebuilt from migrate_dev_registers_options so that a dialog that is
+            # saved before the setup-time migration ran leaves no obsolete key.
+            merged = migrate_dev_registers_options(options) or dict(options)
+            merged[CONF_DEV_REGISTERS_UNKNOWN] = new
             self.hass.config_entries.async_update_entry(config, options=merged)
             if new != current:
-                # Definitionen werden nur beim Setup geladen -> Reload noetig.
+                # Definitions are only loaded at setup -> reload needed.
                 self.hass.async_create_task(
                     self.hass.config_entries.async_reload(config.entry_id)
                 )
@@ -596,13 +579,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
-                        CONF_DEV_REGISTERS_UNKNOWN,
-    discovery_manual_label,
-                        default=current[CONF_DEV_REGISTERS_UNKNOWN],
-                    ): bool,
-                    vol.Optional(
-                        CONF_DEV_REGISTERS_DUPLICATE,
-                        default=current[CONF_DEV_REGISTERS_DUPLICATE],
+                        CONF_DEV_REGISTERS_UNKNOWN, default=current
                     ): bool,
                 }
             ),

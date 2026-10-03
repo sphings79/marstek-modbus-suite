@@ -3,63 +3,58 @@
 # Basis: the Modbus descriptor table of the Venus A control firmware v149 was
 # unpacked statically and compared with the Venus D v150 table. Both expose the
 # same 246 entries, register 30000-38014, with identical type, scale, element
-# size and count; only the SRAM source pointers differ. Every read register used
-# here exists in the Venus A table.
+# size and count; only the SRAM source pointers differ.
+#
+# 3.1.0-beta.3: every register was checked against the Venus A firmware (control
+# 1509, inverter/MPPT micro 1211, BMS 1105). Wherever map and firmware disagreed,
+# the firmware won; what changed is listed in the CHANGELOG.
 #
 # Differences to d.yaml:
 #   - 13 cells per pack instead of 16. The firmware declares 16 slots per pack
 #     on both models; the Venus A hardware has 13, so cells 14-16 would read 0.
 #     Confirmed from the field, where those three read empty, and from the
 #     manual, which gives the pack as 41.6 V (13S).
-#   - the power registers stop at 1500 W rather than 2500: 44002 and 44003, the
-#     two setpoints, and the six schedule modes. Decompiled out of the A image
-#     against the D image, where the two registers turned out not even to
-#     enforce it the same way - 44002 accepts up to 2500 and then stores 1500
-#     silently, 44003 answers anything above 1500 with Modbus exception 3.
+#   - six packs, not seven: BMS 1105 sends packs 1-6 only (pack_id < 7, counted
+#     from 1). Pack 7 is not part of this map; add its entities again if a BMS
+#     version ever sends it (check pack_id < N on every new BMS version).
+#   - the power limits stop at 1450 W: the setpoints 42020/42021 and the limits
+#     44002/44003 accept up to 1500 W in the control firmware, but the inverter
+#     micro silently drops a value of 1451 W or more (it acknowledges it and
+#     keeps the old limit), so 1450 is the highest value that takes effect. The
+#     schedule slot power is limited to +-1450 W for the same reason (the
+#     control firmware itself would accept +-1500 W).
+#   - the MPPT stage sits inside the inverter micro: there is no separate MPPT
+#     unit, no MPPT firmware version (30205 always reads 0) and nothing that
+#     sends the CAN frames behind 30214 and 38000-38014, so those registers are
+#     not mapped.
 #   - its own fault bit texts, read out of the Venus A inverter firmware
 #     (VA_inv_app). The A is a different code base from the D and shares none of
 #     its bit meanings, so the D texts named the wrong faults here.
 #
-# The DEV register sections are carried as well. They were mapped on a Venus D
-# and nothing in them has been measured on an A, which is what the research
-# switch they sit behind is for.
-#
-# Read registers have since been exercised on Venus A hardware, on more than one
+# Read registers have been exercised on Venus A hardware, on more than one
 # device: per-pack values on a three-pack stack, the MPPT strings, the cells, and
 # the figures derived from them. Writing works as well - a zero-feed-in
 # automation has been driving force mode and the two power setpoints on that
 # three-pack A for a while now.
 #
-# What that leaves open is the pair of limits above, because the automation stays
-# at 1500 W and neither boundary has ever been crossed on a device. Nobody has
-# written more than 1500 to 44002 and watched 1500 come back, and nobody has
-# collected the exception 44003 is supposed to answer with. Both remain firmware
-# evidence, which makes them the first thing to confirm against hardware rather
-# than the last.
-#
 # Comments claiming a measurement name the model they were measured on.
 
-MISSING:
-    sensor:
-        - sn_code
-        - software_version
-    binary:
-        - discharge_limit_mode
-    select:
-        - grid_standard
-    number:
-        - charging_cutoff_capacity
-        - discharging_cutoff_capacity
-
 SENSOR_DEFINITIONS:
-    device_name:
+    device_model:
+        # Fixed model string the control firmware rewrites at every boot
+        # ("VNSA-0"), not a name somebody gave the device. Called device_name
+        # before 3.1.0-beta.3.
         register: 31000
         count: 10
         data_type: char
         enabled_by_default: true
         icon: "mdi:package-variant-closed"
-        scan_interval: low
-    vms_version:
+        scan_interval: ultra
+        category: diagnostic
+    vns_version:
+        # Inverter (Micro) firmware. The firmware calls this part vns
+        # (mod0=vns, vns_ver), like vns_boot_version below; "vms" was a typo.
+        # Called vms_version before 3.1.0-beta.3.
         register: 30202
         icon: "mdi:battery-check-outline"
         category: diagnostic
@@ -100,7 +95,7 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: uint16
-        precision: 1
+        precision: 0
         scan_interval: high
     battery_soc_1:
         register: 34002
@@ -156,21 +151,16 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 1
         scan_interval: high
-    battery_soc_7:
-        register: 34602
-        scale: 0.1
-        unit: "%"
-        state_class: measurement
-        enabled_by_default: true
-        data_type: uint16
-        precision: 1
-        scan_interval: high
-    battery_total_energy:
+    battery_rated_capacity:
+        # Nominal capacity: number of packs x 2080 Wh (13S x 3.2 V x 50 Ah),
+        # sent by the BMS. Not the energy left in the packs and independent of
+        # the state of charge. stored_energy and the energy window sensors use
+        # it as the capacity. Called battery_total_energy before 3.1.0-beta.3.
         register: 32105
         scale: 0.001
         unit: kWh
-        device_class: energy
-        state_class: total
+        device_class: energy_storage
+        state_class: measurement
         enabled_by_default: true
         data_type: uint16
         precision: 3
@@ -193,6 +183,10 @@ SENSOR_DEFINITIONS:
         precision: 1
         scan_interval: high
     internal_temperature:
+        # Radiator NTC 1 of the inverter (also served at 30002). The key stays,
+        # because it is the unique id of existing entities; the displayed name
+        # comes from the translation_key.
+        translation_key: inverter_radiator_1_temperature
         register: 35000
         scale: 0.1
         unit: °C
@@ -200,9 +194,13 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: int16
-        precision: 2
+        precision: 1
         scan_interval: low
     internal_mos1_temperature:
+        # Radiator NTC 2 of the inverter (also served at 30003). The key stays,
+        # because it is the unique id of existing entities; the displayed name
+        # comes from the translation_key.
+        translation_key: inverter_radiator_2_temperature
         register: 35001
         scale: 0.1
         unit: °C
@@ -210,7 +208,7 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: int16
-        precision: 2
+        precision: 1
         scan_interval: low
     ac_voltage:
         register: 32200
@@ -326,7 +324,10 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 1
         scan_interval: low
-    min_cell_temperature:
+    battery_1_min_cell_temperature:
+        # The lowest NTC of pack 1 only (pack record 0). The firmware serves no
+        # minimum across the stack; max_cell_temperature (35010) above is the
+        # stack maximum. Called min_cell_temperature before 3.1.0-beta.3.
         register: 35011
         scale: 0.1
         unit: °C
@@ -996,28 +997,8 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_1_voltage:
-        register: 34618
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
     battery_6_cell_2_voltage:
         register: 34519
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    battery_7_cell_2_voltage:
-        register: 34619
         scale: 0.001
         unit: V
         device_class: voltage
@@ -1036,28 +1017,8 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_3_voltage:
-        register: 34620
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
     battery_6_cell_4_voltage:
         register: 34521
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    battery_7_cell_4_voltage:
-        register: 34621
         scale: 0.001
         unit: V
         device_class: voltage
@@ -1076,28 +1037,8 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_5_voltage:
-        register: 34622
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
     battery_6_cell_6_voltage:
         register: 34523
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    battery_7_cell_6_voltage:
-        register: 34623
         scale: 0.001
         unit: V
         device_class: voltage
@@ -1116,28 +1057,8 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_7_voltage:
-        register: 34624
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
     battery_6_cell_8_voltage:
         register: 34525
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    battery_7_cell_8_voltage:
-        register: 34625
         scale: 0.001
         unit: V
         device_class: voltage
@@ -1156,28 +1077,8 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_9_voltage:
-        register: 34626
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
     battery_6_cell_10_voltage:
         register: 34527
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    battery_7_cell_10_voltage:
-        register: 34627
         scale: 0.001
         unit: V
         device_class: voltage
@@ -1196,28 +1097,8 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_11_voltage:
-        register: 34628
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
     battery_6_cell_12_voltage:
         register: 34529
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    battery_7_cell_12_voltage:
-        register: 34629
         scale: 0.001
         unit: V
         device_class: voltage
@@ -1236,37 +1117,6 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 3
         scan_interval: low
-    battery_7_cell_13_voltage:
-        register: 34630
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 3
-        scan_interval: low
-    alarm_status:
-        register: 36000
-        data_type: uint16
-        device_class: problem
-        icon: "mdi:alert"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
-        # High word of the 32-bit alarm mask the firmware serves as one u32 over
-        # 36000-36001, the same split as the two error words. Bit semantics not
-        # decoded on either model (read 0 in all Venus D test scans).
-    alarm_status_low:
-        register: 36001
-        data_type: uint16
-        icon: "mdi:alert"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
-        # Low word of the alarm mask, so bit N here is overall bit N. It used to
-        # be fetched by alarm_status's count: 2 and then thrown away - a uint16
-        # decode returns the first register and ignores the rest.
     fault_status:
         register: 36100
         data_type: uint16
@@ -1288,15 +1138,6 @@ SENSOR_DEFINITIONS:
         # Low word of error_code1, so bit N here is overall bit N.
         # Bit 7 is confirmed across several hardware logs. Bits 6 and 9 were only
         # ever seen together during DC discharge and are not established.
-    fault_status_2:
-        register: 36102
-        data_type: uint16
-        icon: "mdi:alert"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
-        # High word of error_code2, so bit N here is overall bit 16+N.
-        # Derived from firmware only - error_code2 stayed zero in every log so far.
     fault_status_2_low:
         register: 36103
         data_type: uint16
@@ -1304,23 +1145,25 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
-        # Low word of error_code2, so bit N here is overall bit N.
-        # Derived from firmware only - error_code2 stayed zero in every log so far.
-        # Bits 0, 1 and 3 latch individual hardware protections that the firmware
-        # never names; bit 4 is set alongside any of them.
+        # Low word of error_code2, so bit N here is overall bit N. The high word
+        # (36102) is always 0 on the Venus A and is no longer read. The Venus A
+        # inverter sets bits 5-9, 11 and 13 only; the hardware latch bits of the
+        # Venus D (0, 1, 3, 4) do not exist on it. Derived from firmware only.
     inverter_state:
+        # The Venus A has no state 5 (firmware update). 0 means the inverter is
+        # disabled or the link to it was lost; the idle and charge/discharge
+        # thresholds are +-10 W.
         register: 35100
         scale: 1
         icon: "mdi:state-machine"
         enabled_by_default: true
         data_type: uint16
         states:
-            0: Sleep
+            0: Disabled / no data
             1: Standby
             2: Charge
             3: Discharge
             4: Backup Mode
-            5: OTA Upgrade
             6: Backup Passthrough
         scan_interval: high
     modbus_address:
@@ -1491,6 +1334,13 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: low
+        # Bluetooth (BLE) connection state of the communication module.
+        states:
+            0: "Off / not initialised"
+            1: Advertising
+            2: Connected
+            3: Disconnected
+            4: Not advertising
     # --- Per-pack temperatures and protection bitmasks (firmware-confirmed 2026-08-16) ---
     battery_1_env_temperature:
         register: 34011
@@ -1498,7 +1348,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1508,17 +1358,30 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_1_protection_1:
         register: 34007
-        data_type: int16
+        data_type: uint16
         icon: "mdi:shield-alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # BMS level-2 protection word, a bit mask (never negative). The set bits
+        # are decoded into the attributes active_bits / active_faults.
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Relay, MOSFET driver or pre-charge fault
     battery_1_protection_2:
         register: 34008
         data_type: uint16
@@ -1526,13 +1389,36 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    # --- Per-pack BMS warning words (34x09), level-1 warnings before a protection ---
+    # Value 2 is the cell under-voltage warning: lowest cell below 3100 mV at
+    # 0 degC or more, below 2750 mV under 0 degC. The set bits are decoded into
+    # the attributes active_bits / active_faults.
+    battery_1_bms_warnings:
+        register: 34009
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning
+            2: Cell over-voltage warning
+            3: Charge over-current (level 1)
+            4: Discharge over-current (level 1)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature A high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: MOSFET temperature B low
     battery_2_env_temperature:
         register: 34111
         scale: 0.1
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1542,17 +1428,30 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_2_protection_1:
         register: 34107
-        data_type: int16
+        data_type: uint16
         icon: "mdi:shield-alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # BMS level-2 protection word, a bit mask (never negative). The set bits
+        # are decoded into the attributes active_bits / active_faults.
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Relay, MOSFET driver or pre-charge fault
     battery_2_protection_2:
         register: 34108
         data_type: uint16
@@ -1560,13 +1459,32 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    battery_2_bms_warnings:
+        register: 34109
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning
+            2: Cell over-voltage warning
+            3: Charge over-current (level 1)
+            4: Discharge over-current (level 1)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature A high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: MOSFET temperature B low
     battery_3_env_temperature:
         register: 34211
         scale: 0.1
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1576,17 +1494,30 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_3_protection_1:
         register: 34207
-        data_type: int16
+        data_type: uint16
         icon: "mdi:shield-alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # BMS level-2 protection word, a bit mask (never negative). The set bits
+        # are decoded into the attributes active_bits / active_faults.
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Relay, MOSFET driver or pre-charge fault
     battery_3_protection_2:
         register: 34208
         data_type: uint16
@@ -1594,13 +1525,32 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    battery_3_bms_warnings:
+        register: 34209
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning
+            2: Cell over-voltage warning
+            3: Charge over-current (level 1)
+            4: Discharge over-current (level 1)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature A high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: MOSFET temperature B low
     battery_4_env_temperature:
         register: 34311
         scale: 0.1
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1610,17 +1560,30 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_4_protection_1:
         register: 34307
-        data_type: int16
+        data_type: uint16
         icon: "mdi:shield-alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # BMS level-2 protection word, a bit mask (never negative). The set bits
+        # are decoded into the attributes active_bits / active_faults.
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Relay, MOSFET driver or pre-charge fault
     battery_4_protection_2:
         register: 34308
         data_type: uint16
@@ -1628,13 +1591,32 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    battery_4_bms_warnings:
+        register: 34309
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning
+            2: Cell over-voltage warning
+            3: Charge over-current (level 1)
+            4: Discharge over-current (level 1)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature A high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: MOSFET temperature B low
     battery_5_env_temperature:
         register: 34411
         scale: 0.1
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1644,17 +1626,30 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_5_protection_1:
         register: 34407
-        data_type: int16
+        data_type: uint16
         icon: "mdi:shield-alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # BMS level-2 protection word, a bit mask (never negative). The set bits
+        # are decoded into the attributes active_bits / active_faults.
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Relay, MOSFET driver or pre-charge fault
     battery_5_protection_2:
         register: 34408
         data_type: uint16
@@ -1662,23 +1657,32 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    battery_5_bms_warnings:
+        register: 34409
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning
+            2: Cell over-voltage warning
+            3: Charge over-current (level 1)
+            4: Discharge over-current (level 1)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature A high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: MOSFET temperature B low
     battery_6_env_temperature:
         register: 34511
         scale: 0.1
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_env_temperature:
-        register: 34611
-        scale: 0.1
-        unit: "°C"
-        device_class: temperature
-        state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1688,34 +1692,30 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_mos_temperature:
-        register: 34612
-        scale: 0.1
-        unit: "°C"
-        device_class: temperature
-        state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_6_protection_1:
         register: 34507
-        data_type: int16
+        data_type: uint16
         icon: "mdi:shield-alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
-    battery_7_protection_1:
-        register: 34607
-        data_type: int16
-        icon: "mdi:shield-alert-outline"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
+        # BMS level-2 protection word, a bit mask (never negative). The set bits
+        # are decoded into the attributes active_bits / active_faults.
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Relay, MOSFET driver or pre-charge fault
     battery_6_protection_2:
         register: 34508
         data_type: uint16
@@ -1723,13 +1723,25 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
-    battery_7_protection_2:
-        register: 34608
+    battery_6_bms_warnings:
+        register: 34509
         data_type: uint16
-        icon: "mdi:shield-alert-outline"
+        icon: "mdi:alert-outline"
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning
+            2: Cell over-voltage warning
+            3: Charge over-current (level 1)
+            4: Discharge over-current (level 1)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature A high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: MOSFET temperature B low
     # --- Per-pack cell voltage extremes and cell NTC block (firmware-confirmed) ---
     battery_1_max_cell_voltage:
         register: 34005
@@ -1757,7 +1769,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1767,7 +1779,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1777,7 +1789,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1787,7 +1799,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1817,7 +1829,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1827,7 +1839,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1837,7 +1849,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1847,7 +1859,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1877,7 +1889,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1887,7 +1899,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1897,7 +1909,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1907,7 +1919,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1937,7 +1949,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1947,7 +1959,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1957,7 +1969,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1967,7 +1979,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -1997,7 +2009,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2007,7 +2019,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2017,7 +2029,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2027,22 +2039,12 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
     battery_6_max_cell_voltage:
         register: 34505
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        data_type: uint16
-        precision: 3
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_max_cell_voltage:
-        register: 34605
         scale: 0.001
         unit: V
         device_class: voltage
@@ -2061,33 +2063,13 @@ SENSOR_DEFINITIONS:
         precision: 3
         enabled_by_default: true
         scan_interval: low
-    battery_7_min_cell_voltage:
-        register: 34606
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        data_type: uint16
-        precision: 3
-        enabled_by_default: true
-        scan_interval: low
     battery_6_cell_temperature_1:
         register: 34513
         scale: 0.1
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_cell_temperature_1:
-        register: 34613
-        scale: 0.1
-        unit: "°C"
-        device_class: temperature
-        state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2097,17 +2079,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_cell_temperature_2:
-        register: 34614
-        scale: 0.1
-        unit: "°C"
-        device_class: temperature
-        state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2117,17 +2089,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_cell_temperature_3:
-        register: 34615
-        scale: 0.1
-        unit: "°C"
-        device_class: temperature
-        state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2137,17 +2099,7 @@ SENSOR_DEFINITIONS:
         unit: "°C"
         device_class: temperature
         state_class: measurement
-        data_type: uint16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    battery_7_cell_temperature_4:
-        register: 34616
-        scale: 0.1
-        unit: "°C"
-        device_class: temperature
-        state_class: measurement
-        data_type: uint16
+        data_type: int16
         precision: 1
         enabled_by_default: true
         scan_interval: low
@@ -2171,7 +2123,7 @@ SENSOR_DEFINITIONS:
         version_format: true
     battery_2_cycle_count:
         register: 34103
-        data_type: int16
+        data_type: uint16
         state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
@@ -2194,7 +2146,7 @@ SENSOR_DEFINITIONS:
         version_format: true
     battery_3_cycle_count:
         register: 34203
-        data_type: int16
+        data_type: uint16
         state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
@@ -2217,7 +2169,7 @@ SENSOR_DEFINITIONS:
         version_format: true
     battery_4_cycle_count:
         register: 34303
-        data_type: int16
+        data_type: uint16
         state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
@@ -2240,7 +2192,7 @@ SENSOR_DEFINITIONS:
         version_format: true
     battery_5_cycle_count:
         register: 34403
-        data_type: int16
+        data_type: uint16
         state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
@@ -2263,15 +2215,7 @@ SENSOR_DEFINITIONS:
         version_format: true
     battery_6_cycle_count:
         register: 34503
-        data_type: int16
-        state_class: total_increasing
-        icon: "mdi:counter"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: ultra
-    battery_7_cycle_count:
-        register: 34603
-        data_type: int16
+        data_type: uint16
         state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
@@ -2279,13 +2223,6 @@ SENSOR_DEFINITIONS:
         scan_interval: ultra
     battery_6_mos_status:
         register: 34504
-        data_type: uint16
-        icon: "mdi:electric-switch"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
-    battery_7_mos_status:
-        register: 34604
         data_type: uint16
         icon: "mdi:electric-switch"
         category: diagnostic
@@ -2299,15 +2236,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: true
         scan_interval: ultra
         version_format: true
-    battery_7_bms_version:
-        register: 34610
-        data_type: uint16
-        icon: "mdi:battery-check-outline"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: ultra
-        version_format: true
-    # --- Per-pack terminal voltage and current, packs 1-7 ---
+    # --- Per-pack terminal voltage and current, packs 1-6 ---
     # Pack 1 sits at 34000/34001, which the firmware also serves at 30100/30101
     # (source pointers 0x20014FB4 and 0x20014FB6). The single-pack E models map
     # those addresses as battery_voltage and battery_current; here they would be
@@ -2343,7 +2272,7 @@ SENSOR_DEFINITIONS:
         scan_interval: low
     battery_1_cycle_count:
         register: 34003
-        data_type: int16
+        data_type: uint16
         state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
@@ -2439,16 +2368,6 @@ SENSOR_DEFINITIONS:
         precision: 2
         enabled_by_default: true
         scan_interval: low
-    battery_7_voltage:
-        register: 34600
-        scale: 0.01
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        data_type: uint16
-        precision: 2
-        enabled_by_default: true
-        scan_interval: low
     battery_6_current:
         register: 34501
         scale: 0.1
@@ -2459,24 +2378,25 @@ SENSOR_DEFINITIONS:
         precision: 1
         enabled_by_default: true
         scan_interval: low
-    battery_7_current:
-        register: 34601
-        scale: 0.1
-        unit: A
-        device_class: current
-        state_class: measurement
-        data_type: int16
-        precision: 1
-        enabled_by_default: true
-        scan_interval: low
-    # --- System diagnostics (firmware-decoded) ---
     work_mode:
         register: 30010
         data_type: uint16
         icon: "mdi:cog-outline"
         category: diagnostic
-        enabled_by_default: true
+        enabled_by_default: false
         scan_interval: high
+        # The inverter micro's mode, not the work mode in effect (that is
+        # user_work_mode, 43000). It only refreshes while the control unit is in
+        # a maintenance state (after a write to 45000, the MQTT debug or the
+        # shell); in normal operation it keeps reading 0.
+        states:
+            0: Normal
+            1: Manual
+            2: Debug
+            3: Aging
+            4: ATE aging
+            12: CAN test mode
+            13: Voltage source
     ems_boot_version:
         register: 30201
         data_type: uint16
@@ -2520,6 +2440,20 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+    # Discharge current the BMS allows right now (also served at 35112). The
+    # control firmware caps the discharge setpoint at this current times
+    # bms_battery_voltage, except while feeding surplus PV into the grid.
+    bms_discharge_current_limit:
+        register: 32107
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
     # --- Network configuration (30400-30403, decoded from the device IP block) ---
     device_ip_address:
         register: 30400
@@ -2537,8 +2471,22 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: ultra
-    # --- PV yield counter (37021, inverter MPPT struct +0x2C, unit 10 Wh) ---
-    # --- Firmware-decoded diagnostic sensors (from the descriptor table, identical on A and D) ---
+    # --- PV yield counter (37021-37022, one u32 in units of 10 Wh) ---
+    # Lifetime PV yield of the inverter micro (carry of the earlier months plus
+    # the current month); it only resets on an aging run or an EEPROM reset of
+    # the micro. Read as one u32: 37022 alone returns the wrong register.
+    pv_lifetime_energy:
+        register: 37021
+        count: 2
+        scale: 0.01
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        enabled_by_default: true
+        data_type: uint32
+        precision: 2
+        scan_interval: low
+    # --- Firmware-decoded diagnostic sensors (from the descriptor table, as on the D but without mppt_version) ---
     bms_pack_count:
         register: 32109
         data_type: uint16
@@ -2578,6 +2526,45 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # Mppt_GetFaultCode (inverter micro 1211) reports ONE latched fault per
+        # poll and then clears the bits it reported, so several faults come out
+        # one after the other and then 0: the value is transient by design, and
+        # a poll slower than the status request of the control unit can miss it.
+        # Any fault switches off all four PV channels; the stage restarts by
+        # itself once the fault has been gone for a while. "Hardware trip" is a
+        # comparator latch, the others are software thresholds (battery side
+        # 55 V / 90 A, PV 63 V / 20 A / -3 A reverse, radiators and ambient
+        # 90 C). 1093 (chip over-temperature) exists in the code but nothing
+        # ever sets it; the chip only raises the warning 1367 at 85 C. Codes
+        # 1105 and 1106 compare the PV-to-earth (PE) voltage with the PV voltage.
+        states:
+            0: No error
+            1088: Battery over-voltage
+            1089: Battery over-current
+            1093: MPPT chip over-temperature
+            1094: PV4 over-current
+            1095: PV3 over-current
+            1096: PV2 over-current
+            1097: PV1 over-current
+            1098: PV4 reverse current
+            1099: PV3 reverse current
+            1100: PV2 reverse current
+            1101: PV1 reverse current
+            1105: PE (earth) voltage warning
+            1106: PE (earth) over-voltage
+            1107: Battery over-voltage (hardware trip)
+            1109: PV4 over-voltage
+            1110: PV3 over-voltage
+            1111: PV2 over-voltage
+            1112: PV1 over-voltage
+            1123: PV4 over-current (hardware trip)
+            1124: PV3 over-current (hardware trip)
+            1125: PV2 over-current (hardware trip)
+            1126: PV1 over-current (hardware trip)
+            1127: Radiator 1 above 90 °C
+            1128: Radiator 2 above 90 °C
+            1129: Ambient above 90 °C
+            1130: Battery over-current (hardware trip)
     mppt_warning:
         register: 37024
         data_type: uint16
@@ -2585,6 +2572,32 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
+        # The A's MPPT stage is part of the inverter micro (1211): Mppt_GetWarnCode
+        # turns the warning word into one code, the lowest set bit first, and the
+        # word is rebuilt on every pass of the main loop, so a code stays only
+        # while its condition holds. 1363 is set together with the radiator /
+        # ambient bits whenever the power derating (linear from 73 C to 90 C)
+        # is active. Code 1344 (bit 8) is never set anywhere in the firmware.
+        # The chip warning at 85 C (1367) has no derating attached in the code.
+        states:
+            0: No warning
+            1345: MPPT power or voltage reference out of range
+            1363: Power derating, radiator or ambient above 73 °C
+            1364: Radiator 1 sensor open or shorted
+            1365: Radiator 2 sensor open or shorted
+            1366: Ambient sensor open or shorted
+            1367: MPPT chip above 85 °C
+            1368: Radiator 1 above 73 °C
+            1369: Radiator 2 above 73 °C
+            1370: Ambient above 73 °C
+    # --- Start self-test result (30212, firmware-confirmed: FUN_08019364 @0x08019364) ---
+    # 1 = all checks passed, 2 = FUN_08004b08, 3 = flash self-test,
+    # 5 = CH395 id mismatch OR RAM pattern test (both branches write 5).
+    # Measured on two real Venus D with a working LAN: 30212 = 5 and the chip
+    # version (45605) reads 0x4A where Board_PeripheralSelfTest expects 0x4B, so
+    # a 5 on its own is harmless; only 2 (EEPROM) and 3 (flash) are real faults.
+    # 0 = test not run yet. Not a pack count - see bms_pack_count (32109).
+    # Former name: pack_config. Stays disabled: 5 is common and not actionable.
     selftest_status:
         register: 30212
         data_type: uint16
@@ -2592,14 +2605,23 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: low
-    mppt_version:
-        register: 30205
+        states:
+            0: Not run yet
+            1: OK
+            2: EEPROM fault
+            3: Flash fault
+            5: Ethernet chip reports another version than expected (harmless)
+    # Version of the CH395 Ethernet chip, read straight over SPI (0 while the
+    # Ethernet link is down). Isolated: the read waits on the chip, so it is
+    # never part of a block.
+    ethernet_chip_version:
+        register: 45605
         data_type: uint16
-        icon: "mdi:ticket-confirmation-outline"
+        icon: "mdi:ethernet"
         category: diagnostic
-        enabled_by_default: true
+        enabled_by_default: false
         scan_interval: ultra
-        version_format: true
+        isolated: true
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -2619,12 +2641,36 @@ BINARY_SENSOR_DEFINITIONS:
         enabled_by_default: false
         scan_interval: low
 
+    # BMS error lock (32112): while set, the BMS keeps the pack MOSFETs off and
+    # no pack is selected, so the battery neither charges nor discharges
+    # (the Venus A control unit does not blink its key LED for it). Normally off.
+    bms_lock_active:
+        register: 32112
+        data_type: uint16
+        category: diagnostic
+        device_class: problem
+        icon: "mdi:battery-lock"
+        enabled_by_default: true
+        scan_interval: low
+    # BMS factory / standalone mode flag (32113). Always off in normal use.
+    bms_factory_mode:
+        register: 32113
+        data_type: uint16
+        category: diagnostic
+        icon: "mdi:factory"
+        enabled_by_default: false
+        scan_interval: low
+
 SELECT_DEFINITIONS:
     # Taken from the Venus D map, verified there on firmware v150 - not yet
     # re-verified on Venus A hardware.
     # Shares its firmware byte with rs485_control_mode (42000) — see the note
     # there. Selecting any option here writes 0x01/0x00/0x05 and therefore ends
     # RS485 control; forced charge/discharge stops taking effect.
+    # Option 2 is the firmware's AI mode (called trade_mode before
+    # 3.1.0-beta.3). Reading back is ambiguous: AI, the automatic mode, the
+    # passive mode and RS485 control all read 1 (anti_feed), so the select
+    # can show anti_feed although AI was written.
     user_work_mode:
         register: 43000
         enabled_by_default: true
@@ -2632,7 +2678,7 @@ SELECT_DEFINITIONS:
         options:
             manual: 0
             anti_feed: 1
-            trade_mode: 2
+            ai: 2
     force_mode:
         register: 42010
         enabled_by_default: true
@@ -2810,12 +2856,15 @@ SWITCH_DEFINITIONS:
         scan_interval: ultra
 
 NUMBER_DEFINITIONS:
+    # The control firmware accepts up to 1500 W here, but the inverter micro
+    # drops a value of 1451 W or more without an error and keeps its old limit,
+    # so 1450 W is the highest setpoint that takes effect.
     set_charge_power:
         register: 42020
         enabled_by_default: true
         icon: "mdi:battery-arrow-up-outline"
         min: 0
-        max: 1500
+        max: 1450
         step: 50
         unit: W
         data_type: uint16
@@ -2828,7 +2877,7 @@ NUMBER_DEFINITIONS:
         enabled_by_default: true
         icon: "mdi:battery-arrow-down-outline"
         min: 0
-        max: 1500
+        max: 1450
         step: 50
         unit: W
         data_type: uint16
@@ -2836,12 +2885,18 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
+    # 0 would block charging or discharging in the inverter for good (it keeps
+    # the value across a restart), hence the minimum of 50. The register reads
+    # 0 after every restart until it is written again: that means unknown.
+    # The maximum is 1450 W: the inverter micro silently drops a value of
+    # 1451 W or more (it acknowledges it and keeps the old limit), so a limit
+    # of 1500 W would show 1500 while the micro keeps working with the old one.
     max_charge_power:
         register: 44002
         enabled_by_default: true
         icon: "mdi:battery-arrow-up-outline"
-        min: 0
-        max: 1500
+        min: 50
+        max: 1450
         step: 50
         unit: W
         data_type: uint16
@@ -2853,8 +2908,8 @@ NUMBER_DEFINITIONS:
         register: 44003
         enabled_by_default: true
         icon: "mdi:battery-arrow-down-outline"
-        min: 0
-        max: 1500
+        min: 50
+        max: 1450
         step: 50
         unit: W
         data_type: uint16
@@ -2862,11 +2917,14 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
+    # The firmware accepts 13-100 (10-12 return exception 3). It is a command:
+    # a write starts a forced charge or discharge run towards this value, in
+    # RS485 control mode with the inverter in work mode 0.
     charge_to_soc:
         register: 42011
         enabled_by_default: true
         icon: "mdi:battery-sync-outline"
-        min: 10
+        min: 13
         max: 100
         step: 1
         unit: "%"
@@ -2874,6 +2932,10 @@ NUMBER_DEFINITIONS:
         data_type: uint16
         scan_interval: low
 
+    # Start and end are clock times written as HHMM (1830 = 18:30), not
+    # minutes. The end is exclusive and a window never crosses midnight.
+    # Values with minutes of 60 or more are refused by schedules.py: the
+    # firmware would reject them and switch the slot off.
     schedule_1_start:
         register: 43101
         enabled_by_default: true
@@ -2881,7 +2943,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2892,7 +2953,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2903,7 +2963,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2914,7 +2973,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2925,7 +2983,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2936,7 +2993,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2947,7 +3003,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2958,7 +3013,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2969,7 +3023,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2980,7 +3033,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -2991,7 +3043,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -3002,71 +3053,74 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
-    schedule_1_mode:
+    # Slot power in W: positive discharges, negative charges, -1 follows the
+    # CT meter (self-consumption). Limited to +-1450 W: the inverter micro does
+    # not take more (the control firmware would accept +-1500 W).
+    # Called schedule_N_mode before 3.1.0-beta.3.
+    schedule_1_power:
         register: 43103
         enabled_by_default: true
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -1450
+        max: 1450
         step: 1
         unit: W
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_2_mode:
+    schedule_2_power:
         register: 43108
         enabled_by_default: true
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -1450
+        max: 1450
         step: 1
         unit: W
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_3_mode:
+    schedule_3_power:
         register: 43113
         enabled_by_default: true
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -1450
+        max: 1450
         step: 1
         unit: W
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_4_mode:
+    schedule_4_power:
         register: 43118
         enabled_by_default: true
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -1450
+        max: 1450
         step: 1
         unit: W
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_5_mode:
+    schedule_5_power:
         register: 43123
         enabled_by_default: true
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -1450
+        max: 1450
         step: 1
         unit: W
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_6_mode:
+    schedule_6_power:
         register: 43128
         enabled_by_default: true
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -1450
+        max: 1450
         step: 1
         unit: W
         data_type: int16
@@ -3081,10 +3135,35 @@ BUTTON_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         data_type: uint16
+    # The real factory reset: 0xAA11 to 41000. It resets the control unit, the
+    # inverter micro and every BMS pack and deletes the Wi-Fi and cloud settings;
+    # the device reboots. The button used to write 0x55AA to 41001, which does
+    # not exist on the Venus A. confirm: the first press only shows the warning,
+    # a second press within the window runs it.
     factory_reset:
-        register: 41001
-        command: 21930
+        register: 41000
+        command: 43537
         icon: "mdi:factory"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+    # Front panel LED lamp test; the value is the duration in ms (1-29999).
+    led_test:
+        register: 45012
+        command: 3000
+        icon: "mdi:led-on"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+    # Runs the inverter micro's EEPROM self-test. The result is the DEV sensor
+    # 30213 (DEV registers). The test overwrites the first two bytes
+    # of the micro's energy counter record; a reboot within ten minutes of
+    # the test can leave that counter corrupted.
+    inverter_eeprom_test:
+        register: 45001
+        command: 1
+        icon: "mdi:memory"
         category: diagnostic
         enabled_by_default: false
         data_type: uint16
@@ -3096,11 +3175,10 @@ VERSION_SENSOR_DEFINITIONS:
         icon: "mdi:chip"
         category: diagnostic
         enabled_by_default: true
-        mode: ems_vms_mppt_bms
+        mode: ems_vms_bms
         dependency_keys:
             ems: ems_version
-            vms: vms_version
-            mppt: mppt_version
+            vns: vns_version
             bms: battery_1_bms_version
 
 EFFICIENCY_SENSOR_DEFINITIONS:
@@ -3139,9 +3217,10 @@ STORED_ENERGY_SENSOR_DEFINITIONS:
         state_class: total
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
 CYCLE_SENSOR_DEFINITIONS:
+
 RUNTIME_SENSOR_DEFINITIONS:
 
     runtime_to_empty:
@@ -3155,7 +3234,7 @@ RUNTIME_SENSOR_DEFINITIONS:
         mode: to_empty
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
             power: battery_power
     runtime_to_full:
         key: runtime_to_full
@@ -3171,7 +3250,7 @@ RUNTIME_SENSOR_DEFINITIONS:
         # without them the sensor falls back to the plain linear estimate.
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
             power: battery_power
             ac_power: ac_power
             pack_count: bms_pack_count
@@ -3184,7 +3263,6 @@ RUNTIME_SENSOR_DEFINITIONS:
             pack4: battery_soc_4
             pack5: battery_soc_5
             pack6: battery_soc_6
-            pack7: battery_soc_7
 
 BATTERY_LIFE_SENSOR_DEFINITIONS:
 
@@ -3219,7 +3297,7 @@ ENERGY_WINDOW_SENSOR_DEFINITIONS:
 
     # The window runs from the configured discharge floor up to the device's
     # charge_to_soc register, falling back to a full pack when that register
-    # holds a value outside its own 10-100 range.
+    # holds a value outside its own 13-100 range.
     usable_energy:
         key: usable_energy
         unit: kWh
@@ -3231,7 +3309,7 @@ ENERGY_WINDOW_SENSOR_DEFINITIONS:
         mode: usable
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
     energy_to_full:
         key: energy_to_full
         unit: kWh
@@ -3243,7 +3321,7 @@ ENERGY_WINDOW_SENSOR_DEFINITIONS:
         mode: to_full
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
 BACKUP_RESERVE_SENSOR_DEFINITIONS:
 
@@ -3268,7 +3346,7 @@ BACKUP_RESERVE_SENSOR_DEFINITIONS:
         backup_floor: 8
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
 MIRROR_SENSOR_DEFINITIONS:
 
@@ -3373,14 +3451,12 @@ PACK_AGGREGATE_SENSOR_DEFINITIONS:
             cycles4: battery_4_cycle_count
             cycles5: battery_5_cycle_count
             cycles6: battery_6_cycle_count
-            cycles7: battery_7_cycle_count
             present1: battery_1_voltage
             present2: battery_2_voltage
             present3: battery_3_voltage
             present4: battery_4_voltage
             present5: battery_5_voltage
             present6: battery_6_voltage
-            present7: battery_7_voltage
 
 BATTERY_POWER_SENSOR_DEFINITIONS:
 
@@ -3494,17 +3570,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
             max: battery_6_max_cell_voltage
             min: battery_6_min_cell_voltage
 
-    battery_7_cell_voltage_delta:
-        key: battery_7_cell_voltage_delta
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        precision: 3
-        icon: "mdi:delta"
-        enabled_by_default: false
-        dependency_keys:
-            max: battery_7_max_cell_voltage
-            min: battery_7_min_cell_voltage
 BITFIELD_TEXT_SENSOR_DEFINITIONS:
     # These texts come from the Venus A inverter firmware (VA_inv_app 0119 /
     # 1193 / 1211, which share one bit layout), not from the Venus D. The two
@@ -3553,16 +3618,6 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
             3: Grid underfrequency (below limit for too long)
             4: Grid peak voltage (above 430 V)
             7: Grid protection tripped (low confidence)
-    fault_status_2_description:
-        key: fault_status_2_description
-        icon: "mdi:alert-circle-outline"
-        category: diagnostic
-        enabled_by_default: false
-        dependency_keys:
-            source: fault_status_2
-        # High word of error_code2. The firmware has no setter above bit 13, so
-        # this word is always 0 on the Venus A - anything else is a bad read.
-        bit_descriptions: {}
     fault_status_2_low_description:
         key: fault_status_2_low_description
         icon: "mdi:alert-circle-outline"
@@ -3570,996 +3625,18 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: false
         dependency_keys:
             source: fault_status_2_low
-        # Low word of error_code2. Bits 8 and 11 are the two integrators: they
-        # need a limit to stay violated for a while, so they say "this went on
-        # too long" rather than naming a single event.
+        # Low word of error_code2. The Venus A inverter sets exactly the bits
+        # 5-9, 11 and 13 (the Venus D also has 0, 1, 3, 4). Bits 8 and 11 stay
+        # separate from 5 and 6: 8 is an off-grid condition, 11 a state-machine
+        # timeout.
         bit_descriptions:
-            5: Protection shutdown (trigger not identified)
-            6: DC link overvoltage (above 568 V)
-            7: Shut down by supervisor (low confidence)
-            8: Operating limit exceeded for too long (overload integral, or grid below 207 V for 201 cycles)
-            9: Supervisor fault (low confidence)
-            11: Limit exceeded for too long - collective bit, the channel is only in the device event log
-            13: Limit exceeded for more than 20000 cycles
-
-# ---------------------------------------------------------------------------
-# Die beiden DEV-Sektionen sind aus d.yaml uebernommen, unveraendert.
-#
-# Das traegt, weil die Descriptor-Tabellen beider Modelle identisch sind: aus
-# den Control-v150-Images beider Geraete entpackt ergeben sich dieselben 246
-# Eintraege, ohne einen einzigen Unterschied bei Typ, Skala, Elementgroesse
-# oder Anzahl -- und beim A sogar dieselben SRAM-Quellzeiger. Ein Register ist
-# hier dasselbe Register wie dort, und was am D ungeklaert ist, ist es am A auch.
-#
-# Was das NICHT bedeutet: die Fehlerwoerter. Deren Inhalt erzeugt der
-# Wechselrichter, und der ist beim A eine fremde Codebasis -- siehe den
-# Kommentar bei BITFIELD_TEXT_SENSOR_DEFINITIONS.
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-# DEV_UNKNOWN_SENSOR_DEFINITIONS — Option 'DEV-Register: unbekannt'
-#
-# Register, deren Bedeutung nicht geklaert ist. Zwei Quellen:
-#   1. Konfidenz 'niedrig' oder 'mittel' im FW-Debug-Projekt, in keiner
-#      regulaeren Sektion vorhanden.
-#   2. Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf
-#      einen FC03-Read geantwortet haben.
-#
-# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
-# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
-# stehen dadurch in der Oberflaeche beieinander.
-#
-# Bewusst NICHT enthalten:
-#   - 41500-41515: WLAN-Zugangsdaten-Puffer. Der Wert wuerde sonst in Datenbank,
-#     Backups und moeglicherweise Logs landen. Siehe FW-Debug-Projekt,
-#     security/WLAN_Credentials_ueber_Modbus_41500.md
-#   - alle Register, die im Scan die Verbindung haben abreissen lassen
-#     (40000, 41000, 45000-45031, 46000).
-# ---------------------------------------------------------------------------
-DEV_UNKNOWN_SENSOR_DEFINITIONS:
-  dev_30030:
-    register: 30030
-    name: "DEV 30030 (config_word_2000018A?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30031:
-    register: 30031
-    name: "DEV 30031 (inv_slot8_38?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30032:
-    register: 30032
-    name: "DEV 30032 (inv_slot8_3a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30033:
-    register: 30033
-    name: "DEV 30033 (inv_slot8_3c?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30034:
-    register: 30034
-    name: "DEV 30034 (inv_slot8_3e?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30035:
-    register: 30035
-    name: "DEV 30035 (inv_boundary_20014F8C?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30036:
-    register: 30036
-    name: "DEV 30036 (inv_base_voltage?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30211:
-    register: 30211
-    name: "DEV 30211 (config_byte_can54?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30213:
-    register: 30213
-    name: "DEV 30213 (config_byte_canc1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30214:
-    register: 30214
-    name: "DEV 30214 (bms_self_check?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_32112:
-    register: 32112
-    name: "DEV 32112 (bms_lock_flag?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34009:
-    register: 34009
-    name: "DEV 34009 (pack1_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34109:
-    register: 34109
-    name: "DEV 34109 (pack2_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34209:
-    register: 34209
-    name: "DEV 34209 (pack3_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34309:
-    register: 34309
-    name: "DEV 34309 (pack4_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34409:
-    register: 34409
-    name: "DEV 34409 (pack5_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34509:
-    register: 34509
-    name: "DEV 34509 (pack6_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_34609:
-    register: 34609
-    name: "DEV 34609 (pack7_bms_reserved_5a?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37001:
-    register: 37001
-    name: "DEV 37001 (status_block_offset8?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38000:
-    register: 38000
-    name: "DEV 38000 (can40_w1?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38001:
-    register: 38001
-    name: "DEV 38001 (can40_w2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38002:
-    register: 38002
-    name: "DEV 38002 (can40_w3?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38003:
-    register: 38003
-    name: "DEV 38003 (can40_w4?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38004:
-    register: 38004
-    name: "DEV 38004 (can41_w1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38005:
-    register: 38005
-    name: "DEV 38005 (can41_w2?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38006:
-    register: 38006
-    name: "DEV 38006 (can41_w3?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38007:
-    register: 38007
-    name: "DEV 38007 (can42_w1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38008:
-    register: 38008
-    name: "DEV 38008 (can42_w2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38009:
-    register: 38009
-    name: "DEV 38009 (can42_w3?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38010:
-    register: 38010
-    name: "DEV 38010 (can42_w4?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38011:
-    register: 38011
-    name: "DEV 38011 (can43_w1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38012:
-    register: 38012
-    name: "DEV 38012 (can43_w2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38013:
-    register: 38013
-    name: "DEV 38013 (can43_w3?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_38014:
-    register: 38014
-    name: "DEV 38014 (can43_w4?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41600:
-    register: 41600
-    name: "DEV 41600 (schedule_power_00?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41601:
-    register: 41601
-    name: "DEV 41601 (schedule_power_01?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41602:
-    register: 41602
-    name: "DEV 41602 (schedule_power_02?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41603:
-    register: 41603
-    name: "DEV 41603 (schedule_power_03?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41604:
-    register: 41604
-    name: "DEV 41604 (schedule_power_04?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41605:
-    register: 41605
-    name: "DEV 41605 (schedule_power_05?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41606:
-    register: 41606
-    name: "DEV 41606 (schedule_power_06?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41607:
-    register: 41607
-    name: "DEV 41607 (schedule_power_07?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41608:
-    register: 41608
-    name: "DEV 41608 (schedule_power_08?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41609:
-    register: 41609
-    name: "DEV 41609 (schedule_power_09?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41610:
-    register: 41610
-    name: "DEV 41610 (schedule_power_10?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41611:
-    register: 41611
-    name: "DEV 41611 (schedule_power_11?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41612:
-    register: 41612
-    name: "DEV 41612 (schedule_power_12?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41613:
-    register: 41613
-    name: "DEV 41613 (schedule_power_13?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41614:
-    register: 41614
-    name: "DEV 41614 (schedule_power_14?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41615:
-    register: 41615
-    name: "DEV 41615 (schedule_power_15?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41616:
-    register: 41616
-    name: "DEV 41616 (schedule_power_16?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41617:
-    register: 41617
-    name: "DEV 41617 (schedule_power_17?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41618:
-    register: 41618
-    name: "DEV 41618 (schedule_power_18?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41619:
-    register: 41619
-    name: "DEV 41619 (schedule_power_19?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41620:
-    register: 41620
-    name: "DEV 41620 (schedule_power_20?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41621:
-    register: 41621
-    name: "DEV 41621 (schedule_power_21?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41622:
-    register: 41622
-    name: "DEV 41622 (schedule_power_22?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41623:
-    register: 41623
-    name: "DEV 41623 (schedule_power_23?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41624:
-    register: 41624
-    name: "DEV 41624 (schedule_power_24?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41625:
-    register: 41625
-    name: "DEV 41625 (schedule_power_25?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41626:
-    register: 41626
-    name: "DEV 41626 (schedule_power_26?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41627:
-    register: 41627
-    name: "DEV 41627 (schedule_power_27?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41628:
-    register: 41628
-    name: "DEV 41628 (schedule_power_28?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41629:
-    register: 41629
-    name: "DEV 41629 (schedule_power_29?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41630:
-    register: 41630
-    name: "DEV 41630 (schedule_power_30?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_41631:
-    register: 41631
-    name: "DEV 41631 (schedule_power_31?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_45603:
-    register: 45603
-    name: "DEV 45603 (adc_version_bcd_ch1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_45604:
-    register: 45604
-    name: "DEV 45604 (adc_version_bcd_ch2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_45605:
-    register: 45605
-    name: "DEV 45605 (status_query?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46501:
-    register: 46501
-    name: "DEV 46501 (eeprom_struct_00_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46502:
-    register: 46502
-    name: "DEV 46502 (eeprom_struct_00_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46503:
-    register: 46503
-    name: "DEV 46503 (eeprom_struct_01_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46504:
-    register: 46504
-    name: "DEV 46504 (eeprom_struct_01_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46505:
-    register: 46505
-    name: "DEV 46505 (eeprom_struct_01_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46506:
-    register: 46506
-    name: "DEV 46506 (eeprom_struct_02_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46507:
-    register: 46507
-    name: "DEV 46507 (eeprom_struct_02_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46508:
-    register: 46508
-    name: "DEV 46508 (eeprom_struct_02_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46509:
-    register: 46509
-    name: "DEV 46509 (eeprom_struct_03_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46510:
-    register: 46510
-    name: "DEV 46510 (eeprom_struct_03_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46511:
-    register: 46511
-    name: "DEV 46511 (eeprom_struct_03_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46512:
-    register: 46512
-    name: "DEV 46512 (eeprom_struct_04_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46513:
-    register: 46513
-    name: "DEV 46513 (eeprom_struct_04_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46514:
-    register: 46514
-    name: "DEV 46514 (eeprom_struct_04_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46515:
-    register: 46515
-    name: "DEV 46515 (eeprom_struct_05_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46516:
-    register: 46516
-    name: "DEV 46516 (eeprom_struct_05_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46517:
-    register: 46517
-    name: "DEV 46517 (eeprom_struct_05_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46518:
-    register: 46518
-    name: "DEV 46518 (eeprom_struct_06_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46519:
-    register: 46519
-    name: "DEV 46519 (eeprom_struct_06_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46520:
-    register: 46520
-    name: "DEV 46520 (eeprom_struct_06_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46521:
-    register: 46521
-    name: "DEV 46521 (eeprom_struct_07_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46522:
-    register: 46522
-    name: "DEV 46522 (eeprom_struct_07_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46523:
-    register: 46523
-    name: "DEV 46523 (eeprom_struct_07_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46524:
-    register: 46524
-    name: "DEV 46524 (eeprom_struct_08_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46525:
-    register: 46525
-    name: "DEV 46525 (eeprom_struct_08_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46526:
-    register: 46526
-    name: "DEV 46526 (eeprom_struct_08_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46527:
-    register: 46527
-    name: "DEV 46527 (eeprom_struct_09_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46528:
-    register: 46528
-    name: "DEV 46528 (eeprom_struct_09_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46529:
-    register: 46529
-    name: "DEV 46529 (eeprom_struct_09_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46530:
-    register: 46530
-    name: "DEV 46530 (eeprom_struct_10_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46531:
-    register: 46531
-    name: "DEV 46531 (eeprom_struct_10_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46532:
-    register: 46532
-    name: "DEV 46532 (eeprom_struct_10_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46533:
-    register: 46533
-    name: "DEV 46533 (eeprom_struct_11_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46534:
-    register: 46534
-    name: "DEV 46534 (eeprom_struct_11_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46535:
-    register: 46535
-    name: "DEV 46535 (eeprom_struct_11_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46536:
-    register: 46536
-    name: "DEV 46536 (eeprom_struct_12_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46537:
-    register: 46537
-    name: "DEV 46537 (eeprom_struct_12_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46538:
-    register: 46538
-    name: "DEV 46538 (eeprom_struct_12_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46539:
-    register: 46539
-    name: "DEV 46539 (eeprom_struct_13_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46540:
-    register: 46540
-    name: "DEV 46540 (eeprom_struct_13_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46541:
-    register: 46541
-    name: "DEV 46541 (eeprom_struct_13_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46542:
-    register: 46542
-    name: "DEV 46542 (eeprom_struct_14_reg0?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46543:
-    register: 46543
-    name: "DEV 46543 (eeprom_struct_14_reg1?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_46544:
-    register: 46544
-    name: "DEV 46544 (eeprom_struct_14_reg2?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_47400:
-    register: 47400
-    name: "DEV 47400 (debug_register?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37021:
-    register: 37021
-    name: "DEV 37021 (frueher pv_year_capacity, Deutung widerlegt)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37022:
-    register: 37022
-    name: "DEV 37022 (frueher pv_year_capacity_w2, Deutung widerlegt)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-
-# ---------------------------------------------------------------------------
-# DEV_DUPLICATE_SENSOR_DEFINITIONS — Option 'DEV-Register: Doppelungen'
-#
-# Register, die denselben Wert liefern wie ein bereits integrierter Sensor:
-# Aliase auf dieselbe SRAM-Quelle, Spiegelregister und Folgeregister eines
-# mehrteiligen Blocks. Sie bringen keinen neuen Messwert, sind aber nuetzlich,
-# um zu pruefen, ob zwei Register wirklich synchron laufen.
-#
-# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
-# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
-# stehen dadurch in der Oberflaeche beieinander.
-#
-# Bewusst NICHT enthalten:
-#   - 41500-41515: WLAN-Zugangsdaten-Puffer. Der Wert wuerde sonst in Datenbank,
-#     Backups und moeglicherweise Logs landen. Siehe FW-Debug-Projekt,
-#     security/WLAN_Credentials_ueber_Modbus_41500.md
-#   - alle Register, die im Scan die Verbindung haben abreissen lassen
-#     (40000, 41000, 45000-45031, 46000).
-# ---------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------
-# DEV_DUPLICATE_SENSOR_DEFINITIONS — Option 'DEV-Register: Doppelungen'
-#
-# Register, die denselben Wert liefern wie ein bereits integrierter Sensor:
-# Aliase auf dieselbe SRAM-Quelle, Spiegelregister und Folgeregister eines
-# mehrteiligen Blocks. Sie bringen keinen neuen Messwert, sind aber nuetzlich,
-# um zu pruefen, ob zwei Register wirklich synchron laufen.
-#
-# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
-# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
-# stehen dadurch in der Oberflaeche beieinander.
-#
-# Bewusst NICHT enthalten:
-#   - 41500-41515: WLAN-Zugangsdaten-Puffer. Der Wert wuerde sonst in Datenbank,
-#     Backups und moeglicherweise Logs landen. Siehe FW-Debug-Projekt,
-#     security/WLAN_Credentials_ueber_Modbus_41500.md
-#   - alle Register, die im Scan die Verbindung haben abreissen lassen
-#     (40000, 41000, 45000-45031, 46000).
-# ---------------------------------------------------------------------------
-DEV_DUPLICATE_SENSOR_DEFINITIONS:
-  dev_30102:
-    register: 30102
-    name: "DEV 30102 (pack1_max_cell_voltage_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30103:
-    register: 30103
-    name: "DEV 30103 (pack1_min_cell_voltage_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30104:
-    register: 30104
-    name: "DEV 30104 (pack1_max_cell_temp?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30105:
-    register: 30105
-    name: "DEV 30105 (pack1_min_cell_temp?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30106:
-    register: 30106
-    name: "DEV 30106 (pack1_temp_3_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30109:
-    register: 30109
-    name: "DEV 30109 (bms_factory_test?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30110:
-    register: 30110
-    name: "DEV 30110 (config_setpoint_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_30210:
-    register: 30210
-    name: "DEV 30210 (pack1_mos_status_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_32113:
-    register: 32113
-    name: "DEV 32113 (bms_factory_test?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_32114:
-    register: 32114
-    name: "DEV 32114 (config_setpoint_20014FAF?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_37006:
-    register: 37006
-    name: "DEV 37006 (pack1_max_cell_temp_mirror?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_37009:
-    register: 37009
-    name: "DEV 37009 (block_34007_34008?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_37010:
-    register: 37010
-    name: "DEV 37010 (block_34007_34008[2]?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
+            5: Inverter over-current (above 15 A peak)
+            6: DC bus over-voltage (above 530 V, 570 V in LLC mode 0x0E)
+            7: State-machine shutdown (reason 5)
+            8: Off-grid overload or off-grid voltage below 207 V
+            9: Invalid state-machine state
+            11: State transition timeout (pre-charge, LLC or relay)
+            13: Relay check failed (grid relay welded)
 
 GRID_POWER_SENSOR_DEFINITIONS:
     grid_power:
@@ -4598,7 +3675,6 @@ BMS_POWER_SENSOR_DEFINITIONS:
             p4: battery_4_current
             p5: battery_5_current
             p6: battery_6_current
-            p7: battery_7_current
     bms_charge_power_limit:
         key: bms_charge_power_limit
         unit: W
@@ -4614,3 +3690,240 @@ BMS_POWER_SENSOR_DEFINITIONS:
         dependency_keys:
             voltage: bms_battery_voltage
             limit: bms_charge_current_limit
+
+# ---------------------------------------------------------------------------
+# Registers that are never part of a block read.
+#
+# The coordinator bridges small gaps between wanted registers to save
+# requests. A block that starts in, ends in or spans one of these ranges is
+# never built: a definition inside one is read on its own, and only when its
+# entity is enabled. This holds whether or not the DEV groups are loaded.
+#
+#   30030-30035  reply words of the MPPT stage inside the inverter micro, only
+#                valid after a write to 45023/45024
+#   38000-39014  nothing is mapped here on the Venus A (no sender), but a read
+#                anywhere in the range makes the control unit broadcast four
+#                CAN frames per second until the next reboot
+#   41500-41631  Wi-Fi SSID and password buffers of the communication module
+#                (the password reads 0); the service set_wifi writes them,
+#                nothing else touches them in a block
+#   45000-45031  command registers (write-only); a read stalls the TCP
+#                connection
+#   45603-45605  each read waits up to 200 ticks for the inverter micro or the
+#                Ethernet chip and blocks the Modbus task meanwhile
+#   46000        switches RS485 to the shell / OTA mode
+# ---------------------------------------------------------------------------
+NO_BLOCK_READ_RANGES:
+    - [30030, 30035]
+    - [38000, 39014]
+    - [41500, 41631]
+    - [45000, 45031]
+    - [45603, 45605]
+    - [46000, 46000]
+
+# ---------------------------------------------------------------------------
+# DEV_BUTTON_DEFINITIONS - only loaded with the option 'Show DEV registers'
+#
+# Commands from the firmware analysis that are real but change the state of
+# the device. All are disabled by default; the ones that cannot be undone from
+# Home Assistant need a second press within the confirmation window
+# (confirm: true), the first press only shows the warning.
+# ---------------------------------------------------------------------------
+DEV_BUTTON_DEFINITIONS:
+    # Switches the inverter micro off with a latch that lasts until the next
+    # micro reboot (reset_device or a power cycle): the AC output stops and
+    # stays off.
+    dev_45002_inverter_disable:
+        register: 45002
+        command: 1
+        icon: "mdi:power-plug-off"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+    # Restarts the PV stage of the inverter micro with a power reference of
+    # 50 W. The start part persists; the control unit overwrites the reference
+    # with its next limiter frame after a few seconds, so the power part only
+    # acts briefly. Write-only: there is no read-back.
+    dev_45020_pv_restart:
+        register: 45020
+        command: 50
+        icon: "mdi:solar-power-variant"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+    # PV stage off / on (write-only, no read-back). Off stops the PV harvest
+    # until PV on, 45020 or a micro reboot; the control unit's burn-in command
+    # undoes it as well.
+    dev_45021_pv_off:
+        register: 45021
+        command: 0
+        icon: "mdi:solar-power-variant-outline"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+    dev_45021_pv_on:
+        register: 45021
+        command: 1
+        icon: "mdi:solar-power-variant"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+    # Reboots the master BMS (CAN node 1). From a normal pack this also
+    # switches it into a persistent factory / standalone mode that disables
+    # the multi-pack coordination until a BMS factory reset.
+    dev_45027_bms_master_reboot:
+        register: 45027
+        command: 1
+        icon: "mdi:restart-alert"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+    # Factory reset of every BMS pack (broadcast).
+    dev_45028_bms_factory_reset:
+        register: 45028
+        command: 1
+        icon: "mdi:battery-alert"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+    # BMS master / slave role marker (broadcast, so every connected pack
+    # obeys). Set master (1) factory-resets every pack, and on a stack of
+    # several packs it makes all of them masters: the duplicate-master check
+    # then blocks the outputs until a reboot and the marker recreates the
+    # conflict after every reboot. Clear master (0) leaves no master: all packs
+    # boot unassigned with the outputs off until a master is designated again.
+    dev_45030_bms_set_master:
+        register: 45030
+        command: 1
+        icon: "mdi:battery-lock"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+    dev_45030_bms_clear_master:
+        register: 45030
+        command: 0
+        icon: "mdi:battery-off"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+
+# ---------------------------------------------------------------------------
+# DEV_UNKNOWN_SENSOR_DEFINITIONS - option 'Show DEV registers'
+#
+# What is left after the firmware analysis of the Venus A: registers that only
+# carry a value after a command (the MPPT reply words after 45023/45024, the
+# EEPROM self-test result after 45001, the aging results of the inverter micro)
+# or that are read on request only. Everything else was either promoted to a
+# regular entity or removed as a duplicate or as proven to carry nothing.
+#
+# All of them are disabled by default: enabling the option creates the
+# entities, enabling an entity starts reading it. Names follow
+# 'DEV <register> (<meaning>)'.
+# ---------------------------------------------------------------------------
+DEV_UNKNOWN_SENSOR_DEFINITIONS:
+  dev_30030:
+    register: 30030
+    name: "DEV 30030 (MPPT PE test voltage, valid after 45023)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    isolated: true
+    icon: mdi:flask-outline
+  dev_30031:
+    register: 30031
+    name: "DEV 30031 (MPPT Control PV4 current offset, mA, valid after 45024)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    isolated: true
+    icon: mdi:flask-outline
+  dev_30032:
+    register: 30032
+    name: "DEV 30032 (MPPT Control PV3 current offset, mA, valid after 45024)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    isolated: true
+    icon: mdi:flask-outline
+  dev_30033:
+    register: 30033
+    name: "DEV 30033 (MPPT Control PV2 current offset, mA, valid after 45024)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    isolated: true
+    icon: mdi:flask-outline
+  dev_30034:
+    register: 30034
+    name: "DEV 30034 (MPPT Control PV1 current offset, mA, valid after 45024)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    isolated: true
+    icon: mdi:flask-outline
+  dev_30035:
+    register: 30035
+    name: "DEV 30035 (MPPT battery current offset, mA, valid after 45024)"
+    data_type: int16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    isolated: true
+    icon: mdi:flask-outline
+  dev_30036:
+    register: 30036
+    name: "DEV 30036 (MPPT ADC reference voltage)"
+    data_type: uint16
+    scale: 0.01
+    unit: V
+    device_class: voltage
+    state_class: measurement
+    precision: 2
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30213:
+    register: 30213
+    name: "DEV 30213 (inverter EEPROM self-test result, 1 OK / 2 fault, valid after 45001)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_45603:
+    register: 45603
+    name: "DEV 45603 (inverter ATE aging result A, raw BCD, valid after an aging run)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: ultra
+    isolated: true
+    icon: mdi:flask-outline
+  dev_45604:
+    register: 45604
+    name: "DEV 45604 (inverter ATE aging result B, raw BCD, valid after an aging run)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: ultra
+    isolated: true
+    icon: mdi:flask-outline
+
+# ---------------------------------------------------------------------------
+# DEV_DUPLICATE_SENSOR_DEFINITIONS - option 'Show DEV registers'
+#
+# Empty on the Venus A since 3.1.0-beta.3: every alias the firmware analysis
+# found duplicates a regular entity and was removed.
+# ---------------------------------------------------------------------------
+DEV_DUPLICATE_SENSOR_DEFINITIONS: {}

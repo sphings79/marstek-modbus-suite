@@ -1,27 +1,46 @@
-# Venus E v3 register map is partially validated on real hardware.
-# Verify addresses, names, and mappings against live device behavior before production use.
-# Some entries may still be incorrect, duplicated, or incomplete.
-
-MISSING:
-    sensor:
-        - sn_code
-        - software_version
-    binary:
-        - discharge_limit_mode
-    select:
-        - grid_standard
-    number:
-        - charging_cutoff_capacity
-        - discharging_cutoff_capacity
+# Venus E v3 register map.
+#
+# 3.1.0-beta.3: every register was checked against the Venus E v3 firmware
+# (control 151, inverter micro 119, BMS 115). Wherever map and firmware
+# disagreed, the firmware won; what changed is listed in the CHANGELOG. The map
+# is not yet confirmed on every register by a hardware measurement; comments
+# that claim a measurement name the model it was measured on.
+#
+# Differences to d.yaml:
+#   - one fixed battery pack: the BMS 115 only ever sends pack 1 (16 cells),
+#     the pack registers 34100-34699 always read 0 and 32109-32111 are the
+#     constants 1 / 1 / 1. There are therefore no entities for packs 2-7, no
+#     pack counter and no online mask.
+#   - no MPPT / PV stage and no class-2 unit: nothing on the Venus E v3 sends
+#     those frames, so the MPPT, PV and pack-coding registers are not mapped.
+#   - 34002 (battery_soc) is the float SOC integrated from the inverter's
+#     battery power, not the BMS display SOC of the Venus D; one decimal.
+#   - the NTC channels of the inverter are swapped against the Venus D:
+#     35000 is sensor CH12, 35001 sensor CH5.
+#   - its own bit texts for the BMS protection and warning words 34007-34009
+#     (the E3 BMS is a different code base from the D BMS).
+#   - the inverter micro stores 3000 W as its factory limit, so the limit
+#     read-back (44002 / 44003) can show more than the 2500 W the firmware
+#     accepts as input.
+#
+# Words that are never read on their own: the Control's serializer hands out
+# 32-bit words in pairs, so reading 36001 alone returns 36101, 36101 alone
+# returns 36103 and 36103 alone returns the grid voltage. 36000 + 36001 are
+# therefore one uint32 (alarm_status), and 36100, 36101 and 36103 sit next to
+# each other so that they are read together in one block.
 
 SENSOR_DEFINITIONS:
-    device_name:
+    device_model:
+        # Fixed model string the control firmware rewrites at every boot
+        # ("VNSE3-0"), not a name somebody gave the device. Called device_name
+        # before 3.1.0-beta.3.
         register: 31000
         count: 10
-        data_type: char
-        enabled_by_default: true
         icon: "mdi:package-variant-closed"
-        scan_interval: low
+        category: diagnostic
+        enabled_by_default: true
+        data_type: char
+        scan_interval: ultra
     bms_version:
         register: 30204
         icon: "mdi:battery-check-outline"
@@ -30,7 +49,10 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         scan_interval: ultra
         version_format: true
-    vms_version:
+    vns_version:
+        # Inverter (Micro) firmware. The firmware calls this part vns
+        # (mod0=vns, vns_ver), like vns_boot_version below; "vms" was a typo.
+        # Called vms_version before 3.1.0-beta.3.
         register: 30202
         icon: "mdi:battery-check-outline"
         category: diagnostic
@@ -40,30 +62,56 @@ SENSOR_DEFINITIONS:
         version_format: true
     ems_version:
         register: 30200
-        category: diagnostic
+        scale: 1
         icon: "mdi:ticket-confirmation-outline"
+        category: diagnostic
         enabled_by_default: true
         data_type: uint16
-        scale: 1
+        scan_interval: ultra
+        version_format: true
+    ems_boot_version:
+        # Bootloader of the control unit. The bootloader is not part of the firmware
+        # collection, so the value the device reports is not known in advance.
+        register: 30201
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: ultra
+        version_format: true
+    vns_boot_version:
+        # Bootloader of the inverter micro. Set to 0 by the control unit while the link
+        # to the inverter is down.
+        register: 30203
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
         scan_interval: ultra
         version_format: true
     comm_module_firmware:
         register: 30350
         count: 6
-        category: diagnostic
         icon: "mdi:ticket-confirmation-outline"
+        category: diagnostic
         enabled_by_default: true
         data_type: char
         scan_interval: low
     ble_mac_address:
         register: 30304
         count: 6
+        icon: "mdi:bluetooth"
         category: diagnostic
         enabled_by_default: true
-        icon: "mdi:bluetooth"
         data_type: mac
         scan_interval: ultra
     battery_soc:
+        # The float SOC of the Venus E v3: it is integrated from the battery power the
+        # inverter micro reports (fixed 100 Ah), it is not a coulomb counter of the BMS.
+        # It is also reset to 100 % / 0 % when the BMS' own SOC reaches 100 % / 0, and
+        # it can differ from the BMS SOC in between. The register has 0.1 % resolution,
+        # hence one decimal. (The BMS' own SOC at 32104 / 37005 reads the same source
+        # and is not offered.)
         register: 34002
         scale: 0.1
         unit: "%"
@@ -71,14 +119,19 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: uint16
-        precision: 2
+        precision: 1
         scan_interval: high
-    battery_total_energy:
+    battery_rated_capacity:
+        # Nominal capacity of the single pack: a constant 5120 (5.12 kWh) hard-coded in
+        # the BMS 115 (the Venus D reports packs x 2560 Wh). Not the energy left in the
+        # pack and independent of the state of charge. stored_energy and the energy
+        # window sensors use it as the capacity. Called battery_total_energy before
+        # 3.1.0-beta.3.
         register: 32105
         scale: 0.001
         unit: kWh
-        device_class: energy
-        state_class: total
+        device_class: energy_storage
+        state_class: measurement
         enabled_by_default: true
         data_type: uint16
         precision: 3
@@ -112,9 +165,27 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: int16
-        precision: 1
+        precision: 0
         scan_interval: high
+    inverter_dc_voltage:
+        # DC voltage at the inverter's battery side.
+        register: 30000
+        scale: 0.1
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        precision: 1
+        scan_interval: low
     internal_temperature:
+        # NTC channel CH12 of the inverter (also served at 30002). The two inverter NTCs
+        # are swapped against the Venus D. The mounting places are not provable from the
+        # code (the firmware only says "radiator 1 / 2"), so the name follows the
+        # channel. The key stays, because it is the unique id of existing entities; the
+        # displayed name comes from the translation_key.
+        translation_key: inverter_temperature_ntc_ch12
         register: 35000
         scale: 0.1
         unit: °C
@@ -122,9 +193,13 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: int16
-        precision: 2
+        precision: 1
         scan_interval: low
     internal_mos1_temperature:
+        # NTC channel CH5 of the inverter (also served at 30003). Not a MOSFET sensor:
+        # the Venus E v3 has two NTCs and the code does not tie either to a MOSFET.
+        # The key stays (unique id); the displayed name comes from the translation_key.
+        translation_key: inverter_temperature_ntc_ch5
         register: 35001
         scale: 0.1
         unit: °C
@@ -132,18 +207,8 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: int16
-        precision: 2
+        precision: 1
         scan_interval: low
-    internal_mos2_temperature:
-        register: 35002
-        scale: 0.1
-        unit: °C
-        device_class: temperature
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 2
-        scan_interval: high
     ac_voltage:
         register: 32200
         scale: 0.1
@@ -152,16 +217,6 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: uint16
-        precision: 1
-        scan_interval: high
-    ac_current:
-        register: 37004
-        scale: 0.004
-        unit: A
-        device_class: current
-        state_class: measurement
-        enabled_by_default: true
-        data_type: int16
         precision: 1
         scan_interval: high
     ac_power:
@@ -182,8 +237,8 @@ SENSOR_DEFINITIONS:
         device_class: frequency
         state_class: measurement
         enabled_by_default: true
-        data_type: int16
-        precision: 2
+        data_type: uint16
+        precision: 1
         scan_interval: high
     total_charging_energy:
         register: 33000
@@ -204,20 +259,19 @@ SENSOR_DEFINITIONS:
         device_class: energy
         state_class: total_increasing
         enabled_by_default: true
-        data_type: int32
+        data_type: uint32
         precision: 2
         scan_interval: low
     battery_cycle_count:
-        # i16 per the Venus D v150 descriptor table (type code 0x12). Carried over
-        # for the Venus E v3 by analogy - the E's own descriptor table has not been
-        # unpacked, but the 34000 block is laid out the same on both.
+        # Unsigned 16 bit counter (the descriptor table of the E3 control firmware was
+        # unpacked and matches the Venus D table entry for entry).
         register: 34003
         scale: 1
-        icon: "mdi:counter"
         state_class: total_increasing
+        icon: "mdi:counter"
         category: diagnostic
         enabled_by_default: true
-        data_type: int16
+        data_type: uint16
         precision: 0
         scan_interval: ultra
     total_daily_charging_energy:
@@ -239,7 +293,7 @@ SENSOR_DEFINITIONS:
         device_class: energy
         state_class: total_increasing
         enabled_by_default: true
-        data_type: int32
+        data_type: uint32
         precision: 2
         scan_interval: low
     total_monthly_charging_energy:
@@ -261,10 +315,12 @@ SENSOR_DEFINITIONS:
         device_class: energy
         state_class: total_increasing
         enabled_by_default: true
-        data_type: int32
+        data_type: uint32
         precision: 2
         scan_interval: low
     max_cell_temperature:
+        # Maximum and minimum of the NTCs of the one fixed pack, a consistent pair
+        # (35010 / 35011), so both keep their names.
         register: 35010
         scale: 0.1
         unit: °C
@@ -285,13 +341,16 @@ SENSOR_DEFINITIONS:
         precision: 1
         scan_interval: low
     max_cell_voltage:
+        # Also see battery_1_cell_N_voltage. Right after the start the BMS reports
+        # exactly 4.000 V for some cells: that value is a clamp of the report, not a
+        # measurement.
         register: 37007
         scale: 0.001
         unit: V
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: high
     min_cell_voltage:
@@ -301,17 +360,19 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: high
     battery_1_cell_1_voltage:
+        # Cell voltages of the one fixed pack, 16 cells. A value of exactly 4.000 V right
+        # after the start is a clamp of the BMS report, not a measurement.
         register: 34018
         scale: 0.001
         unit: V
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_2_voltage:
@@ -321,7 +382,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_3_voltage:
@@ -331,7 +392,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_4_voltage:
@@ -341,7 +402,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_5_voltage:
@@ -351,7 +412,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_6_voltage:
@@ -361,7 +422,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_7_voltage:
@@ -371,7 +432,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_8_voltage:
@@ -381,7 +442,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_9_voltage:
@@ -391,7 +452,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_10_voltage:
@@ -401,7 +462,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_11_voltage:
@@ -411,7 +472,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_12_voltage:
@@ -421,7 +482,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_13_voltage:
@@ -431,7 +492,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_14_voltage:
@@ -441,7 +502,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_15_voltage:
@@ -451,7 +512,7 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
     battery_1_cell_16_voltage:
@@ -461,29 +522,251 @@ SENSOR_DEFINITIONS:
         device_class: voltage
         state_class: measurement
         enabled_by_default: false
-        data_type: int16
+        data_type: uint16
         precision: 3
         scan_interval: low
+    # --- BMS pack 1 (the one fixed pack), new diagnostics. All disabled by default. ---
+    bms_charge_current_limit:
+        # Charge current limit of the BMS, used by the control unit for its power limit
+        # (up to 100.0 A, depends on the battery profile and the temperature). 35111
+        # serves the same value and is not offered.
+        register: 32106
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        precision: 1
+        scan_interval: high
+    bms_discharge_current_limit:
+        # Discharge current limit of the BMS (same value at 35112, not offered).
+        register: 32107
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        precision: 1
+        scan_interval: high
+    battery_1_mos_status:
+        # Which MOSFETs of the pack conduct: bit 0 = charge, bit 1 = discharge. The value
+        # stays numeric (0 both off, 1 charge only, 2 discharge only, 3 both on); the
+        # translations label the four states. 30210 serves the same value and is not
+        # offered.
+        register: 34004
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: high
+    battery_1_protection_1:
+        # BMS 115 protection word 1, a bit mask (never negative). The set bits are
+        # decoded into the attributes active_bits / active_faults. The texts are those
+        # of the Venus E v3 BMS, not the Venus D's: bit 9 is a short circuit there
+        # (Venus D: relay or pre-charge fault) and the other thresholds differ. Bits 12
+        # and up are not used by the firmware: they show as "unknown bit N". 37009
+        # serves the same word and is not offered.
+        register: 34007
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: high
+        bit_descriptions:
+            0: Cell under-voltage (level 2)
+            1: Cell over-voltage (level 2)
+            2: Charge over-current (level 2)
+            3: Discharge over-current (level 2)
+            4: Charge under-temperature (level 2)
+            5: Charge over-temperature (level 2)
+            6: Discharge under-temperature (level 2)
+            7: Discharge over-temperature (level 2)
+            8: MOSFET over-temperature (level 2)
+            9: Short circuit
+            10: Charge MOSFET breakdown (current above 5 A with the MOSFET off)
+            11: Discharge MOSFET breakdown (current above 5 A with the MOSFET off)
+    battery_1_protection_2:
+        # BMS 115 protection word 2, a bit mask. The Venus D texts do not apply: bits 14
+        # and 15 mean something else here (Venus D: pack firmware mismatch, pack
+        # offline). Bit 8 is never set by the firmware. 37010 serves the same word and
+        # is not offered.
+        register: 34008
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: high
+        bit_descriptions:
+            9: NTC sensor fault (an NTC or the MOSFET NTC outside its valid range)
+            12: Ambient NTC over-temperature (level 2)
+            14: Cell break (a cell below 1500 mV while the pack is above 35.00 V)
+            15: Cell voltage spread above 1000 mV
+    battery_1_bms_warnings:
+        # BMS 115 warning word: the level-1 warnings before a protection, decoded into
+        # the attributes active_bits / active_faults. Bit 0 is never set. Bits above 12
+        # are not used by the firmware. 37011 serves the same word and is not offered.
+        register: 34009
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: high
+        bit_descriptions:
+            1: Cell under-voltage warning (below 2700 mV, 2400 mV when cold)
+            2: Cell over-voltage warning (above 3600 mV)
+            3: Charge over-current warning (55 A)
+            4: Discharge over-current warning (55 A)
+            5: Charge under-temperature (level 1)
+            6: Charge over-temperature (level 1)
+            7: Discharge under-temperature (level 1)
+            8: Discharge over-temperature (level 1)
+            9: MOSFET temperature high (level 1)
+            11: Cell voltage spread above 1000 mV
+            12: Ambient NTC under-temperature (level 1)
+    battery_1_env_temperature:
+        # Signed: a reading below 0 degC would otherwise show about 6553 degC.
+        # 30107 / 30108 serve the same values and are not offered.
+        register: 34011
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 1
+        scan_interval: low
+    battery_1_mos_temperature:
+        register: 34012
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 1
+        scan_interval: low
+    battery_1_cell_temperature_1:
+        # Four thermistors for sixteen cells, no mapping of NTC to cell.
+        register: 34013
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 1
+        scan_interval: low
+    battery_1_cell_temperature_2:
+        register: 34014
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 1
+        scan_interval: low
+    battery_1_cell_temperature_3:
+        register: 34015
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 1
+        scan_interval: low
+    battery_1_cell_temperature_4:
+        register: 34016
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 1
+        scan_interval: low
+    battery_1_profile:
+        # Active battery profile of the BMS (0 to 5): the low byte of 34017, the
+        # read-back of command 45011. Read-only: the profile select 45011 is not offered
+        # (see docs/not-offered-registers.md). The high byte of 34017 (the MOSFET-off
+        # bits, the inverse of 34004) is deliberately not decoded.
+        register: 34017
+        icon: "mdi:battery-heart-variant"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint8_low
+        scan_interval: ultra
+    selftest_status:
+        # Self-test after power-on. The value 4 is never written.
+        # 5 on its own is harmless: on two real Venus D with a working LAN the
+        # Ethernet chip reports 0x4A where the self-test expects 0x4B. Only 2
+        # (EEPROM) and 3 (flash) are real faults.
+        register: 30212
+        icon: "mdi:clipboard-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: low
+        states:
+            0: Not run yet
+            1: OK
+            2: EEPROM fault
+            3: Flash fault
+            5: Ethernet chip reports another version than expected (harmless)
+    bms_charge_voltage_limit:
+        # Charge voltage limit of the BMS: a constant 57.6 V, informational only on the
+        # Venus E v3 (the grid feed-in limiter that uses it on the Venus D is compiled
+        # out).
+        register: 35110
+        scale: 0.1
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        precision: 1
+        scan_interval: low
+    ethernet_chip_version:
+        # Direct SPI read of the Ethernet chip (0 while the link is down). Never part
+        # of a block (isolated and NO_BLOCK_READ_RANGES): a read blocks the Modbus task
+        # for a moment.
+        register: 45605
+        icon: "mdi:ethernet"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+        scan_interval: ultra
+        isolated: true
     inverter_state:
+        # Same field as on the Venus D, with the decision rules of the Venus E v3:
+        # 2 (charge) also when the BMS reports a charge current above 0.4 A; 4 and 6
+        # are the idle states in backup / parallel mode (6 when the control state is
+        # 0xCC). 0 means standby, inverter disabled or no data.
         register: 35100
         scale: 1
         icon: "mdi:state-machine"
         enabled_by_default: true
         data_type: uint16
+        scan_interval: high
         states:
-            0: Sleep
-            1: Standby
+            0: "Standby / disabled (or no data)"
+            1: Idle
             2: Charge
             3: Discharge
-            4: Backup Mode
-            5: OTA Upgrade
-            6: Backup Passthrough
-        scan_interval: high
+            4: "Idle in backup / parallel mode"
+            5: Firmware update
+            6: "Idle in backup / parallel mode (passthrough)"
     modbus_address:
         register: 41100
-        data_type: uint16
         icon: "mdi:home-automation"
         enabled_by_default: true
+        data_type: uint16
         scan_interval: low
     ac_offgrid_voltage:
         register: 32300
@@ -495,16 +778,6 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 1
         scan_interval: low
-    ac_offgrid_current:
-        register: 32301
-        scale: 0.01
-        unit: A
-        device_class: current
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 1
-        scan_interval: high
     ac_offgrid_power:
         register: 32302
         count: 1
@@ -517,101 +790,97 @@ SENSOR_DEFINITIONS:
         precision: 0
         scan_interval: high
     device_ip:
+        # Filled only after an Ethernet DHCP lease: without a fitted or connected RJ45
+        # port it reads 0.0.0.0. LAN only; the Wi-Fi address is not offered.
         register: 30400
         count: 2
-        data_type: ipv4
         icon: "mdi:ip-network"
         category: diagnostic
         enabled_by_default: false
+        data_type: ipv4
         scan_interval: low
     gateway_ip:
         register: 30402
         count: 2
-        data_type: ipv4
         icon: "mdi:ip-network-outline"
         category: diagnostic
         enabled_by_default: false
+        data_type: ipv4
         scan_interval: low
     wifi_signal_strength:
         register: 30303
         scale: -1
-        data_type: uint16
-        device_class: signal_strength
         unit: dBm
+        device_class: signal_strength
         icon: "mdi:wifi"
         category: diagnostic
         enabled_by_default: false
+        data_type: uint16
         precision: 0
         scan_interval: low
     bluetooth_status:
+        # Bluetooth (BLE) connection state of the communication module.
         register: 30301
-        data_type: uint16
         icon: "mdi:bluetooth"
         category: diagnostic
         enabled_by_default: true
+        data_type: uint16
         scan_interval: low
+        states:
+            0: "Off / not initialised"
+            1: Advertising
+            2: Connected
+            3: Disconnected
+            4: Not advertising
     # --- Fault and alarm words ---
-    # The Venus E3 serves the same three 32-bit words as the Venus D, at the
-    # same register numbers: the descriptor table unpacked from the E3 control
-    # firmware carries 36000, 36100 and 36102 (aliases 37013/37015) and matches
-    # the D table entry for entry - 246 registers, no difference in type, scale,
-    # element size or count, only shifted SRAM pointers. They were simply never
-    # mapped here.
-    #
-    # The word order is the D's as well, high word first:
+    # The Venus E v3 serves the same 32-bit words as the Venus D, at the same
+    # register numbers (the descriptor table unpacked from the E3 control
+    # firmware matches the D table entry for entry), high word first:
     # error_code1 = 36100 << 16 | 36101, error_code2 = 36102 << 16 | 36103.
+    #
+    # Read these only as pairs or in one block, never a word on its own: see
+    # the note at the top of the file.
     alarm_status:
+        # 36000 + 36001 as one uint32 (count 2). The only alarm bit the Venus E v3 sets
+        # is bit 0, in the low word at 36001; the high word at 36000 alone always reads
+        # 0, so there is no separate entity for either half. Called alarm_status (36000
+        # only) and alarm_status_low (36001 only) before 3.1.0-beta.3. The set bit is
+        # decoded by alarm_status_low_description.
         register: 36000
-        data_type: uint16
-        device_class: problem
+        count: 2
         icon: "mdi:alert"
         category: diagnostic
         enabled_by_default: true
+        data_type: uint32
         scan_interval: high
-        # High word of the alarm mask. No setter exists above bit 0, so this
-        # register is expected to stay at 0.
-    alarm_status_low:
-        register: 36001
-        data_type: uint16
-        icon: "mdi:alert"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
-        # Low word, bit N here is overall bit N. Unlike the Venus D, whose
-        # inverter firmware never writes the alarm word at all, the E3 sets and
-        # clears bit 0.
     fault_status:
-        register: 36100
-        data_type: uint16
-        icon: "mdi:alert"
-        category: diagnostic
-        enabled_by_default: true
-        scan_interval: high
         # High word of error_code1, so bit N here is overall bit 16+N.
+        register: 36100
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        data_type: uint16
+        scan_interval: high
     fault_status_low:
+        # Low word of error_code1, so bit N here is overall bit N. Never read on its
+        # own (a read of 36101 alone returns 36103).
         register: 36101
-        data_type: uint16
         icon: "mdi:alert"
         category: diagnostic
         enabled_by_default: true
-        scan_interval: high
-        # Low word of error_code1, so bit N here is overall bit N.
-    fault_status_2:
-        register: 36102
         data_type: uint16
-        icon: "mdi:alert"
-        category: diagnostic
-        enabled_by_default: true
         scan_interval: high
-        # High word of error_code2, so bit N here is overall bit 16+N.
     fault_status_2_low:
+        # Low word of error_code2, so bit N here is overall bit N. The high word
+        # (36102) is never written (its only setter, the self-test bit, cannot fire)
+        # and is no longer read. Never read on its own (a read of 36103 alone returns
+        # the grid voltage).
         register: 36103
-        data_type: uint16
         icon: "mdi:alert"
         category: diagnostic
         enabled_by_default: true
+        data_type: uint16
         scan_interval: high
-        # Low word of error_code2, so bit N here is overall bit N.
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -632,11 +901,15 @@ BINARY_SENSOR_DEFINITIONS:
         scan_interval: low
 
 SELECT_DEFINITIONS:
-    # Verified on Venus D firmware v150. Venus E v3 shares that firmware base, so
-    # this is expected to hold here but was not separately confirmed.
+    # Verified on Venus D firmware v150; the Venus E v3 control firmware 151 has
+    # the same handler, so it holds here as well.
     # Shares its firmware byte with rs485_control_mode (42000) — see the note
     # there. Selecting any option here writes 0x01/0x00/0x05 and therefore ends
     # RS485 control; forced charge/discharge stops taking effect.
+    # Option 2 is the firmware's AI mode (called trade_mode before
+    # 3.1.0-beta.3). Reading back is ambiguous: AI, the automatic mode, the
+    # passive mode and RS485 control all read 1 (anti_feed), so the select
+    # can show anti_feed although AI was written.
     user_work_mode:
         register: 43000
         enabled_by_default: true
@@ -644,7 +917,7 @@ SELECT_DEFINITIONS:
         options:
             manual: 0
             anti_feed: 1
-            trade_mode: 2
+            ai: 2
     force_mode:
         register: 42010
         enabled_by_default: true
@@ -746,8 +1019,8 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: low
-    # Verified on Venus D firmware v150. Venus E v3 shares that firmware base, so
-    # this is expected to hold here but was not separately confirmed.
+    # Verified on Venus D firmware v150; the Venus E v3 control firmware 151 has
+    # the same handler.
     # Register 42000 and 43000 are the SAME byte in the firmware. Verified in the
     # v150 Write_Handler: 42000 = 0x55AA sets the mode byte to 0x0A, 0x55BB reads
     # it back from EEPROM 0x301, and 43000's three options write 0x01/0x00/0x05 —
@@ -848,11 +1121,19 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
+    # 0 would block charging or discharging in the inverter for good (it keeps
+    # the value in its EEPROM and reloads it after every restart without a
+    # range check), hence the minimum of 50. The maximum input is 2500 W, what
+    # the firmware accepts. Unlike on the Venus D the register can be read back:
+    # the control unit asks the micro for its real values, so a stored 0 would
+    # show - but it would still be there after a restart. The micro's factory
+    # state (after a factory reset) is 3000 W: that reading is shown as it is,
+    # not clamped to 2500, although 3000 can no longer be written back.
     max_charge_power:
         register: 44002
         enabled_by_default: true
         icon: "mdi:battery-arrow-up-outline"
-        min: 0
+        min: 50
         max: 2500
         step: 50
         unit: W
@@ -865,7 +1146,7 @@ NUMBER_DEFINITIONS:
         register: 44003
         enabled_by_default: true
         icon: "mdi:battery-arrow-down-outline"
-        min: 0
+        min: 50
         max: 2500
         step: 50
         unit: W
@@ -874,17 +1155,25 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
+    # The firmware accepts 13-100 (10-12 return exception 3). It is a command:
+    # a write starts a forced charge or discharge run towards this value, in
+    # RS485 control mode with the inverter in work mode 0.
     charge_to_soc:
         register: 42011
         enabled_by_default: true
         icon: "mdi:battery-sync-outline"
-        min: 10
+        min: 13
         max: 100
         step: 1
         unit: "%"
         scale: 1
         data_type: uint16
         scan_interval: low
+
+    # Start and end are clock times written as HHMM (1830 = 18:30), not
+    # minutes. The end is exclusive and a window never crosses midnight.
+    # Values with minutes of 60 or more are refused by schedules.py: the
+    # firmware would reject them and switch the slot off.
     schedule_1_start:
         register: 43101
         enabled_by_default: true
@@ -892,7 +1181,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -903,7 +1191,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -914,7 +1201,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -925,7 +1211,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -936,7 +1221,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -947,7 +1231,6 @@ NUMBER_DEFINITIONS:
         min: 0
         max: 2358
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -958,7 +1241,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -969,7 +1251,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -980,7 +1261,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -991,7 +1271,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -1002,7 +1281,6 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
@@ -1013,11 +1291,13 @@ NUMBER_DEFINITIONS:
         min: 1
         max: 2359
         step: 1
-        unit: "min"
         data_type: uint16
         category: config
         scan_interval: ultra
-    schedule_1_mode:
+    # Slot power in W: positive discharges, negative charges, -1 follows the
+    # CT meter (self-consumption). Called schedule_N_mode before
+    # 3.1.0-beta.3.
+    schedule_1_power:
         register: 43103
         enabled_by_default: true
         icon: "mdi:cog"
@@ -1028,7 +1308,7 @@ NUMBER_DEFINITIONS:
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_2_mode:
+    schedule_2_power:
         register: 43108
         enabled_by_default: true
         icon: "mdi:cog"
@@ -1039,7 +1319,7 @@ NUMBER_DEFINITIONS:
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_3_mode:
+    schedule_3_power:
         register: 43113
         enabled_by_default: true
         icon: "mdi:cog"
@@ -1050,7 +1330,7 @@ NUMBER_DEFINITIONS:
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_4_mode:
+    schedule_4_power:
         register: 43118
         enabled_by_default: true
         icon: "mdi:cog"
@@ -1061,7 +1341,7 @@ NUMBER_DEFINITIONS:
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_5_mode:
+    schedule_5_power:
         register: 43123
         enabled_by_default: true
         icon: "mdi:cog"
@@ -1072,7 +1352,7 @@ NUMBER_DEFINITIONS:
         data_type: int16
         category: config
         scan_interval: ultra
-    schedule_6_mode:
+    schedule_6_power:
         register: 43128
         enabled_by_default: true
         icon: "mdi:cog"
@@ -1092,27 +1372,59 @@ BUTTON_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         data_type: uint16
+    # The real factory reset: 0xAA11 to 41000. What it resets on the Venus E v3:
+    # the control unit to its factory settings (settings, schedules, limits,
+    # energy statistics, cloud identity) and the TLS certificates of the Wi-Fi
+    # module; the inverter micro to its factory defaults, which means limits of
+    # 3000 / 3000 W and grid standard 0 (the grid standard can only be restored
+    # through the micro's own RS485 or its shell); the BMS only its protection
+    # parameter block (the battery profile stays). The device reboots. The
+    # button used to write 0x55AA to 41001, which the Venus E v3 does not
+    # implement. confirm: the first press only shows the warning (text
+    # confirm_factory_reset_e3), a second press within the window runs it.
     factory_reset:
-        register: 41001
-        command: 21930
+        register: 41000
+        command: 43537
         icon: "mdi:factory"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+        confirm_key: factory_reset_e3
+    # Front panel LED lamp test; the value is the duration in ms (1-29999).
+    # The Venus E v3 drives 28 LED segments.
+    led_test:
+        register: 45012
+        command: 3000
+        icon: "mdi:led-on"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+    # Asks the inverter for the level of its hardware-fault input PB1 (no side
+    # effect). The answer lands in the DEV sensor 30211 (DEV registers).
+    read_inverter_input_pb1:
+        register: 45006
+        command: 1
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        data_type: uint16
+    # Runs the inverter micro's EEPROM write test (one EEPROM write per press).
+    # The result is the DEV sensor 30213, which only reads a constant 1 after
+    # the test.
+    inverter_eeprom_test:
+        register: 45001
+        command: 1
+        icon: "mdi:memory"
         category: diagnostic
         enabled_by_default: false
         data_type: uint16
 
 BITFIELD_TEXT_SENSOR_DEFINITIONS:
-    # These texts come from the Venus D inverter firmware, and that transfer is
-    # justified here: the E3 inverter image (inv_app_0119) is the same code base
-    # as the D's (vd_inv_app_0116) - same reset handler 0x080042AD, 43% shared
-    # code blocks, the error block reached the same way through a literal pool,
-    # and bit for bit the same layout including the event codes that go with it
-    # (0x36 for the hardware latches, 0x13 for bit 7, 0x31 for bit 8, 0x35 for
-    # bit 11). The Venus A is a different code base and does not share any of
-    # this - see a.yaml.
-    #
-    # Two differences to the D are already known and are reflected below:
-    # the E3 writes alarm bit 0, which the D never touches, and the D notes are
-    # missing err2 bit 8, which both images set.
+    # These texts come from the Venus E v3 inverter firmware (inv_app 119),
+    # which is the same code base as the Venus D's (vd_inv_app 116): same reset
+    # handler, same error block, and the same event codes. The Venus A is a
+    # different code base and does not share any of this - see a.yaml.
     fault_status_description:
         key: fault_status_description
         icon: "mdi:alert-circle-outline"
@@ -1122,7 +1434,9 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
             source: fault_status
         # Bit N is overall bit 16+N. Both were confirmed on Venus D hardware:
         # pulling the battery raises overall bit 20, and a pack running a
-        # mismatched firmware raised overall bit 21.
+        # mismatched firmware raised overall bit 21. On the Venus E v3 bit 21
+        # follows the protection words of its own BMS (battery_1_protection_1
+        # / _2), there is no pack firmware to mismatch.
         bit_descriptions:
             4: BMS offline / battery disconnected
             5: BMS reports a fault (check pack firmware versions)
@@ -1133,23 +1447,17 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         enabled_by_default: true
         dependency_keys:
             source: fault_status_low
-        # Carried over from the Venus D, where bit 7 is confirmed across several
-        # hardware logs. Bits 6 and 9 were only ever seen together during DC
-        # discharge and are not established. None of the three has been seen on
-        # an E3 yet.
+        # Bits 0-4 come from the inverter's grid protection and compare against
+        # the limits of the configured grid standard (those differ from the
+        # Venus D's); bit 7 is confirmed across several hardware logs on the
+        # Venus D. Bits 6 and 9 had no setter in the firmware and are gone.
         bit_descriptions:
-            6: Seen during DC discharge (unconfirmed)
-            7: Backup / off-grid branch cannot operate (overload, too little energy, no battery)
-            9: Seen during DC discharge (unconfirmed)
-    fault_status_2_description:
-        key: fault_status_2_description
-        icon: "mdi:alert-circle-outline"
-        category: diagnostic
-        enabled_by_default: false
-        dependency_keys:
-            source: fault_status_2
-        bit_descriptions:
-            0: Self-test failed
+            0: Grid over-voltage
+            1: Grid under-voltage
+            2: Grid over-frequency
+            3: Grid under-frequency
+            4: Grid voltage peak
+            7: AC voltage waveform deviates from the grid sine (seen when the backup output fails)
     fault_status_2_low_description:
         key: fault_status_2_low_description
         icon: "mdi:alert-circle-outline"
@@ -1161,29 +1469,34 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
         # firmware never names; bit 4 is set alongside any of them. Bit 8 is the
         # overload integrator: a counter that climbs while the current stays
         # above its threshold and only trips once it overflows, so it means the
-        # limit was exceeded for a while rather than for an instant.
+        # limit was exceeded for a while rather than for an instant. Bit 5
+        # needs three consecutive over-current samples on the Venus E v3.
         bit_descriptions:
             0: Hardware protection latch B
             1: Hardware protection latch A
             3: Hardware protection latch C
             4: Hardware protection triggered
+            5: Software over-current (above 30 A, 3 consecutive samples)
+            6: DC bus over-voltage (above 530 V)
             7: Shut down by supervisor, retry after 60 s
             8: Operating limit exceeded for too long (overload integrator)
             9: Supervisor fault (low confidence)
             11: Limit exceeded for more than 3000 cycles
+    # The text sensor of alarm_status (the uint32 over 36000 + 36001). The key
+    # keeps its old name so that the entity of existing installations stays.
     alarm_status_low_description:
         key: alarm_status_low_description
         icon: "mdi:alert-outline"
         category: diagnostic
         enabled_by_default: false
         dependency_keys:
-            source: alarm_status_low
-        # The only alarm bit any of the analysed images writes. It is set while
-        # an internal mode flag is clear and cleared again when it is set, and
-        # each branch then works against a different limit table - so it marks
-        # an operating mode rather than a fault. Not confirmed on hardware.
+            source: alarm_status
+        # The only alarm bit the Venus E v3 inverter writes: set while the grid
+        # release flag is missing and cleared again once it is set, so it
+        # means the inverter is waiting for the grid release, not a fault. (On
+        # the Venus D this word is never written.)
         bit_descriptions:
-            0: Alternate limit set active (low confidence)
+            0: Grid release missing / waiting for the grid
 
 VERSION_SENSOR_DEFINITIONS:
     firmware_version:
@@ -1195,7 +1508,7 @@ VERSION_SENSOR_DEFINITIONS:
         mode: ems_vms_bms
         dependency_keys:
             ems: ems_version
-            vms: vms_version
+            vns: vns_version
             bms: bms_version
 
 EFFICIENCY_SENSOR_DEFINITIONS:
@@ -1237,7 +1550,7 @@ STORED_ENERGY_SENSOR_DEFINITIONS:
         state_class: total
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
 CYCLE_SENSOR_DEFINITIONS:
     battery_cycle_count_calc:
@@ -1247,7 +1560,7 @@ CYCLE_SENSOR_DEFINITIONS:
         state_class: measurement
         dependency_keys:
             discharge: total_discharging_energy
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
 RUNTIME_SENSOR_DEFINITIONS:
 
@@ -1262,7 +1575,7 @@ RUNTIME_SENSOR_DEFINITIONS:
         mode: to_empty
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
             power: battery_power
     runtime_to_full:
         key: runtime_to_full
@@ -1277,7 +1590,7 @@ RUNTIME_SENSOR_DEFINITIONS:
         # forecast (charge_forecast.py). Single pack: no pack sequence to follow.
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
             power: battery_power
             ac_power: ac_power
 
@@ -1297,7 +1610,7 @@ BATTERY_LIFE_SENSOR_DEFINITIONS:
         rated_cycles: 6000
         dependency_keys:
             discharge: total_discharging_energy
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
     battery_health:
         key: battery_health
         unit: "%"
@@ -1310,13 +1623,13 @@ BATTERY_LIFE_SENSOR_DEFINITIONS:
         rated_cycles: 6000
         dependency_keys:
             discharge: total_discharging_energy
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
 ENERGY_WINDOW_SENSOR_DEFINITIONS:
 
     # The window runs from the configured discharge floor up to the device's
     # charge_to_soc register, falling back to a full pack when that register
-    # holds a value outside its own 10-100 range.
+    # holds a value outside its own 13-100 range.
     usable_energy:
         key: usable_energy
         unit: kWh
@@ -1328,7 +1641,7 @@ ENERGY_WINDOW_SENSOR_DEFINITIONS:
         mode: usable
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
     energy_to_full:
         key: energy_to_full
         unit: kWh
@@ -1340,5 +1653,124 @@ ENERGY_WINDOW_SENSOR_DEFINITIONS:
         mode: to_full
         dependency_keys:
             soc: battery_soc
-            capacity: battery_total_energy
+            capacity: battery_rated_capacity
 
+# ---------------------------------------------------------------------------
+# Registers that are never part of a block read.
+#
+# The coordinator bridges small gaps between wanted registers to save
+# requests. A block that starts in, ends in or spans one of these ranges is
+# never built: a definition inside one is read on its own, and only when its
+# entity is enabled. This holds whether or not the DEV groups are loaded.
+#
+#   38000-39014  nothing is mapped here on the Venus E v3 (no sender), but the
+#                read path of the control unit is the one of the Venus D, where
+#                a read anywhere in the range makes it broadcast four CAN
+#                frames per second until the next reboot
+#   41500-41631  Wi-Fi SSID and password buffers of the communication module
+#                (the password reads 0); the service set_wifi writes them,
+#                nothing else touches them in a block
+#   45000-45031  command registers (write-only); a read answers with an
+#                exception for the whole block
+#   45603-45605  each read waits up to 200 ticks for the inverter micro or the
+#                Ethernet chip and blocks the Modbus task meanwhile
+#   46000        switches RS485 to the shell / OTA mode
+# ---------------------------------------------------------------------------
+NO_BLOCK_READ_RANGES:
+    - [38000, 39014]
+    - [41500, 41631]
+    - [45000, 45031]
+    - [45603, 45605]
+    - [46000, 46000]
+
+# ---------------------------------------------------------------------------
+# DEV_BUTTON_DEFINITIONS - only loaded with the option 'Show DEV registers'
+#
+# Commands from the firmware analysis that are real but change the state of
+# the device. All are disabled by default and need a second press within the
+# confirmation window (confirm: true); the first press only shows the warning.
+# ---------------------------------------------------------------------------
+DEV_BUTTON_DEFINITIONS:
+    # Sets the inverter micro's sleep flag. Short-lived, as on the Venus D: the
+    # output stops for about 0-5 s until the LED task clears the flag again
+    # (unless the BMS itself requests sleep), and the micro writes its EEPROM.
+    # No latch until a reboot (unlike the Venus A).
+    dev_45002_inverter_sleep_request:
+        register: 45002
+        command: 1
+        icon: "mdi:power-sleep"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+    # Factory reset of the BMS: resets its protection parameter block and
+    # restarts it (the battery is disconnected for about 1.5 s plus the boot
+    # time). The SOC calibration data and the battery profile stay; the Venus
+    # E v3 has no pack roles. Own warning text (confirm_key), because the
+    # effect differs from the Venus D / A reset of every pack.
+    dev_45028_bms_factory_reset:
+        register: 45028
+        command: 1
+        icon: "mdi:battery-alert"
+        category: config
+        enabled_by_default: false
+        data_type: uint16
+        confirm: true
+        confirm_key: dev_45028_bms_factory_reset_e3
+
+# ---------------------------------------------------------------------------
+# DEV_UNKNOWN_SENSOR_DEFINITIONS - option 'Show DEV registers'
+#
+# What is left after the firmware analysis of the Venus E v3: registers that
+# only carry a value after a command (30211 after 45006, 30213 after 45001) or
+# that are read on request only (45603 / 45604: a read blocks the Modbus task).
+# Everything else was either promoted to a regular entity or is not offered.
+#
+# All of them are disabled by default: enabling the option creates the
+# entities, enabling an entity starts reading it. Names follow
+# 'DEV <register> (<meaning>)'.
+# ---------------------------------------------------------------------------
+DEV_UNKNOWN_SENSOR_DEFINITIONS:
+  dev_30211:
+    register: 30211
+    name: "DEV 30211 (inverter hardware-fault input PB1, valid after 45006)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30213:
+    register: 30213
+    name: "DEV 30213 (inverter EEPROM test acknowledgement, reads 1 after 45001)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_45603:
+    register: 45603
+    name: "DEV 45603 (inverter calibration value A, raw BCD)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: ultra
+    isolated: true
+    icon: mdi:flask-outline
+  dev_45604:
+    register: 45604
+    name: "DEV 45604 (inverter calibration value B, raw BCD)"
+    data_type: uint16
+    category: diagnostic
+    enabled_by_default: false
+    scan_interval: ultra
+    isolated: true
+    icon: mdi:flask-outline
+
+# ---------------------------------------------------------------------------
+# DEV_DUPLICATE_SENSOR_DEFINITIONS - option 'Show DEV registers'
+#
+# Empty on the Venus E v3: the aliases of the firmware analysis (30107 / 30108,
+# 30210, 32109-32111 follow-ons, 35111 / 35112, 37009-37011 and others) repeat a
+# regular entity and are not offered.
+# ---------------------------------------------------------------------------
+DEV_DUPLICATE_SENSOR_DEFINITIONS: {}

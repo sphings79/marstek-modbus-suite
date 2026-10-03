@@ -13,13 +13,14 @@ Die Registerdefinitionen liegen in `custom_components/marstek_modbus/registers/`
 
 Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Register auf, das in der jeweiligen YAML-Datei definiert ist. Die Spalten `Type`, `Bytes`, `Scale` und `Unit` stammen aus den YAML-Definitionen, sofern dort vorhanden.
 
-| Schlüssel / Name                  | Beschreibung                               | Type    | Bytes | Scale  | Unit | a     | d     | e_v12 | e_v3 |
+| Schlüssel / Name                  | Beschreibung                               | Type    | Bytes | Scale  | Unit |       |       |       |      |
 |:----------------------------------|:-------------------------------------------|:--------|:-----:|:------:|:----:|:-----:|:-----:|:------:|:-----:|
-| device_name                       | Gerätename (String)  | char    | 20   | -      | -    | 31000 | 31000 | 31000 | 31000 |
+| device_name                       | Gerätename (String)  | char    | 20   | -      | -    |       |       | 31000 |       |
+| device_model                      | Modellkennung (fest `VNSD-0` / `VNSA-0` / `VNSE3-0`) | char    | 20   | -      | -    | 31000 | 31000 |       | 31000 |
 | sn_code                           | Seriennummer / SN-Code  | char    | 20   | -      | -    |       |       | 31200 |       |
 | software_version                  | Software-Version des Geräts | uint16  | 2    | 0.01   | -    |       |       | 31100 |       |
-| bms_version                       | BMS-Firmware-Version | uint16  | 2    | -      | -    | 30204 | 30204 | 31102 | 30204 |
-| vms_version                       | VMS-Firmware-Version | uint16  | 2    | -      | -    | 30202 | 30202 |       | 30202 |
+| bms_version                       | BMS-Firmware-Version | uint16  | 2    | -      | -    |       |       | 31102 | 30204 |
+| vns_version                       | Wechselrichter-Firmware-Version (VNS) | uint16  | 2    | -      | -    | 30202 | 30202 |       | 30202 |
 | ems_version                       | EMS-Firmware-Version (besondere Formatierung) | uint16  | 2    | 1      | -    | 30200 | 30200 | 31101 | 30200 |
 | firmware_version                  | Zusammengesetzter Firmware-Versionsstring | calculated | - | - | - |  |  |  |  |
 | ble_mac_address                   | BLE-MAC-Adresse | mac     | 12   | -      | -    | 30304 | 30304 | 30402 | 30304 |
@@ -29,30 +30,31 @@ Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Regi
 | wifi_status (binary)              | WLAN verbunden (0/1) | uint16  | 2    | 1      | -    | 30300 | 30300 | 30300 | 30300 |
 | cloud_status (binary)             | Cloud verbunden (0/1) | uint16  | 2    | 1      | -    | 30302 | 30302 | 30302 | 30302 |
 | battery_soc                       | Ladezustand     | uint16  | 2    | 0.1/1  | %    | 32104 | 32104 | 32104 | 34002 |
-| battery_total_energy              | Gesamte gespeicherte Energie | uint16  | 2    | 0.001  | kWh  | 32105 | 32105 | 32105 | 32105 |
-| battery_voltage                   | Batteriespannung | uint16  | 2    | 0.01   | V    | 30100 | 30100 | 32100 | 30100 |
-| battery_current                   | Batteriestrom   | int16   | 2    | 0.1/0.01| A   | 30101 | 30101 | 32101 | 30101 |
-| battery_power                     | Batterieleistung | int16/32| 2/4  | 1      | W    | 30001 | 30001 | 32102 | 30001 |
-| total_charging_energy             | Gesamte Ladeenergie   | uint32  | 4    | 0.01   | kWh  | 33000 | 33000 | 33000 | 33000 |
-| total_discharging_energy          | Gesamte Entladeenergie   | int32   | 4    | 0.01   | kWh  | 33002 | 33002 | 33002 | 33002 |
-| total_daily_charging_energy       | Gesamte tägliche Ladeenergie | uint32  | 4    | 0.01   | kWh  | 33004 | 33004 | 33004 | 33004 |
-| total_daily_discharging_energy    | Gesamte tägliche Entladeenergie | int32   | 4    | 0.01   | kWh  | 33006 | 33006 | 33006 | 33006 |
-| total_monthly_charging_energy     | Gesamte monatliche Ladeenergie | uint32  | 4    | 0.01   | kWh  | 33008 | 33008 | 33008 | 33008 |
-| total_monthly_discharging_energy  | Gesamte monatliche Entladeenergie | int32   | 4    | 0.01   | kWh  | 33010 | 33010 | 33010 | 33010 |
-| battery_cycle_count               | Nativer Zyklenzähler | uint16  | 2    | 1      | -    | 34003 | 34003 |       | 34003 |
+| battery_total_energy              | Gesamte gespeicherte Energie | uint16  | 2    | 0.001  | kWh  |       |       | 32105 |       |
+| battery_rated_capacity            | Nennkapazität (Packs × 2560 Wh bei D, × 2080 Wh bei A) | uint16  | 2    | 0.001  | kWh  | 32105 | 32105 |       | 32105 |
+| battery_voltage                   | Batteriespannung | uint16  | 2    | 0.01   | V    |       |       | 32100 | 30100 |
+| battery_current                   | Batteriestrom   | int16   | 2    | 0.1/0.01| A   |       |       | 32101 | 30101 |
+| battery_power                     | Batterieleistung | int16/32| 2/4  | 1      | W    |       |       | 32102 | 30001 |
+| total_charging_energy             | Gesamte Ladeenergie   | uint32  | 4    | 0.01   | kWh  |       |       | 33000 | 33000 |
+| total_discharging_energy          | Gesamte Entladeenergie   | int32   | 4    | 0.01   | kWh  |       |       | 33002 | 33002 |
+| total_daily_charging_energy       | Gesamte tägliche Ladeenergie | uint32  | 4    | 0.01   | kWh  |       |       | 33004 | 33004 |
+| total_daily_discharging_energy    | Gesamte tägliche Entladeenergie | int32   | 4    | 0.01   | kWh  |       |       | 33006 | 33006 |
+| total_monthly_charging_energy     | Gesamte monatliche Ladeenergie | uint32  | 4    | 0.01   | kWh  |       |       | 33008 | 33008 |
+| total_monthly_discharging_energy  | Gesamte monatliche Entladeenergie | int32   | 4    | 0.01   | kWh  |       |       | 33010 | 33010 |
+| battery_cycle_count               | Nativer Zyklenzähler | uint16  | 2    | 1      | -    |       |       |       | 34003 |
 | ac_voltage                        | AC-Spannung | uint16  | 2    | 0.1    | V    | 32200 | 32200 | 32200 | 32200 |
-| ac_current                        | AC-Strom   | int16   | 2    | 0.004/0.01| A  | 37004 | 37004 | 32201 | 37004 |
+| ac_current                        | AC-Strom   | int16   | 2    | 0.004/0.01| A  |       |       | 32201 |       |
 | ac_power                          | AC-Leistung | int16/32| 2/4  | 1      | W    | 30006 | 30006 | 32202 | 30006 |
 | ac_frequency                      | AC-Frequenz  | int16   | 2    | 0.1/0.01| Hz  | 32204 | 32204 | 32204 | 32204 |
 | ac_offgrid_voltage                | AC-Inselbetrieb-Spannung | uint16  | 2    | 0.1    | V    | 32300 | 32300 | 32300 | 32300 |
-| ac_offgrid_current                | AC-Inselbetrieb-Strom | uint16  | 2    | 0.01   | A    | 32301 | 32301 | 32301 | 32301 |
+| ac_offgrid_current                | AC-Inselbetrieb-Strom | uint16  | 2    | 0.01   | A    |       |       | 32301 |       |
 | ac_offgrid_power                  | AC-Inselbetrieb-Leistung | int32   | 4    | 1      | W    | 32302 | 32302 | 32302 | 32302 |
 | internal_temperature              | Interne Gerätetemperatur    | int16   | 2    | 0.1    | °C   | 35000 | 35000 | 35000 | 35000 |
 | internal_mos1_temperature         | Interne Temperatur MOS1   | int16   | 2    | 0.1    | °C   | 35001 | 35001 | 35001 | 35001 |
-| internal_mos2_temperature         | Interne Temperatur MOS2   | int16   | 2    | 0.1    | °C   | 35002 | 35002 | 35002 | 35002 |
+| internal_mos2_temperature         | Interne Temperatur MOS2   | int16   | 2    | 0.1    | °C   |       |       | 35002 |       |
 | max_cell_temperature              | Maximale Zelltemperatur | int16   | 2    | 0.1/1  | °C   | 35010 | 35010 | 35010 | 35010 |
-| max_cell_voltage                  | Maximale Zellspannung | uint16  | 2    | 0.001  | V    | 37007 | —     | 37007 | 37007 |
-| min_cell_voltage                  | Minimale Zellspannung | uint16  | 2    | 0.001  | V    | 37008 | —     | 37008 | 37008 |
+| max_cell_voltage                  | Maximale Zellspannung | uint16  | 2    | 0.001  | V    |       | —     | 37007 | 37007 |
+| min_cell_voltage                  | Minimale Zellspannung | uint16  | 2    | 0.001  | V    |       | —     | 37008 | 37008 |
 | battery_1_cell_1_voltage            | Spannung Akkupack 1 Zelle 1   | int16   | 2    | 0.001  | V    | 34018 | 34018 |       | 34018 |
 | battery_1_cell_2_voltage            | Spannung Akkupack 1 Zelle 2   | int16   | 2    | 0.001  | V    | 34019 | 34019 |       | 34019 |
 | battery_1_cell_3_voltage            | Spannung Akkupack 1 Zelle 3   | int16   | 2    | 0.001  | V    | 34020 | 34020 |       | 34020 |
@@ -178,13 +180,13 @@ Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Regi
 | mppt4_current                     | MPPT4-String-Strom  | uint16  | 2    | 0.1    | A    | 30027 | 30027 |       |       |
 | mppt4_power                       | MPPT4-String-Leistung | uint16  | 2    | 0.1    | W    | 30040 | 30040 |       |       |
 | inverter_state                    | Wechselrichter-/Gerätezustand | uint16  | 2    | 1      | -    | 35100 | 35100 | 35100 | 35100 |
-| fault_status                      | Fehlerstatus-Bits | uint64  | 8    | -      | -    |       |       | 36100 |       |
-| alarm_status                      | Alarmstatus-Bits  | uint32  | 4    | -      | -    |       |       | 36000 |       |
+| fault_status                      | Fehlerstatus-Bits | uint64  | 8    | -      | -    | 36100 | 36100 | 36100 | 36100 |
+| alarm_status                      | Alarmstatus-Bits  | uint32  | 4    | -      | -    |       |       | 36000 | 36000 |
 | modbus_address                    | Modbus-Slave-/Unit-ID | uint16  | 2    | -      | -    | 41100 | 41100 | 41100 | 41100 |
 | rs485_control_mode (switch)       | RS485-Steuermodus (Schreibbefehle)  | uint16  | 2    | -      | -    | 42000 | 42000 | 42000 | 42000 |
 | backup_function (switch)          | Steuerung der Notstromfunktion | uint16  | 2    | -      | -    | 41200 | 41200 | 41200 | 41200 |
 | force_mode (select)               | Zwangsmodus (Kein/Laden/Entladen)  | uint16  | 2    | -      | -    | 42010 | 42010 | 42010 | 42010 |
-| user_work_mode (select)           | Benutzer-Arbeitsmodus (manual/anti_feed/trade) | uint16  | 2    | -      | -    | 43000 | 43000 | 43000 | 43000 |
+| user_work_mode (select)           | Benutzer-Arbeitsmodus (manual/anti_feed/trade; D, A und E v3: manual/anti_feed/ai) | uint16  | 2    | -      | -    | 43000 | 43000 | 43000 | 43000 |
 | discharge_limit_mode (binary)     | Modus der Entladegrenze (Diagnose) | uint16  | 2    | -      | -    |       |       | 41010 |       |
 | modbus_connection (binary)        | Zustand der Modbus-Verbindung | derived | -    | -      | -    |  |  |  |  |
 | grid_standard (select)            | Netzstandard / Regionsauswahl    | uint16  | 2    | -      | -    |       |       | 44100 |       |
@@ -196,36 +198,46 @@ Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Regi
 | charging_cutoff_capacity (number) | Ladeschlussgrenze (Prozent)  | uint16  | 2    | 0.1    | %    |       |       | 44000 |       |
 | discharging_cutoff_capacity       | Entladeschlussgrenze (Prozent)  | uint16  | 2    | 0.1    | %    |       |       | 44001 |       |
 | reset_device (button)             | Befehl zum Zurücksetzen des Geräts | uint16  | 2    | -      | -    | 41000 | 41000 | 41000 | 41000 |
-| factory_reset (button)            | Befehl für Werksreset | uint16  | 2    | -      | -    | 41001 | 41001 | 41001 | 41001 |
+| factory_reset (button)            | Befehl für Werksreset (D, A und E v3: 41000 = 0xAA11, Bestätigung) | uint16  | 2    | -      | -    | 41000 | 41000 | 41001 | 41000 |
+| led_test (button)                 | LED-Test der Frontblende (3000 ms) | uint16  | 2    | -      | ms   | 45012 | 45012 |       | 45012 |
+| read_inverter_input_pb1 (button)  | Wechselrichter-Eingang PB1 abfragen (D und E v3; Ergebnis: DEV 30211) | uint16  | 2    | -      | -    |       | 45006 |       | 45006 |
+| inverter_eeprom_test (button)     | EEPROM-Selbsttest des Wechselrichters (D: kein lesbares Ergebnis; A und E v3: DEV 30213) | uint16  | 2    | -      | -    | 45001 | 45001 |       | 45001 |
+| pack_coding (button)              | BMS-Pack-Adresscodierung (Bestätigung; Status: DEV 32114) | uint16  | 2    | -      | -    |       | 45029 |       |       |
 | schedule_1_days                  | Zeitplan 1 Tage (Bitmaske) | bit      | 2    | -      | -    | 43100 | 43100 | 43100 | 43100 |
 | schedule_1_start                 | Zeitplan 1 Start (HHMM) | uint     | 2    | -      | min  | 43101 | 43101 | 43101 | 43101 |
 | schedule_1_end                   | Zeitplan 1 Ende (HHMM) | uint     | 2    | -      | min  | 43102 | 43102 | 43102 | 43102 |
-| schedule_1_mode                  | Zeitplan 1 Modus (numerisch) | int16    | 2    | -      | W    | 43103 | 43103 | 43103 | 43103 |
+| schedule_1_mode                  | Zeitplan 1 Modus (numerisch) | int16    | 2    | -      | W    |       |       | 43103 |       |
+| schedule_1_power                  | Zeitplan 1 Leistung (+ Entladen, − Laden, −1 CT) | int16   | 2    | -      | W    | 43103 | 43103 |       | 43103 |
 | schedule_1_enabled               | Zeitplan 1 aktiv (0/1)   | uint     | 2    | -      | -    | 43104 | 43104 | 43104 | 43104 |
 | schedule_2_days                  | Zeitplan 2 Tage (Bitmaske) | bit      | 2    | -      | -    | 43105 | 43105 | 43105 | 43105 |
 | schedule_2_start                 | Zeitplan 2 Start (HHMM) | uint     | 2    | -      | min  | 43106 | 43106 | 43106 | 43106 |
 | schedule_2_end                   | Zeitplan 2 Ende (HHMM) | uint     | 2    | -      | min  | 43107 | 43107 | 43107 | 43107 |
-| schedule_2_mode                  | Zeitplan 2 Modus (numerisch) | int16    | 2    | -      | W    | 43108 | 43108 | 43108 | 43108 |
+| schedule_2_mode                  | Zeitplan 2 Modus (numerisch) | int16    | 2    | -      | W    |       |       | 43108 |       |
+| schedule_2_power                  | Zeitplan 2 Leistung (+ Entladen, − Laden, −1 CT) | int16   | 2    | -      | W    | 43108 | 43108 |       | 43108 |
 | schedule_2_enabled               | Zeitplan 2 aktiv (0/1)   | uint     | 2    | -      | -    | 43109 | 43109 | 43109 | 43109 |
 | schedule_3_days                  | Zeitplan 3 Tage (Bitmaske) | bit      | 2    | -      | -    | 43110 | 43110 | 43110 | 43110 |
 | schedule_3_start                 | Zeitplan 3 Start (HHMM) | uint     | 2    | -      | min  | 43111 | 43111 | 43111 | 43111 |
 | schedule_3_end                   | Zeitplan 3 Ende (HHMM) | uint     | 2    | -      | min  | 43112 | 43112 | 43112 | 43112 |
-| schedule_3_mode                  | Zeitplan 3 Modus (numerisch) | int16    | 2    | -      | W    | 43113 | 43113 | 43113 | 43113 |
+| schedule_3_mode                  | Zeitplan 3 Modus (numerisch) | int16    | 2    | -      | W    |       |       | 43113 |       |
+| schedule_3_power                  | Zeitplan 3 Leistung (+ Entladen, − Laden, −1 CT) | int16   | 2    | -      | W    | 43113 | 43113 |       | 43113 |
 | schedule_3_enabled               | Zeitplan 3 aktiv (0/1)   | uint     | 2    | -      | -    | 43114 | 43114 | 43114 | 43114 |
 | schedule_4_days                  | Zeitplan 4 Tage (Bitmaske) | bit      | 2    | -      | -    | 43115 | 43115 | 43115 | 43115 |
 | schedule_4_start                 | Zeitplan 4 Start (HHMM) | uint     | 2    | -      | min  | 43116 | 43116 | 43116 | 43116 |
 | schedule_4_end                   | Zeitplan 4 Ende (HHMM) | uint     | 2    | -      | min  | 43117 | 43117 | 43117 | 43117 |
-| schedule_4_mode                  | Zeitplan 4 Modus (numerisch) | int16    | 2    | -      | W    | 43118 | 43118 | 43118 | 43118 |
+| schedule_4_mode                  | Zeitplan 4 Modus (numerisch) | int16    | 2    | -      | W    |       |       | 43118 |       |
+| schedule_4_power                  | Zeitplan 4 Leistung (+ Entladen, − Laden, −1 CT) | int16   | 2    | -      | W    | 43118 | 43118 |       | 43118 |
 | schedule_4_enabled               | Zeitplan 4 aktiv (0/1)   | uint     | 2    | -      | -    | 43119 | 43119 | 43119 | 43119 |
 | schedule_5_days                  | Zeitplan 5 Tage (Bitmaske) | bit      | 2    | -      | -    | 43120 | 43120 | 43120 | 43120 |
 | schedule_5_start                 | Zeitplan 5 Start (HHMM) | uint     | 2    | -      | min  | 43121 | 43121 | 43121 | 43121 |
 | schedule_5_end                   | Zeitplan 5 Ende (HHMM) | uint     | 2    | -      | min  | 43122 | 43122 | 43122 | 43122 |
-| schedule_5_mode                  | Zeitplan 5 Modus (numerisch) | int16    | 2    | -      | W    | 43123 | 43123 | 43123 | 43123 |
+| schedule_5_mode                  | Zeitplan 5 Modus (numerisch) | int16    | 2    | -      | W    |       |       | 43123 |       |
+| schedule_5_power                  | Zeitplan 5 Leistung (+ Entladen, − Laden, −1 CT) | int16   | 2    | -      | W    | 43123 | 43123 |       | 43123 |
 | schedule_5_enabled               | Zeitplan 5 aktiv (0/1)   | uint     | 2    | -      | -    | 43124 | 43124 | 43124 | 43124 |
 | schedule_6_days                  | Zeitplan 6 Tage (Bitmaske) | bit      | 2    | -      | -    | 43125 | 43125 | 43125 | 43125 |
 | schedule_6_start                 | Zeitplan 6 Start (HHMM) | uint     | 2    | -      | min  | 43126 | 43126 | 43126 | 43126 |
 | schedule_6_end                   | Zeitplan 6 Ende (HHMM) | uint     | 2    | -      | min  | 43127 | 43127 | 43127 | 43127 |
-| schedule_6_mode                  | Zeitplan 6 Modus (numerisch) | int16    | 2    | -      | W    | 43128 | 43128 | 43128 | 43128 |
+| schedule_6_mode                  | Zeitplan 6 Modus (numerisch) | int16    | 2    | -      | W    |       |       | 43128 |       |
+| schedule_6_power                  | Zeitplan 6 Leistung (+ Entladen, − Laden, −1 CT) | int16   | 2    | -      | W    | 43128 | 43128 |       | 43128 |
 | schedule_6_enabled               | Zeitplan 6 aktiv (0/1)   | uint     | 2    | -      | -    | 43129 | 43129 | 43129 | 43129 |
 | round_trip_efficiency_total       | Round-Trip-Wirkungsgrad (Gesamtenergien Laden/Entladen) | calculated | - | - | % |  |  |  |  |
 | round_trip_efficiency_monthly     | Round-Trip-Wirkungsgrad (Monatswerte Laden/Entladen) | calculated | - | - | % |  |  |  |  |
@@ -234,13 +246,20 @@ Die folgende Tabelle listet je Schlüssel die beschreibenden Felder und das Regi
 | battery_cycle_count_calc          | Aus Gesamtentladung und Kapazität berechnete Zyklenzahl  | calculated | - | - | - |  |  |  |  |
 
 _Hinweise:_
+- **Venus D und Venus A, 3.1.0-beta.3:** Fünf Schlüssel wurden bei beiden Modellen umbenannt und werden automatisch migriert, samt Entitäts-ID und Verlauf: `device_name` → `device_model`, `vms_version` → `vns_version`, `battery_total_energy` → `battery_rated_capacity`, `min_cell_temperature` → `battery_1_min_cell_temperature` (nur Pack 1; 35010 bleibt das Stack-Maximum) und `schedule_N_mode` → `schedule_N_power`. Die Option `trade_mode` von `user_work_mode` heißt dort `ai`. `alarm_status`, `alarm_status_low` und `fault_status_2` wurden entfernt (die Firmware schreibt sie weder auf der Venus D noch auf der Venus A, sie lesen immer 0), das alte `factory_reset` auf 41001 (auf keinem der beiden Modelle implementiert) wurde durch den echten Werksreset ersetzt.
+- **Nur Venus A, 3.1.0-beta.3:** `mppt_version` (30205, immer 0: die MPPT-Stufe sitzt im Wechselrichter-Micro), Pack 7 (BMS 1105 sendet nur die Packs 1–6) sowie die MPPT/CAN-Register 30214 und 38000–38014 (kein Sender) sind nicht mehr abgebildet; `pv_lifetime_energy` (37021, u32, 0,01 kWh) ist neu. `max_charge_power` / `max_discharge_power` laufen von 50 bis 1450 W und `set_charge_power` / `set_discharge_power` bis 1450 W: Der Wechselrichter-Micro verwirft einen Wert ab 1451 W stillschweigend. `internal_temperature` / `internal_mos1_temperature` behalten ihre Schlüssel und heißen jetzt Kühlkörper-Temperatur 1 / 2.
+- **Venus E v3, 3.1.0-beta.3:** Vier Schlüssel wurden umbenannt und werden automatisch migriert, samt Entitäts-ID und Verlauf: `device_name` → `device_model` (fest `VNSE3-0`), `vms_version` → `vns_version`, `battery_total_energy` → `battery_rated_capacity` (Nennkapazität des einen festen Packs, 5,12 kWh) und `schedule_N_mode` → `schedule_N_power`; `min_cell_temperature` behält seinen Namen. Die Option `trade_mode` von `user_work_mode` heißt `ai`. Entfernt: `alarm_status_low` und das 16-Bit-`alarm_status` (ein uint32 `alarm_status` über 36000 + 36001 ersetzt sie), `fault_status_2`, das alte `factory_reset` auf 41001 sowie die Aliase `ac_offgrid_current` (32301 = 32300), `ac_current` (37004 = 30006, die Netzleistung) und `internal_mos2_temperature` (35002 = 35001). `internal_temperature` / `internal_mos1_temperature` behalten ihre Schlüssel und heißen jetzt Wechselrichter-Temperatur von NTC CH12 / CH5. `max_charge_power` / `max_discharge_power` laufen von 50 bis 2500 W; auf der Venus E v3 lassen sie sich zurücklesen (die Steuereinheit fragt den Micro), nach einem Werksreset bis 3000 W, und die Entität zeigt diesen Wert unbeschnitten. Ein fester Pack: Es gibt keine Entitäten für Packs 2 bis 7, keinen Pack-Zähler und keine Online-Maske. Neu (standardmäßig deaktiviert): `bms_charge_current_limit`, `bms_discharge_current_limit`, `battery_1_mos_status`, `battery_1_protection_1` / `_2`, `battery_1_bms_warnings`, `battery_1_env_temperature`, `battery_1_mos_temperature`, `battery_1_cell_temperature_1..4`, `battery_1_profile` (Low-Byte von 34017), `selftest_status`, `ems_boot_version`, `vns_boot_version`, `inverter_dc_voltage`, `bms_charge_voltage_limit`, `ethernet_chip_version`.
+- **Tasten mit `confirm: true`** (Venus D: `factory_reset`, `pack_coding` und die beiden DEV-BMS-Tasten; Venus A: `factory_reset` und die DEV-Tasten für Wechselrichter aus, BMS-Master-Neustart, BMS-Werksreset und die BMS-Master-Rolle; Venus E v3: `factory_reset` mit eigener Warnung und die DEV-Tasten für die Wechselrichter-Schlafanforderung und den BMS-Werksreset) brauchen zwei Drücke: Der erste zeigt nur die Warnung, ein zweiter innerhalb von 15 s sendet den Befehl.
+- **Isolierte Lesezugriffe (Venus A):** 30030–30035, 38000–39014, 45000–45031, 45603–45605 und 46000 sind nie Teil einer Blocklesung (`NO_BLOCK_READ_RANGES` in `a.yaml`). In 38000–39014 ist auf der Venus A nichts abgebildet, ein Lesezugriff dort startet aber trotzdem den CAN-Broadcast.
+- **Isolierte Lesezugriffe (Venus D):** 30030–30035, 30214, 37021–37022, 38000–39014, 45000–45031, 45603–45605 und 46000 sind nie Teil einer Blocklesung (`NO_BLOCK_READ_RANGES` in `d.yaml`). Ein Lesezugriff irgendwo in 38000–39014 lässt die Steuereinheit bis zum nächsten Neustart vier CAN-Frames pro Sekunde senden; ein Lesezugriff auf 45603–45605 blockiert den Modbus-Task bis zu 200 Ticks.
+- **Isolierte Lesezugriffe (Venus E v3):** 38000–39014, 41500–41631, 45000–45031, 45603–45605 und 46000 sind nie Teil einer Blocklesung (`NO_BLOCK_READ_RANGES` in `e_v3.yaml`). Auch 36001, 36101 und 36103 werden nie einzeln gelesen: Ein einzelnes Lesen von 36001 liefert 36101, von 36101 liefert 36103 und von 36103 die Netzspannung; deshalb ist das Alarmwort ein uint32, und die Fehlerwörter werden zusammen in einem Block gelesen.
 - `charge_to_soc` (42011, „Maximaler SoC“) ist ein Befehl, keine passive Einstellung: Ein Schreibvorgang lässt das Gerät die Batterie sofort auf diesen Ladezustand fahren — an der Hardware verifiziert: Der Wert 70 löste eine Entladung aus, die bei 70 % stoppte. Es ist **nicht** die in der Marstek-App gezeigte Notstromreserve; das ist ein separater, dauerhafter Parameter ganz ohne Modbus-Register.
 - `max_discharge_power` (44003) ist eine freie Grenze, kein Drei-Stufen-Wähler: 1350 W gesetzt und anschließend 2500 W Entladung angefordert ergab an der Hardware 1355 W. Das Register teilt sich sein EEPROM-Wort mit der Geräteleistungsklasse (800 / 2200 / 2500 W) der App. Ein Schreibvorgang stellt die Leistung also wieder her, nachdem die Cloud die Klasse auf 800 zurückgesetzt hat — was sich in der Praxis als Entladung zeigt, die partout nicht über 800 W hinauskommt. Der Cloud-Befehl setzt zusätzlich ein Stufen-Flag und begrenzt bei 800 W jeden Zeitplan-Slot; das Schreiben des Registers tut beides nicht. Das Register ist ein reines Schreibregister, der aktive Wert lässt sich also nicht zurücklesen.
 - `max_cell_voltage` / `min_cell_voltage` gelten auf der Venus D **nicht** geräteweit: 37007/37008 lesen dieselbe Firmware-Quelle wie `battery_1_max_cell_voltage` / `battery_1_min_cell_voltage` (34005/34006), also nur Pack 1. Sie wurden aus `d.yaml` entfernt; stattdessen die Sensoren je Pack verwenden.
 - Die Spalten `a`, `d`, `e_v12` und `e_v3` entsprechen den YAML-Dateien unter `custom_components/marstek_modbus/registers/`.
 - `Bytes` gibt die typische Byte-Größe des Schlüssels an (jedes Modbus-Register = 2 Bytes).
-- Leere Zellen bedeuten, dass die betreffende YAML diesen Schlüssel nicht definiert (oder dass der Wert berechnet wird und kein direktes Modbus-Register hat).
-- `firmware_version` wird aus den Roh-Versionsregistern zusammengesetzt. `E v1/v2` nutzt `ems + bms`; `A`, `D` und `E v3` nutzen `ems + vms + bms`.
+- Leere Zellen bedeuten, dass die betreffende YAML diesen Schlüssel nicht definiert (oder dass der Wert berechnet wird und kein direktes Modbus-Register hat). Bei Venus A und D sind die Einzelpack-Schlüssel `battery_voltage`, `battery_current` und `bms_version` leer: an ihre Stelle treten die Pack-Schlüssel (`battery_1_voltage`, `battery_1_current`, `battery_1_bms_version`). `battery_power`, `battery_cycle_count` und die `total_*_charging/discharging_energy`-Zähler sind dort berechnete oder durchgereichte Sensoren und ebenfalls leer; ihre Quellen sind `dc_sample_power`, `battery_N_cycle_count` und `total_ac_input_energy` / `total_ac_output_energy` (33000 …). Die Tabelle führt nicht jeden Schlüssel der YAML-Dateien auf.
+- `firmware_version` wird aus den Roh-Versionsregistern zusammengesetzt. `E v1/v2` nutzt `ems + bms`; `A` und `E v3` nutzen `ems + vns + bms`; `D` nutzt `ems + vns + mppt + bms`.
 - `ble_mac_address` wird dekodiert und als normale MAC-Adresse formatiert, etwa `00:9B:08:05:D9:0A`.
 - `modbus_connection` ist ein diagnostischer Binärsensor, der sich aus kürzlich erfolgreichen Modbus-Lesevorgängen ableitet, nicht aus einem eigenen Geräteregister.
 - Der Schalter `rs485_control_mode` (Register 42000) nutzt Schreibbefehle (command_on=21930, command_off=21947), um RS485-Steuervorgänge auszulösen; mit Vorsicht verwenden.
@@ -248,10 +267,10 @@ _Hinweise:_
 - Zeitformat der Zeitpläne: `start` und `end` werden als HHMM-Ganzzahlen im 24-Stunden-Format eingetragen (zum Beispiel `0830` = 08:30). Es gelten die in der jeweiligen YAML angegebenen Wertebereiche; für einen zusammenhängenden aktiven Zeitraum muss `start` vor `end` liegen.
 - Tagesauswahl der Zeitpläne: Das zugrunde liegende Register `schedule_*_days` bildet mehrere Tage über eine Bitmaske ab, die Integration stellt es aber derzeit als einfache Einfachauswahl in Home Assistant dar. Aus dieser Einschränkung heraus lassen sich über die Integrations-UI keine mehreren Tage auswählen.
 - Vorbehalt zum Energie-Dashboard (Venus A / Venus D mit PV-Eingang): Die gemeldeten Lade-/Entladeenergieregister der Batterie können Energie enthalten, die über den Wechselrichterpfad an Hausverbraucher fließt — also nicht nur die reine Batterie-Ein-/Ausspeisung. Das kann zu irreführenden Batteriestatistiken im Energie-Dashboard von Home Assistant führen. Für belastbare Dashboard-Werte lieber eigene abgeleitete Sensoren verwenden (etwa über Leistungsintegration) und das Verhalten auf der eigenen Firmware bzw. dem eigenen Gerät prüfen.
-- Werte für den Zeitplan-Modus: `schedule_*_mode` akzeptiert folgende Bereiche:
+- Werte für die Zeitplan-Leistung: `schedule_*_power` (Venus A, D und E v3) / `schedule_*_mode` (Venus E v1/v2) akzeptiert folgende Bereiche:
   - `-1` = Eigenverbrauchsmodus
   - Der Lade-/Entladebereich ist modellabhängig.
-  - Venus A (ab FW v148): `-100` bis `-1500` (Laden), `100` bis `1500` (Entladen)
+  - Venus A (ab FW v148): `-100` bis `-1500` (Laden), `100` bis `1500` (Entladen) in der Control-Firmware; der Wechselrichter-Micro verwirft Werte ab 1451 W stillschweigend, deshalb endet die Integration bei ±1450 W
   - Venus D / Venus E: `-100` bis `-2500` (Laden), `100` bis `2500` (Entladen)
 
 ---

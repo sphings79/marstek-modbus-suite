@@ -86,7 +86,7 @@ Lade- und Entladeleistung, die Grenzwerte, Benutzer- und erzwungener Modus, die 
 Notstrom und RS485 — und alle sechs Zeitpläne mit Zeiten, Leistung, beliebigen Wochentagen und An/Aus.
 
 Jeder Regler liest seine Grenzen aus der Entität, statt sie fest zu verdrahten. Derselbe Editor ist
-damit auf einem **1500-W**-Venus-A genauso richtig wie auf einem **2500-W**-Venus-D. Zeiten werden
+damit auf einem **1450-W**-Venus-A genauso richtig wie auf einem **2500-W**-Venus-D. Zeiten werden
 zwischen dem HHMM der Register und einem Uhrzeitfeld umgerechnet.
 
 So führt das Gerät die Zeitpläne aus, laut Control-Firmware 150 auf A, D und E3:
@@ -108,6 +108,22 @@ So führt das Gerät die Zeitpläne aus, laut Control-Firmware 150 auf A, D und 
 > Was den Speicher von außen regelt — eine Nulleinspeisungs-Automation, ein Energiemanager —
 > schreibt dieselben Register und gewinnt innerhalb von Sekunden. Passiert das direkt nach einer
 > Eingabe, sagt der Reiter das, statt kaputt auszusehen.
+
+### System und Wartung
+
+Der Reiter System zeigt Modell, Firmware, Verbindung und die Störungsregister. Sein Banner nennt die
+Ursache eines gesetzten Störungsworts im Klartext, nicht nur das Register; die BMS-Fehlersperre (und
+der BMS-Werksmodus, wenn du diese Entität aktiviert hast) erscheint als Warnung, und das Warten der
+Venus E v3 auf die Netzfreigabe als Hinweis, nicht als Störung.
+
+Ganz unten liegt, standardmäßig zugeklappt, ein Abschnitt **Wartung**, als Gefahrenzone gezeichnet.
+Er listet jede Befehlstaste des Speichers, die du aktiviert hast (Werksreset, Pack-Codierung,
+LED-Test, die Servicetests und mit der DEV-Option die DEV-Befehle). Ein Befehl mit der zweistufigen
+Bestätigung der Integration zeigt zuerst die Warnung mit einem Countdown und wird nur gesendet, wenn
+du innerhalb des Zeitfensters bestätigst. Daneben sendet das Formular **WLAN** neue Zugangsdaten mit denselben Prüfungen wie
+der Dienst `marstek_modbus.set_wifi` an das Kommunikationsmodul, aber über den eigenen
+Websocket-Befehl der Integration, sodass das Passwort nicht im Recorder landet — die zugehörige
+Warnung steht in [docs/set-wifi.de.md](docs/set-wifi.de.md). Das Panel speichert das Passwort nie.
 
 ### Einstellungen
 
@@ -137,7 +153,7 @@ bleibt ein selbst ausgeblendeter Reiter von einem unterscheidbar, den es nie gab
 |---|:---:|:---:|:---:|
 | 🇩🇪 **Deutsch** | ✅ | ✅ | ✅ |
 | 🇬🇧 **English** | ✅ | ✅ | ✅ |
-| 🇳🇱 **Nederlands** | ✅ | ✅ | fällt auf Englisch zurück |
+| 🇳🇱 **Nederlands** | ✅ | ✅ | ✅ |
 
 Alle drei folgen der Sprache, auf die Home Assistant eingestellt ist — nichts zu konfigurieren. Die
 Entitätsnamen kommen aus dem Übersetzungssystem von Home Assistant, und genau deshalb findet das
@@ -171,21 +187,24 @@ Entitätsliste folgt denselben Grenzen.
 | Verbleibende Zyklen und Batteriezustand | ✅ | ✅ | ✅ | ✅ |
 | Innen- und Zelltemperaturen | ✅ | ✅ | ✅ | ✅ |
 | Firmware-Versionen, Netzwerkdiagnose | ✅ | ✅ | ✅ | ✅ |
-| Stör- und Alarmregister | ✅ | ✅ | ✅ | ❌ |
+| Stör- und Alarmregister | ✅ | ✅ | ✅ | ✅ |
 | **Solareingänge (MPPT)** | ✅ | ✅ | ❌ | ❌ |
-| **Zellspannungen je Pack** | ✅ | ✅ | ❌ | ❌ |
+| **Zellspannungen je Pack** | ✅ | ✅ | ❌ | ✅¹ |
 | **Ladezustand je Pack** | ✅ | ✅ | ❌ | ❌ |
-| **Temperaturen und Zyklen je Pack** | ✅ | ✅ | ❌ | ❌ |
-| **Schutzflags je Pack** | ✅ | ✅ | ❌ | ❌ |
+| **Temperaturen und Zyklen je Pack** | ✅ | ✅ | ❌ | ✅¹ |
+| **Schutzflags je Pack** | ✅ | ✅ | ❌ | ✅¹ |
 | **Welches Pack gerade Strom führt** | ✅ | ✅ | ❌ | ❌ |
 | Batteriepacks | bis zu 6 | bis zu 7 | 1, fest verbaut | 1, fest verbaut |
+
+¹ Das eine fest verbaute Pack der Venus E v3. Diese Messwerte gibt es, sie sind dort aber standardmäßig
+deaktiviert; in der Entitätsliste einschalten, um sie zu sehen.
 
 ### Steuerung
 
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Lade- und Entladeleistung | ✅ | ✅ | ✅ | ✅ |
-| Leistungsgrenzen | 1500 W | 2500 W | 2500 W | 2500 W |
+| Leistungsgrenzen | 1450 W | 2500 W | 2500 W | 2500 W |
 | Ladeziel (SoC-Obergrenze) | ✅ | ✅ | ✅ | ✅ |
 | Betriebsmodus, erzwungener Modus | ✅ | ✅ | ✅ | ✅ |
 | Sechs Zeitpläne mit Tagesauswahl | ✅ | ✅ | ✅ | ✅ |
@@ -197,13 +216,25 @@ Entitätsliste folgt denselben Grenzen.
 Alles in dieser Tabelle lässt sich sowohl im Reiter **Steuerung** als auch in der Entitätsliste
 ändern.
 
+### Wartung und Dienste
+
+| | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
+|---|:---:|:---:|:---:|:---:|
+| Werksreset (mit Bestätigungsschritt) | ✅ | ✅ | ✅ | ✅ |
+| LED-Test, EEPROM-Test des Wechselrichters | ✅ | ✅ | ❌ | ✅ |
+| WLAN-Dienst `set_wifi` | ✅ | ✅ | ❌ | ✅ |
+| DEV-Register und DEV-Tasten (Option **DEV-Register anzeigen**) | ✅ | ✅ | ❌ | ✅ |
+
+Der Wartungsbereich im Reiter **System** listet die Befehle, die dein Speicher hat; die DEV-Tasten
+und `set_wifi` brauchen die Option **DEV-Register anzeigen**.
+
 ### Panel-Reiter
 
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Übersicht | ✅ | ✅ | ✅ | ✅ |
-| Zellen | ✅ | ✅ | ❌ | ❌ |
-| Packs | ✅ | ✅ | ❌ | ❌ |
+| Zellen | ✅ | ✅ | ❌ | ✅¹ |
+| Packs | ✅ | ✅ | ❌ | ✅¹ |
 | Solar | ✅ | ✅ | ❌ | ❌ |
 | Energie | ✅ | ✅ | ✅ | ✅ |
 | **Steuerung** | ✅ | ✅ | ✅ | ✅ |
@@ -213,6 +244,10 @@ Alles in dieser Tabelle lässt sich sowohl im Reiter **Steuerung** als auch in d
 Ein Reiter erscheint nur, wenn der Speicher etwas hineinzustellen hat, und lässt sich in den
 Einstellungen von Hand ausblenden — dort stehen die, die dein Modell nicht füllen kann, ausgegraut
 mit Begründung.
+
+¹ Das eine eingebaute Pack. Seine Werte (Zellspannungen, Pack-Temperaturen, Schutz- und Warnwörter,
+MOSFET-Status, Batterieprofil) sind bei der Venus E v3 standardmäßig deaktiviert; die Reiter sagen
+das und füllen sich, sobald du sie aktivierst.
 
 > [!IMPORTANT]
 > Venus **A**, **D** und **E v3** teilen eine Firmware-Basis. Venus **E v1/v2** baut auf einer
@@ -306,7 +341,8 @@ zwei Wege:
 
 Alles landet auf einem Gerät. **Jede Entität, die das Panel liest, ist standardmäßig aktiv** — das
 Panel ist damit vollständig, sobald die Integration eingerichtet ist, ohne dass du etwas von Hand
-einschalten musst. Deaktiviert bleibt, wonach keine Ansicht fragt: Register ohne geklärte Bedeutung,
+einschalten musst. Bewusst zum Einschalten sind nur die Befehlstasten des Wartungsabschnitts und
+die Pack-Werte der Venus E v3. Deaktiviert bleibt, wonach keine Ansicht fragt: Register ohne geklärte Bedeutung,
 Werte, die ein anderer Sensor bereits liefert, und Diagnosen für Fälle, die dich nichts angehen. Wer
 die trotzdem will, aktiviert sie in der Entitätsliste.
 
@@ -388,6 +424,17 @@ Home Assistants eigenes **Abfrage von Aktualisierungen aktivieren** in den Syste
 Eintrags funktioniert weiterhin und ist davon unabhängig. Sind beide gesetzt, gewinnt das von Home
 Assistant, weil es den Zeitplan abklemmt, bevor die Integration überhaupt gefragt wird.
 
+### Register, die nicht angeboten werden, und der WLAN-Dienst
+
+Einige Register der Venus D, A und E v3 werden bewusst nicht zu Entitäten oder Tasten, weil ihr Schreiben
+den Ausgang stoppen, Schutzfunktionen umgehen oder Modbus dauerhaft abschalten kann.
+[docs/not-offered-registers.de.md](docs/not-offered-registers.de.md) listet sie mit dem Grund je
+Register. Eines davon hat stattdessen einen Dienst: `marstek_modbus.set_wifi` schreibt die
+WLAN-Zugangsdaten des Kommunikationsmoduls der Venus D, A und E v3. Er ist aus, solange **Optionen →
+DEV-Register → DEV-Register anzeigen** nicht eingeschaltet ist, und ein falscher oder
+abgebrochener Schreibvorgang kann das Modul mit falschen Zugangsdaten zurücklassen; deshalb zuerst
+[docs/set-wifi.de.md](docs/set-wifi.de.md) lesen.
+
 ---
 
 ## Was lokal bleibt
@@ -427,10 +474,7 @@ konfiguriert hast.
 - **Alle paar Minuten scheitert ein Read, während die Batterie ihre Telemetrie hochlädt**
   Firmware v150 schickt die Telemetrie über TLS, und der Schlüsselaustausch lässt das Gerät rund
   viereinhalb Sekunden lang nicht mehr auf Modbus antworten. Jeder Read mit kürzerem Timeout gibt
-  auf, und die Antwort kommt danach, ohne dass noch jemand auf sie wartet. Hier gemessen, samt der
-  Frage, was die Client-Bibliothek mit dieser Antwort macht und warum das entscheidet, ob die Pause
-  einen fehlgeschlagenen Read kostet oder zwei:
-  **[TMODBUS-MIGRATION.de.md](TMODBUS-MIGRATION.de.md)**.
+  auf, und die Antwort kommt danach, ohne dass noch jemand auf sie wartet.
 
 ---
 

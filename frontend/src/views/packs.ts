@@ -5,6 +5,7 @@ import { baseStyles } from "../styles";
 import type { PackFill } from "../components/mk-pack-bars";
 import "../components/mk-pack-bars";
 import "../components/mk-stat";
+import { CAPACITY_KEYS, mosConducts } from "../entities";
 import {
   cellDeltaFlag,
   SPREAD_WARN_PP,
@@ -95,7 +96,7 @@ export class MkViewPacks extends MkView {
 
   /** Nominal capacity of a single pack, used to turn a percentage into kWh. */
   private get packCapacity(): number | null {
-    const total = this.reader.num("battery_total_energy");
+    const total = this.reader.numFirst(CAPACITY_KEYS);
     const count = this.packs.length;
     return total !== null && count ? total / count : null;
   }
@@ -106,9 +107,9 @@ export class MkViewPacks extends MkView {
     const per = this.packCapacity;
 
     return this.packs.map((i) => {
-      const soc = r.num(`battery_soc_${i}`);
-      const min = r.num(`battery_${i}_min_cell_voltage`);
-      const max = r.num(`battery_${i}_max_cell_voltage`);
+      const soc = r.packNum(i, "soc");
+      const min = r.packNum(i, "min_cell_voltage");
+      const max = r.packNum(i, "max_cell_voltage");
       return {
         index: i,
         soc,
@@ -132,10 +133,18 @@ export class MkViewPacks extends MkView {
     const mean = socs.length ? socs.reduce((a, b) => a + b, 0) / socs.length : null;
     const spread = socs.length ? Math.max(...socs) - Math.min(...socs) : null;
     const cycles = this.packs
-      .map((i) => r.num(`battery_${i}_cycle_count`))
+      .map((i) => r.packNum(i, "cycle_count"))
       .filter((v): v is number => v !== null);
 
     return html`
+      ${this.disabledPackNote([
+        "max_cell_voltage",
+        "min_cell_voltage",
+        "mos_temperature",
+        "env_temperature",
+        "cell_temperature_1",
+        "mos_status",
+      ])}
       <div class="grid tiles">
         <mk-stat
           label=${r.label("battery_soc")}
@@ -161,10 +170,10 @@ export class MkViewPacks extends MkView {
           label=${t("packs.stored_total")}
           value=${f.num(r.num("stored_energy"), 2)}
           unit="kWh"
-          foot=${r.num("battery_total_energy") === null
+          foot=${r.numFirst(CAPACITY_KEYS) === null
             ? ""
             : t("packs.of_max", {
-                value: f.num(r.num("battery_total_energy"), 2),
+                value: f.num(r.numFirst(CAPACITY_KEYS), 2),
               })}
         ></mk-stat>
         <mk-stat
@@ -202,7 +211,7 @@ export class MkViewPacks extends MkView {
                 .spread=${spread}
                 .spreadWarn=${this.spreadWarn}
                 packLabel=${t("common.pack")}
-                energyUnit=${r.unit("battery_total_energy") || "kWh"}
+                energyUnit=${r.unit(r.firstKey(CAPACITY_KEYS) ?? "") || "kWh"}
                 .formatNumber=${(v: number | null, d = 0) => f.num(v, d)}
               ></mk-pack-bars>
             `
@@ -230,7 +239,7 @@ export class MkViewPacks extends MkView {
     const per = this.packCapacity;
 
     const socs = this.packs
-      .map((i) => r.num(`battery_soc_${i}`))
+      .map((i) => r.packNum(i, "soc"))
       .filter((v): v is number => v !== null)
       .sort((a, b) => a - b);
     const median = socs.length ? socs[Math.floor(socs.length / 2)] : null;
@@ -271,18 +280,18 @@ export class MkViewPacks extends MkView {
             </thead>
             <tbody>
               ${this.packs.map((i) => {
-                const soc = r.num(`battery_soc_${i}`);
-                const min = r.num(`battery_${i}_min_cell_voltage`);
-                const max = r.num(`battery_${i}_max_cell_voltage`);
+                const soc = r.packNum(i, "soc");
+                const min = r.packNum(i, "min_cell_voltage");
+                const max = r.packNum(i, "max_cell_voltage");
                 const delta = min !== null && max !== null ? max - min : null;
                 const ntc = [1, 2, 3, 4]
                   .map((n) => r.num(`battery_${i}_cell_temperature_${n}`))
                   .filter((v): v is number => v !== null)
                   .map((v) => f.num(v, 1))
                   .join(" · ");
-                // The device closes one pack's MOSFETs at a time; that pack
-                // is the one doing the work right now.
-                const conducting = r.num(`battery_${i}_mos_status`) === 3;
+                // The device switches one pack in at a time (MOSFET status 1
+                // to 3); that pack is the one doing the work right now.
+                const conducting = mosConducts(r.packNum(i, "mos_status"));
                 // Only ever flagged once the spread tile above is flagged
                 // too - see packIsOutlier.
                 const odd = packIsOutlier(soc, median, spread, this.spreadWarn);
@@ -304,9 +313,9 @@ export class MkViewPacks extends MkView {
                     <td class="n ${cellDeltaFlag(delta)}">
                       ${f.millivolts(delta)} mV
                     </td>
-                    <td class="n">${f.num(r.num(`battery_${i}_voltage`), 2)}</td>
-                    <td class="n">${f.num(r.num(`battery_${i}_current`), 2)}</td>
-                    <td class="n">${f.num(r.num(`battery_${i}_cycle_count`), 0)}</td>
+                    <td class="n">${f.num(r.packNum(i, "voltage"), 2)}</td>
+                    <td class="n">${f.num(r.packNum(i, "current"), 2)}</td>
+                    <td class="n">${f.num(r.packNum(i, "cycle_count"), 0)}</td>
                     <td class="n">${f.num(r.num(`battery_${i}_mos_temperature`), 1)}</td>
                     <td class="n">${f.num(r.num(`battery_${i}_env_temperature`), 1)}</td>
                     <td class="n">${ntc || "—"}</td>

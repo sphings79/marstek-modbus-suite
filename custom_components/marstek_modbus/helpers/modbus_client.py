@@ -51,6 +51,22 @@ CONNECT_BACKOFF_BASE_SEC = 1.0
 CONNECT_BACKOFF_MAX_SEC = 30.0
 
 
+# tmodbus logs every frame it sends and receives, as hex, to this logger at DEBUG
+# level. A write that carries a secret (the Wi-Fi password) must not show up in
+# that log, so the logger is muted for the duration of that one request.
+RAW_TRAFFIC_LOGGER_NAME = "tmodbus.raw_traffic"
+
+
+class _MuteFilter(logging.Filter):
+    """Drop every record of the logger it is attached to."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return False
+
+
+_MUTE_RAW_TRAFFIC = _MuteFilter()
+
+
 class MarstekModbusClient:
     """
     Wrapper for a tmodbus AsyncModbusClient with helper methods
@@ -79,11 +95,17 @@ class MarstekModbusClient:
         self.hold_closed = False
 
         # Set by the last read that failed: True when the device refused the
-        # request with a Modbus exception, False when it simply did not answer.
-        # A refusal is a statement about the registers that were asked for and
-        # can be learned from; a timeout is a statement about the moment and
-        # must not be. The block reader needs to tell the two apart.
+        # request with Modbus exception 2 (illegal data address), False when it
+        # simply did not answer or refused for another reason (busy, failure).
+        # An illegal-address refusal is a statement about the registers that
+        # were asked for and can be learned from; a timeout or another refusal
+        # is a statement about the moment and must not be. The block reader
+        # needs to tell them apart.
         self.last_read_rejected = False
+        # True when the last read ended with any Modbus exception reply. That
+        # reply was framed and matched, so the socket is still in step and
+        # needs no rebuild - unlike after a timeout.
+        self.last_read_refused = False
 
         # Set for the duration of one call by a caller that already knows the
         # device is not answering. The failures below then go to debug: a probe
@@ -527,6 +549,12 @@ class MarstekModbusClient:
         if data_type == "uint16":
             return regs[0]
 
+        if data_type == "uint8_low":
+            # Only the low byte of a 16-bit register. For registers that carry
+            # a value in one byte and something else in the other (the Venus E v3
+            # battery profile at 34017: low byte profile, high byte MOSFET bits).
+            return regs[0] & 0xFF
+
         if data_type == "int32":
             if len(regs) < 2:
                 _LOGGER.warning(
@@ -654,9 +682,16 @@ class MarstekModbusClient:
             return None
 
         self.last_read_rejected = False
+        self.last_read_refused = False
+        # A block probe (several registers, one attempt) refused with exception
+        # 0x02 is how the coordinator learns which gaps the device does not
+        # serve. It has a split-up fallback ready, so it is not worth an error.
+        expected_refusal = False
 
         attempt = 0
         while attempt < max_retries:
+            # Set by an illegal-address refusal, which ends the retry loop.
+            address_refused = False
             client_connected = False
             try:
                 client_connected = bool(self.client and getattr(self.client, "connected", False))
@@ -770,9 +805,9 @@ class MarstekModbusClient:
                 # An unanswered request is the expected shape of a failure here,
                 # not something exceptional. It gets a readable line instead of a
                 # traceback — during an outage this fires once per register.
-                # This is also the stall the migration notes describe: the reply
-                # that arrives after the timeout is dropped by the transport as
-                # an unmatched transaction id, not fed to the next request.
+                # A stalled request leaves a late reply behind: the reply that
+                # arrives after the timeout is dropped by the transport as an
+                # unmatched transaction id, not fed to the next request.
                 _LOGGER.warning(
                     "No response for register %d (0x%04X) on attempt %d: %s",
                     register,
@@ -786,15 +821,31 @@ class MarstekModbusClient:
                 # The device answered, and the answer was a refusal — an illegal
                 # address inside a probed block being the usual one. Same
                 # treatment the old backend gave an error response.
-                self.last_read_rejected = True
-                _LOGGER.error(
+                # Only exception 2 (illegal data address) says that a register
+                # inside the block does not exist. Any other refusal, such as
+                # 6 (device busy) or 4 (device failure), is about the moment and
+                # must not be learned as a bad gap.
+                illegal_address = getattr(e, "error_code", None) == 2
+                self.last_read_rejected = illegal_address
+                self.last_read_refused = True
+                expected_refusal = (
+                    count > 1
+                    and max_retries <= 1
+                    and illegal_address
+                )
+                (_LOGGER.debug if expected_refusal else _LOGGER.error)(
                     "Modbus read error at register %d (0x%04X) on attempt %d: %s",
                     register,
                     register,
                     attempt + 1,
                     e,
                 )
-                if attempt + 1 < max_retries:
+                # Exception 2 is a definitive answer: the address does not
+                # exist, and asking again - on a fresh socket or not - gets the
+                # same answer. Stop instead of paying for more requests and
+                # reconnects. Other codes (busy, failure) keep their retries.
+                address_refused = illegal_address
+                if attempt + 1 < max_retries and not address_refused:
                     _LOGGER.debug(
                         "Attempting reconnect after Modbus error response for register %d (0x%04X)",
                         register,
@@ -835,17 +886,21 @@ class MarstekModbusClient:
                 self._mark_request_finished(request_start)
 
             attempt += 1
+            if address_refused:
+                break
             if attempt < max_retries:
                 await asyncio.sleep(retry_delay)
 
         # A single-attempt read is the caller probing a block; it has an
         # individual-read fallback ready, so this is not an error on its own.
         log = _LOGGER.warning if max_retries <= 1 else _LOGGER.error
+        if expected_refusal:
+            log = _LOGGER.debug
         log(
             "Failed to read register %d (0x%04X) after %d attempt(s)",
             register,
             register,
-            max_retries,
+            attempt,
         )
         return None
 
@@ -900,6 +955,7 @@ class MarstekModbusClient:
         value: int,
         max_retries: int = 3,
         retry_delay: float = 0.2,
+        sensitive: bool = False,
     ) -> bool:
         """
         Write a single value to a Modbus holding register asynchronously with retries.
@@ -909,10 +965,21 @@ class MarstekModbusClient:
             value (int): Value to write.
             max_retries (int): Maximum number of write attempts.
             retry_delay (float): Delay in seconds between retries.
+            sensitive (bool): The value is a secret (a Wi-Fi password). It is
+                then left out of every log line, errors are reported by type
+                only, and tmodbus's raw frame log is muted for the request.
 
         Returns:
             bool: True if write was successful, False otherwise.
         """
+        # What a log line may say about the value, and about an error that
+        # might quote the request it belongs to.
+        shown = "<hidden>" if sensitive else value
+        raw_traffic_logger = logging.getLogger(RAW_TRAFFIC_LOGGER_NAME)
+
+        def detail(error: Exception):
+            return type(error).__name__ if sensitive else error
+
         # Input validation
         if not (0 <= register <= 0xFFFF):
             _LOGGER.error(
@@ -929,8 +996,8 @@ class MarstekModbusClient:
 
         if not (0 <= value <= 0xFFFF):
             _LOGGER.error(
-                "Invalid value for write: %d. Must be 0-65535.",
-                value,
+                "Invalid value for write: %s. Must be 0-65535.",
+                shown,
             )
             return False
         value_to_send = value
@@ -969,29 +1036,52 @@ class MarstekModbusClient:
                     # Logged from inside the lock, so the timestamp is the moment
                     # the frame goes out rather than the moment the write was
                     # queued behind whatever request is still running.
-                    _LOGGER.debug(
-                        "Writing to register %d (0x%04X), value=%d (0x%04X), attempt=%d",
-                        register,
-                        register,
-                        value,
-                        value,
-                        attempt + 1,
-                    )
+                    if sensitive:
+                        _LOGGER.debug(
+                            "Writing to register %d (0x%04X), value hidden, attempt=%d",
+                            register,
+                            register,
+                            attempt + 1,
+                        )
+                    else:
+                        _LOGGER.debug(
+                            "Writing to register %d (0x%04X), value=%d (0x%04X), attempt=%d",
+                            register,
+                            register,
+                            value,
+                            value,
+                            attempt + 1,
+                        )
 
                     try:
                         # Function code 6. tmodbus checks the echo itself and
                         # raises unless the device sent the address and value
                         # back unchanged, so a return here is a confirmed write.
-                        await self.client.write_single_register(register, value)
+                        if sensitive:
+                            # Inside the request lock, so the mute covers this
+                            # frame and its echo and nothing else.
+                            raw_traffic_logger.addFilter(_MUTE_RAW_TRAFFIC)
+                        try:
+                            await self.client.write_single_register(register, value)
+                        finally:
+                            if sensitive:
+                                raw_traffic_logger.removeFilter(_MUTE_RAW_TRAFFIC)
                     finally:
                         self._mark_request_finished(request_start)
 
-                _LOGGER.debug(
-                    "Write confirmed for register %d (0x%04X), value=%d",
-                    register,
-                    register,
-                    value,
-                )
+                if sensitive:
+                    _LOGGER.debug(
+                        "Write confirmed for register %d (0x%04X)",
+                        register,
+                        register,
+                    )
+                else:
+                    _LOGGER.debug(
+                        "Write confirmed for register %d (0x%04X), value=%d",
+                        register,
+                        register,
+                        value,
+                    )
                 return True
 
             except asyncio.CancelledError:
@@ -1006,7 +1096,7 @@ class MarstekModbusClient:
                     register,
                     register,
                     attempt + 1,
-                    e,
+                    detail(e),
                 )
             except ModbusResponseError as e:
                 _LOGGER.warning(
@@ -1014,7 +1104,7 @@ class MarstekModbusClient:
                     register,
                     register,
                     attempt + 1,
-                    e,
+                    detail(e),
                 )
             except (ModbusConnectionError, TModbusError) as e:
                 _LOGGER.warning(
@@ -1023,16 +1113,26 @@ class MarstekModbusClient:
                     register,
                     attempt + 1,
                     type(e).__name__,
-                    e,
+                    detail(e),
                 )
             except Exception as e:
-                _LOGGER.exception(
-                    "Exception during Modbus write at register %d (0x%04X) on attempt %d: %s",
-                    register,
-                    register,
-                    attempt + 1,
-                    e,
-                )
+                if sensitive:
+                    # No traceback and no message: either could quote the request.
+                    _LOGGER.error(
+                        "Exception during Modbus write at register %d (0x%04X) on attempt %d: %s",
+                        register,
+                        register,
+                        attempt + 1,
+                        type(e).__name__,
+                    )
+                else:
+                    _LOGGER.exception(
+                        "Exception during Modbus write at register %d (0x%04X) on attempt %d: %s",
+                        register,
+                        register,
+                        attempt + 1,
+                        e,
+                    )
 
             attempt += 1
             if attempt < max_retries:

@@ -43,7 +43,7 @@ const WEEK = [
  * Times live in the registers as HHMM rather than minutes past midnight - 830
  * is half past eight, not fourteen hours - so they are converted here and only
  * here. The power range is read from the entity, which is what makes the same
- * editor correct on a 1500 W Venus A and a 2500 W Venus D.
+ * editor correct on a 1450 W Venus A and a 2500 W Venus D.
  *
  * The days are a bit mask on the device, so each day is its own chip and any
  * combination - including none, which leaves the slot unused - can be set.

@@ -5,6 +5,7 @@ import { baseStyles } from "../styles";
 import "../components/mk-gauge";
 import "../components/mk-stat";
 import { cellDeltaTone, CELL_DELTA_CRIT_V } from "../thresholds";
+import { CAPACITY_KEYS, INTERNAL_TEMP_KEYS } from "../entities";
 
 /** Below this many watts the battery is treated as resting, matching the
  *  integration's own idle threshold for the runtime sensors. */
@@ -103,7 +104,7 @@ export class MkViewCore extends MkView {
     const t = this.t;
 
     const soc = r.num("battery_soc");
-    const capacity = r.num("battery_total_energy");
+    const capacity = r.numFirst(CAPACITY_KEYS);
     const stored = r.num("stored_energy");
     const power = r.num("battery_power");
 
@@ -201,8 +202,8 @@ export class MkViewCore extends MkView {
         ${this.deltaTile()}
         <mk-stat
           label=${t("core.internal_temp")}
-          value=${f.num(r.num("internal_temperature"), 1)}
-          unit=${this.unitOf("internal_temperature")}
+          value=${f.num(r.numFirst(INTERNAL_TEMP_KEYS), 1)}
+          unit=${this.unitOf(...INTERNAL_TEMP_KEYS)}
           tone="ok"
         ></mk-stat>
         <mk-stat
@@ -316,8 +317,8 @@ export class MkViewCore extends MkView {
     let worst: { pack: number; delta: number } | null = null;
 
     for (let i = 1; i <= r.packCount(); i++) {
-      const hi = r.num(`battery_${i}_max_cell_voltage`);
-      const lo = r.num(`battery_${i}_min_cell_voltage`);
+      const hi = r.packNum(i, "max_cell_voltage");
+      const lo = r.packNum(i, "min_cell_voltage");
       if (hi === null || lo === null) continue;
       const delta = hi - lo;
       if (!worst || delta > worst.delta) worst = { pack: i, delta };
