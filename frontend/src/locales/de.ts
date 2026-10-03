@@ -363,6 +363,24 @@ export const de: Record<string, string> = {
 
   "common.unavailable": "—",
 
+  // ---- all batteries (compact overview) ----
+  "tab.overview": "ALLE BATTERIEN",
+  "overview.empty": "Keine Batterie gewählt. Die Batterien für diese Ansicht stehen unter Einstellungen, Batterien.",
+  "overview.open": "Diese Batterie öffnen",
+  "overview.temp_max": "Temperatur (max)",
+  "overview.status.ok": "Kein Fehler",
+  "overview.status.warn": "Warnung",
+  "overview.status.crit": "Fehler",
+  "overview.status.offline": "Offline",
+  "settings.start_device": "Beim Öffnen angezeigte Batterie",
+  "settings.start_device.last": "Zuletzt benutzte",
+  "settings.start_device_hint": "Auf welcher Batterie sich das Panel öffnet. Gilt auf allen deinen Geräten; „Zuletzt benutzte“ behält die zuletzt in diesem Browser gewählte Batterie.",
+  "settings.slots": "Kompaktansicht",
+  "settings.slot": "Platz {n}",
+  "settings.slot.none": "— leer —",
+  "settings.slots_hint": "Welche Batterien der Tab Alle Batterien zeigt, in dieser Reihenfolge. Zwei stehen nebeneinander, bei drei steht die dritte darunter über die volle Breite, vier ergeben 2×2. Alle leer lassen zeigt jede Batterie, bis zu vier.",
+  "settings.unavail.overview": "braucht zwei oder mehr Batterien",
+
   // ---- decoded fault and warning codes (Venus A MPPT stage) ----
   "code.mppt_error.0": "Kein Fehler",
   "code.mppt_error.1088": "Batterie-Überspannung",

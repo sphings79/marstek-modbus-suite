@@ -5,6 +5,34 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.0-beta.4
+
+[3.1.0-beta.3](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.1.0-beta.3)
+plus the changes below. This is a pre-release. If you want to stay on stable,
+[3.0.1](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.1) is the one to use.
+
+### Panel: several batteries
+
+With two or more batteries set up the panel has two new settings and a new tab.
+
+- **Battery shown on opening.** Settings, Battery shown on opening: a fixed battery, or "Last used",
+  which is what the panel did until now. The choice is stored in Home Assistant under your own user and
+  follows you to your other devices; the battery you pick in the header is still remembered per
+  browser and applies when the setting is on "Last used".
+- **Tab All batteries**, a compact view for two to four batteries at once. One tile per battery with
+  charge level, battery power and its direction, state, AC power, PV total (only when the battery
+  has PV), the highest temperature and a dot for fault, warning or offline. Two tiles sit side by
+  side, three put the third across the full width below, four make two by two, and a narrow
+  screen stacks them. A tile opens the full view of that battery. The tab is read only; setting
+  a power stays in the full view.
+- **Which batteries, and where.** Settings, Compact overview: positions 1 to 4, each with a battery
+  or empty, filled in that order. A battery that is put on a second position moves instead of
+  appearing twice. With nothing chosen the tab shows every battery, up to four. The tab can be hidden
+  and chosen as the start tab like the others; with a single battery it is not offered.
+- Texts in English, German and Dutch.
+
+---
+
 ## 3.1.0-beta.3
 
 [3.1.0-beta.2](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.1.0-beta.2)

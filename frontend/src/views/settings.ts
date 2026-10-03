@@ -5,6 +5,7 @@ import { baseStyles } from "../styles";
 import type { Translate } from "./view-base";
 import type { LocalSettings, PanelSettings, ThemeMode } from "../settings";
 import {
+  OVERVIEW_SLOTS,
   exportSettings,
   importSettings,
   FONT_SCALE_MIN,
@@ -28,6 +29,12 @@ export interface TabChoice {
   available: boolean;
 }
 
+/** One battery as the settings pickers list it. */
+export interface DeviceChoice {
+  id: string;
+  name: string;
+}
+
 /**
  * The panel's own settings.
  *
@@ -39,6 +46,8 @@ export class MkViewSettings extends LitElement {
   @property({ attribute: false }) settings!: PanelSettings;
   @property({ attribute: false }) local!: LocalSettings;
   @property({ attribute: false }) tabs: TabChoice[] = [];
+  /** Every battery set up; the battery pickers appear with more than one. */
+  @property({ attribute: false }) devices: DeviceChoice[] = [];
   @property({ attribute: false }) t!: Translate;
   @property({ attribute: false }) onChange!: (patch: Partial<PanelSettings>) => void;
   @property({ attribute: false }) onChangeLocal!: (patch: Partial<LocalSettings>) => void;
@@ -302,6 +311,20 @@ export class MkViewSettings extends LitElement {
         outline-offset: 2px;
       }
 
+      select {
+        width: 100%;
+        font-family: var(--mk-mono);
+        font-size: 11.5px;
+        padding: 8px 10px;
+        color: var(--mk-fg);
+        background: var(--mk-inset);
+        border: 1px solid var(--mk-line);
+      }
+      select:focus-visible {
+        outline: 2px solid var(--mk-accent);
+        outline-offset: 1px;
+      }
+
       .transfer {
         margin-top: 14px;
       }
@@ -518,6 +541,8 @@ export class MkViewSettings extends LitElement {
         </div>
       </div>
 
+      ${this.devices.length > 1 ? this.batteryPanels() : nothing}
+
       <div class="grid below" style="grid-template-columns: 1fr">
         <div class="panel">
           <div class="head"><div class="label">${t("settings.storage")}</div></div>
@@ -541,6 +566,72 @@ export class MkViewSettings extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Which battery opens first and which ones the compact overview shows.
+   *
+   * Only offered with several batteries; with one there is nothing to choose.
+   * The positions are filled in order: with three chosen, the third closes the
+   * grid across the full width.
+   */
+  private batteryPanels() {
+    const t = this.t;
+    const s = this.settings;
+    const slots = Array.from({ length: OVERVIEW_SLOTS }, (_, i) => s.overviewSlots[i] ?? "");
+
+    return html`
+      <div class="grid below">
+        <div class="panel">
+          <div class="head"><div class="label">${t("settings.start_device")}</div></div>
+          ${this.choices<string>(
+            [
+              ["last", t("settings.start_device.last")],
+              ...this.devices.map((d) => [d.id, d.name] as [string, string]),
+            ],
+            this.devices.some((d) => d.id === s.startDevice) ? s.startDevice : "last",
+            (startDevice) => this.onChange({ startDevice }),
+            false,
+            true,
+          )}
+          <div class="note">${t("settings.start_device_hint")}</div>
+        </div>
+
+        <div class="panel">
+          <div class="head"><div class="label">${t("settings.slots")}</div></div>
+          ${slots.map(
+            (current, index) => html`
+              <div class="field">
+                <span class="label">${t("settings.slot", { n: index + 1 })}</span>
+                <select
+                  aria-label=${t("settings.slot", { n: index + 1 })}
+                  @change=${(e: Event) =>
+                    this.pickSlot(slots, index, (e.target as HTMLSelectElement).value)}
+                >
+                  <option value="" ?selected=${current === ""}>${t("settings.slot.none")}</option>
+                  ${this.devices.map(
+                    (d) => html`
+                      <option value=${d.id} ?selected=${d.id === current}>${d.name}</option>
+                    `,
+                  )}
+                </select>
+              </div>
+            `,
+          )}
+          <div class="note">${t("settings.slots_hint")}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Put a battery on a position. A battery already on another position moves
+   * rather than appearing twice: two identical tiles would only be noise.
+   */
+  private pickSlot(slots: string[], index: number, id: string): void {
+    const next = slots.map((other, i) => (id && i !== index && other === id ? "" : other));
+    next[index] = id;
+    this.onChange({ overviewSlots: next });
   }
 
   /**

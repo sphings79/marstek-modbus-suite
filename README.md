@@ -142,6 +142,12 @@ answers — which is also why the import/export box leaves them out.
 Tabs your battery cannot fill are listed greyed out with the reason, so a tab you hid stays
 distinguishable from one that was never there.
 
+With **two or more batteries** the settings also let you pick the battery the panel opens on, and
+choose up to four batteries for the tab **All batteries**: a compact, read-only overview with one
+tile per battery (charge, power, state, PV, temperature, a fault dot). Two tiles sit side by side,
+three put the third across the full width below, four make two by two, and a phone shows them one
+under the other. A tile opens the full view of its battery.
+
 ---
 
 ## Languages
@@ -227,6 +233,7 @@ The maintenance section in the **System** tab lists the commands your battery ha
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Overview | ✅ | ✅ | ✅ | ✅ |
+| All batteries (two or more batteries set up) | ✅ | ✅ | ✅ | ✅ |
 | Cells | ✅ | ✅ | ❌ | ✅¹ |
 | Packs | ✅ | ✅ | ❌ | ✅¹ |
 | Solar | ✅ | ✅ | ❌ | ❌ |

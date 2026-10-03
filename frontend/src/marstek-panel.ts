@@ -20,6 +20,7 @@ import "./views/solar";
 import "./views/energy";
 import "./views/system";
 import "./views/control";
+import "./views/overview";
 import "./views/settings";
 import type { TabChoice } from "./views/settings";
 import { applyScheme } from "./palettes";
@@ -31,12 +32,14 @@ import {
   clearLocal,
   DEFAULT_SETTINGS,
   DEFAULT_LOCAL,
+  OVERVIEW_SLOTS,
   type PanelSettings,
   type LocalSettings,
 } from "./settings";
 
 type TabId =
   | "core"
+  | "overview"
   | "cells"
   | "packs"
   | "solar"
@@ -44,7 +47,7 @@ type TabId =
   | "control"
   | "system";
 
-const TABS: TabId[] = ["core", "cells", "packs", "solar", "energy", "control", "system"];
+const TABS: TabId[] = ["core", "overview", "cells", "packs", "solar", "energy", "control", "system"];
 
 /**
  * A tab appears only when the battery has something to put in it. The Venus E
@@ -474,7 +477,19 @@ export class MarstekPanel extends LitElement {
       }
       this.settings = settings;
       this.tab = this.startingTab();
+      this.applyStartDevice();
     });
+  }
+
+  /**
+   * Open on the battery the user fixed, when they fixed one. With "last" the
+   * browser's remembered choice stands, as before. A battery that is gone
+   * from the list is ignored rather than leaving the panel on nothing.
+   */
+  private applyStartDevice(): void {
+    const wanted = this.settings.startDevice;
+    if (wanted === "last") return;
+    if (this.devices.some((d) => d.deviceId === wanted)) this.deviceId = wanted;
   }
 
   /** Where the panel opens: a fixed tab, or the one it was left on. */
@@ -559,6 +574,8 @@ export class MarstekPanel extends LitElement {
   }
 
   private supports(reader: DeviceReader, id: TabId): boolean {
+    // The overview compares batteries, so it needs more than one.
+    if (id === "overview") return this.devices.length > 1;
     const key = TAB_REQUIRES[id];
     if (!key || reader.entityId(key) !== undefined) return true;
     return SINGLE_PACK_TABS.includes(id) && reader.isSinglePack() && !reader.isLegacyE();
@@ -640,6 +657,7 @@ export class MarstekPanel extends LitElement {
                 .onChangeLocal=${(patch: Partial<LocalSettings>) =>
                   this.updateLocal(patch)}
                 .tabs=${this.tabChoices(reader)}
+                .devices=${this.devices.map((d) => ({ id: d.deviceId, name: d.name }))}
                 .t=${this.t}
                 .onChange=${(patch: Partial<PanelSettings>) => this.update_(patch)}
                 .onReset=${() => this.resetSettings()}
@@ -800,6 +818,20 @@ export class MarstekPanel extends LitElement {
     return floor >= 0 && floor <= 100 ? floor : null;
   }
 
+  /**
+   * The batteries of the compact overview: the ones the user placed, in their
+   * order, and every battery (up to the grid's size) when none was placed.
+   */
+  private overviewReaders(): DeviceReader[] {
+    const all = this.devices;
+    const placed = this.settings.overviewSlots
+      .map((id) => all.find((d) => d.deviceId === id))
+      .filter((d): d is MarstekDevice => d !== undefined)
+      .filter((d, i, list) => list.indexOf(d) === i);
+    const chosen = placed.length ? placed : all.slice(0, OVERVIEW_SLOTS);
+    return chosen.map((d) => new DeviceReader(this.hass, d));
+  }
+
   private renderTab(reader: DeviceReader, active: TabId) {
     const shared = {
       reader,
@@ -808,6 +840,16 @@ export class MarstekPanel extends LitElement {
     };
 
     switch (active) {
+      case "overview":
+        return html`<mk-view-overview
+          .readers=${this.overviewReaders()}
+          .fmt=${shared.fmt}
+          .t=${shared.t}
+          .onOpen=${(deviceId: string) => {
+            this.selectDevice(deviceId);
+            this.openTab("core");
+          }}
+        ></mk-view-overview>`;
       case "cells":
         return html`<mk-view-cells
           .reader=${shared.reader}

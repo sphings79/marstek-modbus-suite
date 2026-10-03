@@ -145,6 +145,13 @@ weg.
 Reiter, die dein Speicher nicht füllen kann, stehen ausgegraut mit Begründung in der Liste — so
 bleibt ein selbst ausgeblendeter Reiter von einem unterscheidbar, den es nie gab.
 
+Mit **zwei oder mehr Batterien** legen die Einstellungen außerdem fest, auf welcher Batterie sich das
+Panel öffnet, und welche bis zu vier Batterien der Reiter **Alle Batterien** zeigt: eine
+kompakte Ansicht nur zum Lesen mit einer Kachel je Batterie (Ladestand, Leistung, Zustand, PV,
+Temperatur, ein Fehlerpunkt). Zwei Kacheln stehen nebeneinander, bei dreien steht die dritte darunter
+über die volle Breite, vier ergeben 2×2, auf dem Handy stehen sie untereinander. Eine Kachel öffnet
+die Vollansicht ihrer Batterie.
+
 ---
 
 ## Sprachen
@@ -233,6 +240,7 @@ und `set_wifi` brauchen die Option **DEV-Register anzeigen**.
 | | Venus A | Venus D | Venus E v1/v2 | Venus E v3 |
 |---|:---:|:---:|:---:|:---:|
 | Übersicht | ✅ | ✅ | ✅ | ✅ |
+| Alle Batterien (ab zwei eingerichteten Batterien) | ✅ | ✅ | ✅ | ✅ |
 | Zellen | ✅ | ✅ | ❌ | ✅¹ |
 | Packs | ✅ | ✅ | ❌ | ✅¹ |
 | Solar | ✅ | ✅ | ❌ | ❌ |

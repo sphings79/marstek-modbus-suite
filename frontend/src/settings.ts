@@ -46,7 +46,18 @@ export interface PanelSettings {
    */
   spreadWarn: number;
   spreadCrit: number;
+  /** Battery shown on opening: its device id, or "last" for the one used last. */
+  startDevice: string;
+  /**
+   * Batteries of the compact overview, by device id, in the order they are
+   * laid out. An empty entry is a position left empty; with nothing chosen at
+   * all the overview shows every battery.
+   */
+  overviewSlots: string[];
 }
+
+/** The compact overview holds at most this many batteries. */
+export const OVERVIEW_SLOTS = 4;
 
 /**
  * What the panel looks like on this screen. Per browser, never exported.
@@ -78,6 +89,8 @@ export const DEFAULT_SETTINGS: PanelSettings = {
   extraDigits: false,
   spreadWarn: SPREAD_WARN_PP,
   spreadCrit: SPREAD_CRIT_PP,
+  startDevice: "last",
+  overviewSlots: [],
 };
 
 const STORAGE_KEY = "marstek-panel.settings";
@@ -130,6 +143,15 @@ export function parseSettings(stored: unknown): PanelSettings {
       : [],
     extraDigits: raw.extraDigits === true,
     ...spreadPair(raw.spreadWarn, raw.spreadCrit),
+    startDevice:
+      typeof raw.startDevice === "string" && raw.startDevice
+        ? raw.startDevice
+        : DEFAULT_SETTINGS.startDevice,
+    overviewSlots: Array.isArray(raw.overviewSlots)
+      ? raw.overviewSlots
+          .filter((id): id is string => typeof id === "string")
+          .slice(0, OVERVIEW_SLOTS)
+      : [],
   };
 }
 

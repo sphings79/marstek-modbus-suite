@@ -368,6 +368,24 @@ export const nl: Record<string, string> = {
 
   "common.unavailable": "—",
 
+  // ---- all batteries (compact overview) ----
+  "tab.overview": "ALLE BATTERIJEN",
+  "overview.empty": "Geen batterij gekozen. Kies de batterijen voor deze weergave onder Instellingen, Batterijen.",
+  "overview.open": "Deze batterij openen",
+  "overview.temp_max": "Temperatuur (max)",
+  "overview.status.ok": "Geen storing",
+  "overview.status.warn": "Waarschuwing",
+  "overview.status.crit": "Storing",
+  "overview.status.offline": "Offline",
+  "settings.start_device": "Batterij bij het openen",
+  "settings.start_device.last": "Laatst gebruikt",
+  "settings.start_device_hint": "Op welke batterij het paneel opent. Geldt op al je apparaten; „Laatst gebruikt” houdt de laatst in deze browser gekozen batterij aan.",
+  "settings.slots": "Compact overzicht",
+  "settings.slot": "Plek {n}",
+  "settings.slot.none": "— leeg —",
+  "settings.slots_hint": "Welke batterijen het tabblad Alle batterijen toont, in deze volgorde. Twee staan naast elkaar, bij drie staat de derde eronder over de volle breedte, vier geven 2×2. Alles leeg laten toont elke batterij, tot vier.",
+  "settings.unavail.overview": "vereist twee of meer batterijen",
+
   // ---- decoded fault and warning codes (Venus A MPPT stage) ----
   "code.mppt_error.0": "Geen fout",
   "code.mppt_error.1088": "Batterij-overspanning",

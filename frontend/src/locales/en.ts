@@ -371,6 +371,24 @@ export const en: Record<string, string> = {
 
   "common.unavailable": "—",
 
+  // ---- all batteries (compact overview) ----
+  "tab.overview": "ALL BATTERIES",
+  "overview.empty": "No battery chosen. Pick the batteries for this view under Settings, Batteries.",
+  "overview.open": "Open this battery",
+  "overview.temp_max": "Temperature (max)",
+  "overview.status.ok": "No fault",
+  "overview.status.warn": "Warning",
+  "overview.status.crit": "Fault",
+  "overview.status.offline": "Offline",
+  "settings.start_device": "Battery shown on opening",
+  "settings.start_device.last": "Last used",
+  "settings.start_device_hint": "Which battery the panel opens on. Follows you across your devices; “Last used” keeps the battery picked last in this browser.",
+  "settings.slots": "Compact overview",
+  "settings.slot": "Position {n}",
+  "settings.slot.none": "— empty —",
+  "settings.slots_hint": "Which batteries the tab All batteries shows, in order. Two sit side by side, three put the third across the full width below, four make two by two. Leave all empty to show every battery, up to four.",
+  "settings.unavail.overview": "needs two or more batteries",
+
   // ---- decoded fault and warning codes (Venus A MPPT stage) ----
   "code.mppt_error.0": "No error",
   "code.mppt_error.1088": "Battery over-voltage",
