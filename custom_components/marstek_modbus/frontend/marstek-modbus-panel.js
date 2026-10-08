@@ -2577,10 +2577,6 @@
       .cards.n1 {
         grid-template-columns: minmax(0, 1fr);
       }
-      /* The odd tile closes the grid across the full width. */
-      .cards.n3 .card:nth-child(3) {
-        grid-column: 1 / -1;
-      }
       @media (max-width: 700px) {
         .cards {
           grid-template-columns: minmax(0, 1fr);

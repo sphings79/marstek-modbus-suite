@@ -27,8 +27,8 @@ interface Tile {
  * Several batteries side by side, read only.
  *
  * One tile per battery the user chose, in a grid that follows how many there
- * are: two sit next to each other, three put the third across the full width
- * below, four make two by two. On a narrow screen they stack. A tile carries
+ * are: two sit next to each other, three and four make two by two (the fourth
+ * cell stays empty with three, so every tile has the same width). On a narrow screen they stack. A tile carries
  * what a glance needs and opens the full view of its battery when pressed;
  * nothing here writes to a register, because a slider on a tile that small is
  * as easy to knock as to use.
@@ -50,10 +50,6 @@ export class MkViewOverview extends LitElement {
       }
       .cards.n1 {
         grid-template-columns: minmax(0, 1fr);
-      }
-      /* The odd tile closes the grid across the full width. */
-      .cards.n3 .card:nth-child(3) {
-        grid-column: 1 / -1;
       }
       @media (max-width: 700px) {
         .cards {
