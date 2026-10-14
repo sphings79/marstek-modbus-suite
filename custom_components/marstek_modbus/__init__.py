@@ -286,6 +286,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             coordinator._async_clear_rs485_control_mode_issue()
             # Remove coordinator reference from hass data
             hass.data[DOMAIN].pop(entry.entry_id, None)
+            # Disabling the last battery must take the sidebar item with it.
+            # The next setup registers the panel again.
+            async_remove_panel_if_unused(hass)
 
         return unload_ok
     except Exception as err:

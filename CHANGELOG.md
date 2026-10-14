@@ -5,6 +5,16 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.1
+
+### Panel
+
+- The **Marstek Modbus** sidebar item now disappears as soon as the last battery is disabled or
+  unloaded, not only when it is deleted. It is registered again when a battery is set up. With
+  several batteries the item stays until the last one is gone. A reload removes it for a moment.
+
+---
+
 ## 3.1.0
 
 The first stable release since [3.0.1](https://github.com/sphings79/marstek-modbus-suite/releases/tag/3.0.1).

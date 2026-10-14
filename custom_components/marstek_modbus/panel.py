@@ -133,13 +133,11 @@ async def async_register_panel(hass: HomeAssistant) -> None:
 
 
 def async_remove_panel_if_unused(hass: HomeAssistant) -> None:
-    """Take the panel out of the sidebar once the last battery is removed.
+    """Take the panel out of the sidebar once the last battery is gone.
 
-    Deliberately *not* called when a config entry is merely unloaded: Home
-    Assistant unloads and reloads an entry for every options change and every
-    reload, and tearing the sidebar item down each time makes it depend on the
-    setup that follows succeeding. It only goes away when the entry is actually
-    deleted.
+    Called on unload (disable, reload) and on removal of a config entry. A
+    reload therefore drops the item briefly and the following setup registers
+    it again; with a second battery still loaded nothing happens.
     """
     data = hass.data.get(DOMAIN, {})
     if not data.get(DATA_PANEL_REGISTERED):
