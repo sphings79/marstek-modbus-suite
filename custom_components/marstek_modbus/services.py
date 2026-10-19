@@ -26,8 +26,9 @@ through the Modbus registers 41500-41631. What the firmware does with them:
 The password is never read back (the registers always read 0), never logged,
 not even at debug level, and never put into an exception or a state.
 
-Two ways in, one implementation (async_set_wifi): the service, for
-automations, scripts and the developer tools, and the websocket command
+Two ways in, one implementation (async_set_wifi): the service (admin
+only, like the websocket command), for automations, scripts and the developer
+tools, and the websocket command
 marstek_modbus/set_wifi (websocket.py), which the panel uses. Only the latter
 keeps the password out of the recorder: Home Assistant stores every service
 call with its data as a call_service event.
@@ -43,6 +44,7 @@ from homeassistant.const import ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.service import async_register_admin_service
 
 from .const import DOMAIN, LEGACY_DEVICE_VERSIONS
 from .coordinator import MarstekCoordinator
@@ -293,6 +295,10 @@ def async_register_services(hass: HomeAssistant) -> None:
     """Register the services once; they outlive single config entries."""
     if hass.services.has_service(DOMAIN, SERVICE_SET_WIFI):
         return
-    hass.services.async_register(
-        DOMAIN, SERVICE_SET_WIFI, async_handle_set_wifi, schema=SET_WIFI_SCHEMA
+    async_register_admin_service(
+        hass,
+        DOMAIN,
+        SERVICE_SET_WIFI,
+        async_handle_set_wifi,
+        schema=SET_WIFI_SCHEMA,
     )

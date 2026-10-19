@@ -5,6 +5,18 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.2
+
+### Security and stability
+
+- The `marstek_modbus.set_wifi` service is now an admin service: only administrators can call it,
+  like the websocket command the panel uses. Before, any user who could edit an automation or script
+  could push new Wi-Fi credentials to a battery.
+- The host check in the config flow no longer resolves the name on the event loop. A slow or failing
+  DNS lookup does not stall Home Assistant any more.
+
+---
+
 ## 3.1.1
 
 ### Panel
