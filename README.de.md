@@ -11,6 +11,8 @@
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.9%2B-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://www.home-assistant.io/)
 [![Lizenz](https://img.shields.io/github/license/sphings79/marstek-modbus-suite?style=for-the-badge&color=2ae6dc&labelColor=0b131d)](LICENSE)
 
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
+
 **Kein Marstek-Konto · Keine Cloud · Kein MQTT-Broker · Kein YAML**
 
 🇩🇪 Deutsch · 🇬🇧 English · 🇳🇱 Nederlands — [English version of this page](README.md)
@@ -300,9 +302,7 @@ aus derselben Quelle** wie alles andere in deiner Anlage.
 
 ## Installation
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
-
-1. HACS öffnen, nach **Marstek Modbus Suite** suchen und herunterladen (oder den Button oben nutzen)
+1. HACS öffnen, nach **Marstek Modbus Suite** suchen und herunterladen (oder den Button ganz oben nutzen)
 2. Home Assistant neu starten
 3. Integration über **Einstellungen → Geräte & Dienste** hinzufügen
 
