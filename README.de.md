@@ -25,7 +25,7 @@
 |:--|:--|:--|
 | 🔌 **Nur lokal** | ein TCP-Socket, nichts verlässt das Haus | |
 | 📊 **Eigenes Panel** | sieben Reiter, keine Custom Cards nötig | |
-| 🎛️ **Schreibt, nicht nur liest** | Leistung, Grenzwerte, Modi, sechs Zeitpläne | |
+| 🎛️ **Steuern & Auslesen** | Leistung, Grenzwerte, Modi, sechs Zeitpläne | |
 | 🔬 **Je Pack, je Zelle** | 112 Zellspannungen auf einer gemeinsamen Achse | |
 | 🎨 **Sieben Farbschemata** | hell und dunkel, deine Wahl | |
 | 🌍 **Drei Sprachen** | und es folgt Home Assistant | |
