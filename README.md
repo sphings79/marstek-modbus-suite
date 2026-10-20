@@ -25,7 +25,7 @@
 |:--|:--|:--|
 | 🔌 **Local only** | one TCP socket, nothing leaves the house | |
 | 📊 **Its own panel** | seven tabs, no custom cards to install | |
-| 🎛️ **Writes, not just reads** | power, limits, modes, six schedules | |
+| 🎛️ **Control & readout** | power, limits, modes, six schedules | |
 | 🔬 **Per pack, per cell** | 112 cell voltages on one shared axis | |
 | 🎨 **Seven colour schemes** | light and dark, yours to pick | |
 | 🌍 **Three languages** | and it follows Home Assistant | |
