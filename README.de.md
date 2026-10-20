@@ -7,7 +7,7 @@
 ### Dein Marstek Venus, ausgelesen und gesteuert über lokales Modbus TCP — mit eigenem Dashboard.
 
 [![Release](https://img.shields.io/github/v/release/sphings79/marstek-modbus-suite?include_prereleases&style=for-the-badge&color=2ae6dc&labelColor=0b131d)](https://github.com/sphings79/marstek-modbus-suite/releases)
-[![HACS](https://img.shields.io/badge/HACS-eigenes%20Repository-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://hacs.xyz/)
+[![HACS](https://img.shields.io/badge/HACS-default-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://hacs.xyz/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.9%2B-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://www.home-assistant.io/)
 [![Lizenz](https://img.shields.io/github/license/sphings79/marstek-modbus-suite?style=for-the-badge&color=2ae6dc&labelColor=0b131d)](LICENSE)
 
@@ -300,11 +300,11 @@ aus derselben Quelle** wie alles andere in deiner Anlage.
 
 ## Installation
 
-1. Dieses Repository in HACS unter **Integrationen → Benutzerdefinierte Repositories** hinzufügen
-   (Kategorie: Integration)
-2. **Marstek Modbus Suite** installieren
-3. Home Assistant neu starten
-4. Integration über **Einstellungen → Geräte & Dienste** hinzufügen
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
+
+1. HACS öffnen, nach **Marstek Modbus Suite** suchen und herunterladen (oder den Button oben nutzen)
+2. Home Assistant neu starten
+3. Integration über **Einstellungen → Geräte & Dienste** hinzufügen
 
 <div align="center">
 <img src="assets/setup.de.svg" alt="Home-Assistant-Konfigurationsdialog: IP-Adresse, Port, Unit ID und Geräteversion des Marstek-Venus-Speichers" width="70%">
