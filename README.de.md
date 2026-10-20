@@ -302,7 +302,9 @@ aus derselben Quelle** wie alles andere in deiner Anlage.
 
 ## Installation
 
-1. HACS öffnen, nach **Marstek Modbus Suite** suchen und herunterladen (oder den Button ganz oben nutzen)
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
+
+1. HACS öffnen, nach **Marstek Modbus Suite** suchen und herunterladen (oder den Button oben nutzen)
 2. Home Assistant neu starten
 3. Integration über **Einstellungen → Geräte & Dienste** hinzufügen
 
