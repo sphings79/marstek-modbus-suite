@@ -89,9 +89,13 @@
       },
       "dev": {
         "title": "DEV-registers",
-        "description": "Schakelt extra diagnose-items in die anders verborgen zijn. Ze heten \"DEV [register] ([betekenis])\"; een vraagteken betekent dat de naam een vermoeden is.\n\nDaaronder vallen:\n\n- registers waarvan de betekenis niet vaststaat: de eenheid erachter heeft geen controleerbare firmware, of ze geven pas na een opdracht een waarde\n- spiegel- en dubbele registers, op de modellen die er hebben\n- de DEV-knoppen voor serviceopdrachten: standaard uitgeschakeld, en wat niet ongedaan te maken is vraagt een tweede druk\n- de service set_wifi (wifi-gegevens van de communicatiemodule)\n\nAlle DEV-entiteiten worden uitgeschakeld aangemaakt; schakel zelf in wat je wilt. Alleen voor gevorderde gebruikers en analyse. De integratie wordt na het omschakelen opnieuw geladen.",
+        "description": "Schakelt extra diagnose-items in die anders verborgen zijn. Ze heten \"DEV [register] ([betekenis])\"; een vraagteken betekent dat de naam een vermoeden is.\n\nDaaronder vallen:\n\n- registers waarvan de betekenis niet vaststaat: de eenheid erachter heeft geen controleerbare firmware, of ze geven pas na een opdracht een waarde\n- spiegel- en dubbele registers, op de modellen die er hebben\n- de DEV-knoppen voor serviceopdrachten: standaard uitgeschakeld, en wat niet ongedaan te maken is vraagt een tweede druk\n- de service set_wifi (wifi-gegevens van de communicatiemodule)\n\nAlle DEV-entiteiten worden uitgeschakeld aangemaakt; schakel zelf in wat je wilt. Alleen voor gevorderde gebruikers en analyse. De integratie wordt opnieuw geladen na het omschakelen van \"DEV-registers tonen\"; \"Geen terugval op enkele leesacties\" werkt direct, zonder herladen.",
         "data": {
-          "dev_registers_unknown": "DEV-registers tonen"
+          "dev_registers_unknown": "DEV-registers tonen",
+          "no_single_read_fallback": "Geen terugval op enkele leesacties"
+        },
+        "data_description": {
+          "no_single_read_fallback": "Mislukt een blokleesactie, dan worden de registers niet alsnog één voor één gelezen. Ze blijven tot de volgende cyclus niet beschikbaar. Alleen voor analyse; werkt direct."
         }
       },
       "limits": {

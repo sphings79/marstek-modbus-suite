@@ -232,6 +232,12 @@ PACK_COUNT_VERSIONS = {"d", "a"}
 CONF_DEV_REGISTERS_UNKNOWN = "dev_registers_unknown"
 DEFAULT_DEV_REGISTERS = False
 
+# Developer option in the same options step: when a block read fails, do not
+# retry its registers one by one. Meant for analysing the device's behaviour,
+# where the fallback would hide a block that the firmware refuses.
+CONF_NO_SINGLE_FALLBACK = "no_single_read_fallback"
+DEFAULT_NO_SINGLE_FALLBACK = False
+
 # Obsolete keys. They are only read to migrate an existing entry and are dropped
 # from the stored options afterwards:
 #   dev_registers            the single switch of 1.1.5-beta.1

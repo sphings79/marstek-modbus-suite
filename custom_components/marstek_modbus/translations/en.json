@@ -89,9 +89,13 @@
       },
       "dev": {
         "title": "DEV registers",
-        "description": "Switches on extra diagnostic items that are hidden otherwise. They are named \"DEV [register] ([meaning])\"; a question mark means the name is a guess.\n\nIt covers:\n\n- registers whose meaning is not settled: the unit behind them has no firmware that could be checked, or they only deliver a value after a command\n- mirror/duplicate registers, on the models that have any\n- the DEV buttons for service commands: disabled by default, and the ones that cannot be undone need a second press\n- the service set_wifi (Wi-Fi credentials of the communication module)\n\nAll DEV entities are created disabled; enable the ones you want yourself. For advanced users and analysis only. The integration reloads after switching.",
+        "description": "Switches on extra diagnostic items that are hidden otherwise. They are named \"DEV [register] ([meaning])\"; a question mark means the name is a guess.\n\nIt covers:\n\n- registers whose meaning is not settled: the unit behind them has no firmware that could be checked, or they only deliver a value after a command\n- mirror/duplicate registers, on the models that have any\n- the DEV buttons for service commands: disabled by default, and the ones that cannot be undone need a second press\n- the service set_wifi (Wi-Fi credentials of the communication module)\n\nAll DEV entities are created disabled; enable the ones you want yourself. For advanced users and analysis only. The integration reloads after switching \"Show DEV registers\"; \"No single-read fallback\" applies immediately, without a reload.",
         "data": {
-          "dev_registers_unknown": "Show DEV registers"
+          "dev_registers_unknown": "Show DEV registers",
+          "no_single_read_fallback": "No single-read fallback"
+        },
+        "data_description": {
+          "no_single_read_fallback": "When a block read fails, its registers are not read one by one afterwards. They stay unavailable until the next cycle. For analysis only; takes effect immediately."
         }
       },
       "limits": {

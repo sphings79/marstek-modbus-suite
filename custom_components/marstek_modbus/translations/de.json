@@ -89,9 +89,13 @@
       },
       "dev": {
         "title": "DEV-Register",
-        "description": "Schaltet zusätzliche Diagnose-Elemente ein, die sonst ausgeblendet sind. Sie heißen \"DEV [Register] ([Bedeutung])\"; ein Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\nDazu gehören:\n\n- Register ohne geklärte Bedeutung: Die Einheit dahinter hat keine prüfbare Firmware, oder sie liefern erst nach einem Befehl einen Wert\n- Spiegel- und Doppel-Register, auf den Modellen, die welche haben\n- die DEV-Tasten für Service-Befehle: standardmäßig deaktiviert, die nicht umkehrbaren brauchen einen zweiten Druck\n- der Dienst set_wifi (WLAN-Zugangsdaten des Kommunikationsmoduls)\n\nAlle DEV-Entitäten werden deaktiviert angelegt; die gewünschten selbst aktivieren. Nur für fortgeschrittene Nutzer und zur Analyse. Nach dem Umschalten wird die Integration neu geladen.",
+        "description": "Schaltet zusätzliche Diagnose-Elemente ein, die sonst ausgeblendet sind. Sie heißen \"DEV [Register] ([Bedeutung])\"; ein Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\nDazu gehören:\n\n- Register ohne geklärte Bedeutung: Die Einheit dahinter hat keine prüfbare Firmware, oder sie liefern erst nach einem Befehl einen Wert\n- Spiegel- und Doppel-Register, auf den Modellen, die welche haben\n- die DEV-Tasten für Service-Befehle: standardmäßig deaktiviert, die nicht umkehrbaren brauchen einen zweiten Druck\n- der Dienst set_wifi (WLAN-Zugangsdaten des Kommunikationsmoduls)\n\nAlle DEV-Entitäten werden deaktiviert angelegt; die gewünschten selbst aktivieren. Nur für fortgeschrittene Nutzer und zur Analyse. Nach dem Umschalten von \"DEV-Register anzeigen\" wird die Integration neu geladen; \"Kein Einzelread-Rückfall\" wirkt sofort, ohne Neuladen.",
         "data": {
-          "dev_registers_unknown": "DEV-Register anzeigen"
+          "dev_registers_unknown": "DEV-Register anzeigen",
+          "no_single_read_fallback": "Kein Einzelread-Rückfall"
+        },
+        "data_description": {
+          "no_single_read_fallback": "Schlägt ein Blockread fehl, werden seine Register nicht einzeln nachgelesen. Sie bleiben bis zum nächsten Zyklus nicht verfügbar. Nur für die Analyse; wirkt sofort."
         }
       },
       "limits": {

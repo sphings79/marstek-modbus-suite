@@ -5,6 +5,18 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.3-beta.1
+
+### Developer options
+
+- New switch **No single-read fallback** in the options step "DEV registers". When a block read
+  fails, its registers are no longer read one by one afterwards; they stay unavailable until the
+  next cycle. It applies immediately, without a reload. The debug log shows
+  `no_single_fallback=ON (developer option)` in every polling summary, and a line for each failed
+  block, so an issue report with debug logs shows whether it was on.
+
+---
+
 ## 3.1.2
 
 ### Security and stability

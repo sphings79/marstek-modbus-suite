@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     LEGACY_DEVICE_VERSIONS,
                     DEFAULT_TIMEOUT, DEFAULT_MESSAGE_WAIT_MS, CONF_MESSAGE_WAIT_MS,
-                    dev_registers_enabled,
+                    dev_registers_enabled, CONF_NO_SINGLE_FALLBACK,
                     CONF_DISCHARGE_FLOOR, DEFAULT_DISCHARGE_FLOOR,
                     DOMAIN,
                     min_scan_intervals,
@@ -394,6 +394,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
             attempts = max(1, int(max_retries or 1))
             budget = attempts * base + (attempts - 1) * (base + max(0.0, retry_delay))
         return budget + max(1.0, base)
+
+    @property
+    def _no_single_fallback(self) -> bool:
+        """Developer option: no single reads after a failed block read.
+
+        Read from the live options on every call, so a change in the dialog
+        applies without a reload.
+        """
+        return bool((self.config_entry.options or {}).get(CONF_NO_SINGLE_FALLBACK, False))
 
     def _block_read_timeout(self, block_count: int) -> float:
         """Return a dynamic timeout for block reads based on request size.
@@ -1522,6 +1531,21 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     f"block {block_start}-{block_end}",
                     "a timeout" if block_timeout_occurred else "a failed read",
                 )
+            if self._no_single_fallback:
+                # Developer option: leave the block failed instead of hiding it
+                # behind single reads. The values stay unavailable this cycle.
+                _LOGGER.debug(
+                    "Block %d-%d failed; developer option 'No single-read fallback' is ON, "
+                    "so its registers are not retried one by one",
+                    block_start,
+                    block_end,
+                )
+                return {}, {
+                    "requests": 1,
+                    "block_requests": 1,
+                    "single_requests": 0,
+                    "failover_single_requests": 0,
+                }
             values: dict[str, object] = {}
             for sensor in due_sensors:
                 key = sensor["key"]
@@ -2183,7 +2207,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             _LOGGER.debug("No sensors due for update in this cycle")
 
         _LOGGER.debug(
-            "Polling summary: due=%d, groups=%d, requests=%d, block_requests=%d, single_requests=%d, failover_single_requests=%d, successful_reads=%d",
+            "Polling summary: due=%d, groups=%d, requests=%d, block_requests=%d, single_requests=%d, failover_single_requests=%d, successful_reads=%d, no_single_fallback=%s",
             len(due_sensors),
             grouped_blocks,
             top_level_requests,
@@ -2191,6 +2215,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             single_requests,
             failover_single_requests,
             successful_reads,
+            "ON (developer option)" if self._no_single_fallback else "off",
         )
         self._last_cycle_stats = {
             "attempted_reads": attempted_reads,

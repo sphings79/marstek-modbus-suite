@@ -14,6 +14,8 @@ from homeassistant.util import slugify
 from .const import (
     BEACON_MODEL_VERSIONS,
     CONF_DEV_REGISTERS_UNKNOWN,
+    CONF_NO_SINGLE_FALLBACK,
+    DEFAULT_NO_SINGLE_FALLBACK,
     discovery_manual_label,
     CONF_DISCHARGE_FLOOR,
     DEFAULT_DISCHARGE_FLOOR,
@@ -566,6 +568,10 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
             # saved before the setup-time migration ran leaves no obsolete key.
             merged = migrate_dev_registers_options(options) or dict(options)
             merged[CONF_DEV_REGISTERS_UNKNOWN] = new
+            # Read live by the coordinator on every block failure: no reload.
+            merged[CONF_NO_SINGLE_FALLBACK] = bool(
+                user_input.get(CONF_NO_SINGLE_FALLBACK, DEFAULT_NO_SINGLE_FALLBACK)
+            )
             self.hass.config_entries.async_update_entry(config, options=merged)
             if new != current:
                 # Definitions are only loaded at setup -> reload needed.
@@ -580,6 +586,14 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_DEV_REGISTERS_UNKNOWN, default=current
+                    ): bool,
+                    vol.Optional(
+                        CONF_NO_SINGLE_FALLBACK,
+                        default=bool(
+                            options.get(
+                                CONF_NO_SINGLE_FALLBACK, DEFAULT_NO_SINGLE_FALLBACK
+                            )
+                        ),
                     ): bool,
                 }
             ),
