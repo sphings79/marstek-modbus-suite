@@ -5,6 +5,20 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.3-beta.2
+
+### Changes
+
+- **Max charge power** and **Max discharge power** accept 0 W again on the Venus A, D and E v3
+  (the minimum was 50 W since 3.1.0-beta.3). A price planner can now hold stored energy by setting
+  the discharge limit to 0 W while the battery keeps charging from surplus in its own
+  self-consumption mode. The inverter keeps the value across a restart, so a 0 stays until it is
+  written again. ([#8](https://github.com/sphings79/marstek-modbus-suite/issues/8))
+- On the Venus A the two limits go up to 1500 W now (was 1450 W). On some firmware versions the
+  inverter micro may silently ignore a value above 1450 W.
+
+---
+
 ## 3.1.3-beta.1
 
 ### Developer options

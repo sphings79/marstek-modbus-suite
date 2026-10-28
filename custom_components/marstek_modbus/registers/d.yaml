@@ -3309,14 +3309,15 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
-    # 0 would block charging or discharging in the inverter for good (it keeps
-    # the value across a restart), hence the minimum of 50. The register reads
-    # 0 after every restart until it is written again: that means unknown.
+    # 0 is allowed: it stops charging or discharging in the inverter. The
+    # inverter keeps the value across a restart, so it stays until written
+    # again. The register reads 0 after every restart until it is written
+    # again: that means unknown.
     max_charge_power:
         register: 44002
         enabled_by_default: true
         icon: "mdi:battery-arrow-up-outline"
-        min: 50
+        min: 0
         max: 2500
         step: 50
         unit: W
@@ -3329,7 +3330,7 @@ NUMBER_DEFINITIONS:
         register: 44003
         enabled_by_default: true
         icon: "mdi:battery-arrow-down-outline"
-        min: 50
+        min: 0
         max: 2500
         step: 50
         unit: W

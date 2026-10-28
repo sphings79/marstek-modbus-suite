@@ -1121,19 +1121,19 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
-    # 0 would block charging or discharging in the inverter for good (it keeps
-    # the value in its EEPROM and reloads it after every restart without a
-    # range check), hence the minimum of 50. The maximum input is 2500 W, what
-    # the firmware accepts. Unlike on the Venus D the register can be read back:
-    # the control unit asks the micro for its real values, so a stored 0 would
-    # show - but it would still be there after a restart. The micro's factory
+    # 0 is allowed: it stops charging or discharging in the inverter. The
+    # inverter keeps the value in its EEPROM and reloads it after every restart
+    # without a range check, so it stays until written again. The maximum
+    # input is 2500 W, what the firmware accepts. Unlike on the Venus D the register can be read back:
+    # the control unit asks the micro for its real values, so a stored 0 shows
+    # as 0, and it is still there after a restart. The micro's factory
     # state (after a factory reset) is 3000 W: that reading is shown as it is,
     # not clamped to 2500, although 3000 can no longer be written back.
     max_charge_power:
         register: 44002
         enabled_by_default: true
         icon: "mdi:battery-arrow-up-outline"
-        min: 50
+        min: 0
         max: 2500
         step: 50
         unit: W
@@ -1146,7 +1146,7 @@ NUMBER_DEFINITIONS:
         register: 44003
         enabled_by_default: true
         icon: "mdi:battery-arrow-down-outline"
-        min: 50
+        min: 0
         max: 2500
         step: 50
         unit: W

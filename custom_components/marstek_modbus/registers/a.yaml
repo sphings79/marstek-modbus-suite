@@ -17,12 +17,13 @@
 #   - six packs, not seven: BMS 1105 sends packs 1-6 only (pack_id < 7, counted
 #     from 1). Pack 7 is not part of this map; add its entities again if a BMS
 #     version ever sends it (check pack_id < N on every new BMS version).
-#   - the power limits stop at 1450 W: the setpoints 42020/42021 and the limits
-#     44002/44003 accept up to 1500 W in the control firmware, but the inverter
-#     micro silently drops a value of 1451 W or more (it acknowledges it and
-#     keeps the old limit), so 1450 is the highest value that takes effect. The
+#   - the setpoints 42020/42021 stop at 1450 W: the control firmware accepts up
+#     to 1500 W, but on some firmware versions the inverter micro may silently
+#     drop a value of 1451 W or more (it acknowledges it and keeps the old
+#     limit), so 1450 is the highest value that surely takes effect. The
 #     schedule slot power is limited to +-1450 W for the same reason (the
-#     control firmware itself would accept +-1500 W).
+#     control firmware itself would accept +-1500 W). The power limits
+#     44002/44003 go up to 1500 W, with the same caveat.
 #   - the MPPT stage sits inside the inverter micro: there is no separate MPPT
 #     unit, no MPPT firmware version (30205 always reads 0) and nothing that
 #     sends the CAN frames behind 30214 and 38000-38014, so those registers are
@@ -2885,18 +2886,20 @@ NUMBER_DEFINITIONS:
         affects:
             - ac_power
             - battery_power
-    # 0 would block charging or discharging in the inverter for good (it keeps
-    # the value across a restart), hence the minimum of 50. The register reads
-    # 0 after every restart until it is written again: that means unknown.
-    # The maximum is 1450 W: the inverter micro silently drops a value of
-    # 1451 W or more (it acknowledges it and keeps the old limit), so a limit
-    # of 1500 W would show 1500 while the micro keeps working with the old one.
+    # 0 is allowed: it stops charging or discharging in the inverter. The
+    # inverter keeps the value across a restart, so it stays until written
+    # again. The register reads 0 after every restart until it is written
+    # again: that means unknown.
+    # The maximum is 1500 W, what the control firmware accepts. Note: on some
+    # firmware versions the inverter micro may silently drop a value of 1451 W
+    # or more (it acknowledges it and keeps the old limit), so a value above
+    # 1450 W may show as set while the micro keeps working with the old one.
     max_charge_power:
         register: 44002
         enabled_by_default: true
         icon: "mdi:battery-arrow-up-outline"
-        min: 50
-        max: 1450
+        min: 0
+        max: 1500
         step: 50
         unit: W
         data_type: uint16
@@ -2908,8 +2911,8 @@ NUMBER_DEFINITIONS:
         register: 44003
         enabled_by_default: true
         icon: "mdi:battery-arrow-down-outline"
-        min: 50
-        max: 1450
+        min: 0
+        max: 1500
         step: 50
         unit: W
         data_type: uint16
