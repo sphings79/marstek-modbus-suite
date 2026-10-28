@@ -5,7 +5,7 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
-## 3.1.3-beta.2
+## 3.1.3
 
 ### Changes
 
@@ -16,10 +16,6 @@ Entries before 3.0.0-beta.12 are in the
   written again. ([#8](https://github.com/sphings79/marstek-modbus-suite/issues/8))
 - On the Venus A the two limits go up to 1500 W now (was 1450 W). On some firmware versions the
   inverter micro may silently ignore a value above 1450 W.
-
----
-
-## 3.1.3-beta.1
 
 ### Developer options
 
