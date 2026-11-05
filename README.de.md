@@ -286,7 +286,7 @@ aus derselben Quelle** wie alles andere in deiner Anlage.
   - oder eine **Ethernet-Verbindung** direkt zu einem Speicher, der selbst Modbus TCP spricht
 - **IP-Adresse**, **Port** (meist 502) und **Unit ID** (auch Slave ID) dieser Bridge
 - Home Assistant **2025.9** oder neuer
-- HACS, für die bequeme Installation
+- Der Marketplace (Home Assistant 2026.11 und neuer) oder HACS (2026.10 und älter), für die bequeme Installation
 
 ### Getestete Gateways
 
@@ -310,7 +310,7 @@ Für eine Neuinstallation öffne **Einstellungen → Marketplace**, suche nach *
 
 [![Öffne deine Home-Assistant-Instanz und zeige dieses Repository im Marketplace an.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
 
-Starte Home Assistant neu, falls eine Reparatur dich dazu auffordert.
+Starte Home Assistant neu, falls eine Reparatur dich dazu auffordert. Mach danach mit der [Einrichtung](#einrichtung) weiter.
 
 Wenn **Marstek Modbus Suite** in der Suche nicht auftaucht, füge es stattdessen als benutzerdefiniertes Repository hinzu: Füge in **Einstellungen → Marketplace** `https://github.com/sphings79/marstek-modbus-suite` hinzu (Kategorie **Integration**) und installiere es dort. Benutzerdefinierte Repositories setzen voraus, dass der Marketplace mit GitHub verbunden ist; beim ersten Mal fragt er danach.
 
@@ -321,6 +321,8 @@ Wenn **Marstek Modbus Suite** in der Suche nicht auftaucht, füge es stattdessen
 1. HACS öffnen, nach **Marstek Modbus Suite** suchen und herunterladen (oder den Button oben nutzen)
 2. Home Assistant neu starten
 3. Integration über **Einstellungen → Geräte & Dienste** hinzufügen
+
+### Einrichtung
 
 <div align="center">
 <img src="assets/setup.de.svg" alt="Home-Assistant-Konfigurationsdialog: IP-Adresse, Port, Unit ID und Geräteversion des Marstek-Venus-Speichers" width="70%">
@@ -341,10 +343,10 @@ Integration weist einen bereits vergebenen zurück.
 Diese Integration ist ein Fork von
 [ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus) und liegt im
 selben Ordner `custom_components/marstek_modbus`. Beide lassen sich deshalb nicht parallel
-installieren, das alte Repository muss vorher aus HACS entfernt werden. Für die Entitäten gibt es
+installieren, das alte Repository muss vorher aus dem Marketplace bzw. aus HACS entfernt werden. Für die Entitäten gibt es
 zwei Wege:
 
-- **Config-Eintrag stehen lassen** (empfohlen): Nur das HACS-Repository tauschen und den Eintrag
+- **Config-Eintrag stehen lassen** (empfohlen): Nur das Repository tauschen und den Eintrag
   unter *Geräte & Dienste* nicht löschen. Dann ändert sich nichts — Gerätename, Entity-IDs und
   Verlauf bleiben, weil die Entitäten an der unveränderten Eintrags-ID hängen. Diese Integration
   kennt jeden Registerschlüssel der alten, es kommen nur welche dazu.
