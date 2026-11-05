@@ -25,7 +25,7 @@ module does.
 
 Scope of the coupling, so the next person knows what they are looking at:
 
-  * Two methods are reproduced from tmodbus 0.6.2, each with one line changed:
+  * Two methods are reproduced from tmodbus 1.1.0, each with one line changed:
     `data_received`, where the frame is measured, and `open()`, which names
     the protocol class inside a lambda and so offers nothing to override.
   * `ModbusTcpProtocol` is not in `tmodbus.transport.async_tcp.__all__`, and
@@ -81,7 +81,7 @@ MBAP_PROTOCOL_ID = b"\x00\x00"
 class ExceptionFrameProtocol(ModbusTcpProtocol):
     """Protocol that frames an exception reply by its size, not by the header.
 
-    `data_received` is reproduced from tmodbus 0.6.2 with one change, marked
+    `data_received` is reproduced from tmodbus 1.1.0 with one change, marked
     below. A first attempt only corrected what the upstream parser had left
     stuck in the buffer, which was shorter but wrong: when the rejection and
     the reply after it arrive in the same segment, the parser can satisfy the
@@ -119,7 +119,7 @@ class ExceptionFrameProtocol(ModbusTcpProtocol):
 
             total_length = 7 + (length - 1)  # Total length = MBAP header + PDU length
 
-            # --- the one change against tmodbus 0.6.2 -------------------------
+            # --- the one change against tmodbus 1.1.0 -------------------------
             # An exception PDU is two bytes, the function code with bit 7 set
             # and the exception code, so its frame is nine bytes whatever the
             # header claims. The Marstek firmware claims ten. Measuring it by
@@ -160,7 +160,7 @@ class ExceptionFrameProtocol(ModbusTcpProtocol):
 class ExceptionFrameTcpTransport(AsyncTcpTransport):
     """TCP transport that connects with `ExceptionFrameProtocol`.
 
-    `open()` is reproduced from tmodbus 0.6.2 because the upstream method names
+    `open()` is reproduced from tmodbus 1.1.0 because the upstream method names
     the protocol class inside the lambda it passes to `create_connection`,
     leaving nothing to override. Only that name differs here.
     """
@@ -185,6 +185,7 @@ class ExceptionFrameTcpTransport(AsyncTcpTransport):
                 ),
                 timeout=self.connect_timeout,
             )
+            self._closed_event.clear()
             _LOGGER.info("Async TCP connection established: %s:%d", self.host, self.port)
         except TimeoutError:
             _LOGGER.debug("Async TCP connection timeout: %s:%d", self.host, self.port, exc_info=True)
