@@ -501,6 +501,16 @@ outbound connection beyond the one TCP socket to the address you configured.
   shows the correct mode while Home Assistant keeps displaying the previous one, because of a
   discrepancy in the Modbus register response. This is a firmware-side issue.
 
+- **`Force mode` reads standby after `Charge to SOC` is written**
+  Writing `Charge to SOC` (register 42011) makes `Force mode` (42010) read back `0` (standby)
+  until 42010 is written again, while the force charge keeps running — measured at about 2.3 kW.
+  Observed on one Venus E v3 on firmware 150; not re-verified on other models. A controller that
+  re-sends `charge` whenever it reads standby, and that rewrites `Charge to SOC` on every cycle
+  (for example because a decimal target such as 89.4 never equals the stored integer 89), ends
+  up in a loop of writes. Round the target to an integer before comparing it with the entity's
+  state, and do not treat a standby readback right after a `Charge to SOC` write as a stopped
+  charge.
+
 - **The battery disappears from the network every 30 minutes**
   A few seconds with no Modbus and no ping, on a fixed rhythm. This is the device's own firmware
   resetting its network chip when it cannot reach Marstek's cloud — not this integration, and not

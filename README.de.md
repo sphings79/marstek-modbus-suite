@@ -490,6 +490,16 @@ konfiguriert hast.
   nicht. Die Marstek-App zeigt den richtigen Modus, Home Assistant weiterhin den vorherigen — wegen
   einer Abweichung in der Antwort des Modbus-Registers. Das liegt an der Firmware.
 
+- **`Force mode` meldet Standby, nachdem `Charge to SOC` geschrieben wurde**
+  Wird `Charge to SOC` (Register 42011) geschrieben, liest `Force mode` (42010) `0` (Standby)
+  zurück, bis 42010 erneut geschrieben wird — die Zwangsladung läuft dabei weiter, gemessen mit
+  rund 2,3 kW. Beobachtet an einer Venus E v3 mit Firmware 150; auf anderen Modellen nicht
+  nachgeprüft. Ein Controller, der bei Standby erneut `charge` sendet und `Charge to SOC` bei
+  jedem Durchlauf neu schreibt (etwa weil ein Dezimalziel wie 89,4 nie dem gespeicherten Integer
+  89 entspricht), gerät in eine Schreibschleife. Das Ziel vor dem Vergleich mit dem Zustand der
+  Entität auf einen Integer runden und ein Standby direkt nach einem Schreiben von
+  `Charge to SOC` nicht als beendete Ladung werten.
+
 - **Der Speicher verschwindet alle 30 Minuten aus dem Netz**
   Ein paar Sekunden ohne Modbus und ohne Ping, in festem Rhythmus. Das ist die Firmware des Geräts,
   die ihren Netzwerkchip zurücksetzt, wenn sie Marsteks Cloud nicht erreicht — nicht diese
