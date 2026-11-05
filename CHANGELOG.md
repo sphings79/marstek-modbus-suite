@@ -5,6 +5,18 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.4
+
+### Fixes
+
+- The integration installs and validates again on Home Assistant 2026.11 and newer. Home Assistant
+  core now ships tmodbus 1.1.0, which conflicted with the pinned `tmodbus>=0.6.2,<0.7`
+  (hassfest: "incompatible with tmodbus==1.1.0"). The requirement is now `tmodbus>=1.1.0,<1.2`.
+- The exception-frame transport now clears the connection's closed flag when it opens, as tmodbus
+  1.1.0 does.
+
+---
+
 ## 3.1.3
 
 ### Changes
