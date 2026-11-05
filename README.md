@@ -7,11 +7,11 @@
 ### Your Marstek Venus, read and driven over local Modbus TCP — with a dashboard of its own.
 
 [![Release](https://img.shields.io/github/v/release/sphings79/marstek-modbus-suite?include_prereleases&style=for-the-badge&color=2ae6dc&labelColor=0b131d)](https://github.com/sphings79/marstek-modbus-suite/releases)
-[![HACS](https://img.shields.io/badge/HACS-default-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://hacs.xyz/)
+[![Marketplace](https://img.shields.io/badge/Marketplace-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://my.home-assistant.io/redirect/marketplace_browse/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.9%2B-2ae6dc?style=for-the-badge&labelColor=0b131d)](https://www.home-assistant.io/)
 [![Licence](https://img.shields.io/github/license/sphings79/marstek-modbus-suite?style=for-the-badge&color=2ae6dc&labelColor=0b131d)](LICENSE)
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
 
 **No Marstek account · No cloud · No MQTT broker · No YAML**
 
@@ -296,6 +296,20 @@ read [Modbus proxies stall on this firmware](#known-issues) first.
 ---
 
 ## Installation
+
+### Marketplace (Home Assistant 2026.11 and newer)
+
+Home Assistant 2026.11 replaces HACS with the built-in **Marketplace**. If you installed Marstek Modbus Suite through HACS, the Marketplace takes it over on upgrade, and you don't need to do anything.
+
+For a new install, open **Settings → Marketplace**, search for **Marstek Modbus Suite** and install it, or use this button:
+
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
+
+Restart Home Assistant if a repair asks you to.
+
+If **Marstek Modbus Suite** doesn't show up in the search, add it as a custom repository instead: in **Settings → Marketplace**, add `https://github.com/sphings79/marstek-modbus-suite` (category **Integration**), then install it from there. Custom repositories need the Marketplace to be connected to GitHub, and it asks you to connect the first time.
+
+### HACS (Home Assistant 2026.10 and older)
 
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sphings79&repository=marstek-modbus-suite&category=integration)
 
