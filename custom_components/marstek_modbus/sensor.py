@@ -941,20 +941,24 @@ class MarstekWindowSensor(MarstekCalculatedSensor):
         """Lower end of the window, in percent."""
         return float(getattr(self.coordinator, "discharge_floor", 0.0))
 
-    def _ceiling(self) -> float:
+    def _ceiling(self, soc: float) -> float:
         """Upper end of the window, in percent, falling back to a full pack.
 
-        Tolerant on purpose: any reading from 10 to 100 counts, anything else
-        (a literal 0 under external control) falls back to 100. The number
-        entity charge_to_soc enforces 13 to 100 on the Venus D, A and E v3 and
-        10 to 100 on the E v1/v2; this reader does not tell the models apart.
+        charge_to_soc is a command register, not a stored limit: the device
+        reads back its minimum (13) or a stale target once a run is over. A
+        reading below the current state of charge cannot be a target still to
+        be reached, so it counts as none and the window ends at 100. Anything
+        outside 10 to 100 (a literal 0 under external control) does too. The
+        number entity charge_to_soc enforces 13 to 100 on the Venus D, A and
+        E v3 and 10 to 100 on the E v1/v2; this reader does not tell the
+        models apart.
         """
         data = self.coordinator.data if isinstance(self.coordinator.data, dict) else {}
         try:
             ceiling = float(data.get("charge_to_soc"))
         except (TypeError, ValueError):
             return 100.0
-        return ceiling if 10.0 <= ceiling <= 100.0 else 100.0
+        return ceiling if max(10.0, soc) <= ceiling <= 100.0 else 100.0
 
 
 class MarstekRuntimeSensor(MarstekWindowSensor):
@@ -1113,7 +1117,7 @@ class MarstekRuntimeSensor(MarstekWindowSensor):
             self._store.async_delay_save(self._learner.to_dict, 60)
 
     def _time_to_full(self, dep_values: dict, soc: float, capacity: float, power: float):
-        target = self._ceiling()
+        target = self._ceiling(soc)
         linear_hours = None
         if power > self.IDLE_POWER_W:
             linear_hours = capacity * max(target - soc, 0.0) / 100 / (power / 1000)
@@ -1235,7 +1239,7 @@ class MarstekEnergyWindowSensor(MarstekWindowSensor):
         if mode == "usable":
             span = max(soc - self._floor(), 0.0)
         elif mode == "to_full":
-            span = max(self._ceiling() - soc, 0.0)
+            span = max(self._ceiling(soc) - soc, 0.0)
         else:
             _LOGGER.warning("%s unknown energy window mode '%s'", self._key, mode)
             return None

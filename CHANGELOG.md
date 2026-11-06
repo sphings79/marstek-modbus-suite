@@ -5,6 +5,19 @@ Entries before 3.0.0-beta.12 are in the
 
 ---
 
+## 3.1.5-beta.1
+
+### Fixes
+
+- **Energy to full** and **Time to full** no longer sit at 0 while the battery charges. The
+  `Charge to SOC` register is a command, and some firmware versions (seen on a Venus E v3 with
+  V151.119.115) read back its minimum of 13 % when no forced charge is running. That was taken as
+  the charge target, and with the battery above 13 % nothing was left to fill. A reading below the
+  current state of charge now counts as no target, and the window ends at 100 %.
+  ([#11](https://github.com/sphings79/marstek-modbus-suite/issues/11))
+
+---
+
 ## 3.1.4
 
 ### Fixes
